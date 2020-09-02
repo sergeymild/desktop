@@ -9,6 +9,7 @@ export type MenuIDs =
   | 'merge-branch'
   | 'rebase-branch'
   | 'view-repository-on-github'
+  | 'merge-into-develop'
   | 'compare-on-github'
   | 'open-in-shell'
   | 'push'

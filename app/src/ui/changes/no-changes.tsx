@@ -255,6 +255,20 @@ export class NoChanges extends React.Component<
   private onShowInFileManagerClicked = () =>
     this.props.dispatcher.recordSuggestedStepOpenWorkingDirectory()
 
+  private onMergeIntoDevelopClick = () => {
+    console.log(this.props.repositoryState)
+  }
+
+
+  private renderMergeIntoDevelop() {
+    return this.renderMenuBackedAction(
+      'merge-into-develop',
+      `Merge into develop`,
+      undefined,
+      this.onMergeIntoDevelopClick
+    )
+  }
+
   private renderViewOnGitHub() {
     const isGitHub = this.props.repository.gitHubRepository !== null
 
@@ -684,6 +698,7 @@ export class NoChanges extends React.Component<
           {this.renderOpenInExternalEditor()}
           {this.renderShowInFileManager()}
           {this.renderViewOnGitHub()}
+          {this.renderMergeIntoDevelop()}
         </SuggestedActionGroup>
       </>
     )
