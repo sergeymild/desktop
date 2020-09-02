@@ -18,6 +18,7 @@ import { isCurrentBranchForcePush } from '../../lib/rebase'
 import { StashedChangesLoadStates } from '../../models/stash-entry'
 import { Dispatcher } from '../dispatcher'
 import { SuggestedActionGroup } from '../suggested-actions'
+import { PopupType } from '../../models/popup'
 
 function formatMenuItemLabel(text: string) {
   if (__WIN32__ || __LINUX__) {
@@ -221,21 +222,21 @@ export class NoChanges extends React.Component<
     description?: string | JSX.Element,
     onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
   ) {
-    const menuItem = this.getMenuItemInfo(itemId)
-
-    if (menuItem === undefined) {
-      log.error(`Could not find matching menu item for ${itemId}`)
-      return null
-    }
+    // const menuItem = this.getMenuItemInfo(itemId)
+    //
+    // if (menuItem === undefined) {
+    //   log.error(`Could not find matching menu item for ${itemId}`)
+    //   return null
+    // }
 
     return (
       <MenuBackedSuggestedAction
         title={title}
         description={description}
-        discoverabilityContent={this.renderDiscoverabilityElements(menuItem)}
+        discoverabilityContent={""}
         menuItemId={itemId}
-        buttonText={formatMenuItemLabel(menuItem.label)}
-        disabled={!menuItem.enabled}
+        buttonText={formatMenuItemLabel("merge Into Develop")}
+        disabled={false}
         onClick={onClick}
       />
     )
@@ -256,7 +257,10 @@ export class NoChanges extends React.Component<
     this.props.dispatcher.recordSuggestedStepOpenWorkingDirectory()
 
   private onMergeIntoDevelopClick = () => {
-    console.log(this.props.repositoryState)
+    this.props.dispatcher.showPopup({
+      type: PopupType.MergeBranch,
+      repository: this.props.repository,
+    })
   }
 
 
