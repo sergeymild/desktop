@@ -4,6 +4,18 @@ import { IGitAccount } from '../../models/git-account'
 import { IRemote } from '../../models/remote'
 import { envForRemoteOperation } from './environment'
 
+interface ITagItem {
+  name: string,
+  hash: string,
+  date: string,
+  remote: Boolean
+}
+
+let remoteTags = new Map<string, string>()
+let cacheTags: Array<ITagItem>
+
+export {ITagItem}
+
 /**
  * Create a new tag on the given target commit.
  *
@@ -32,8 +44,60 @@ export async function deleteTag(
   name: string
 ): Promise<void> {
   const args = ['tag', '-d', name]
-
+  if (cacheTags) {
+    cacheTags = cacheTags.filter(t => t.name !== name)
+  }
   await git(args, repository.path, 'deleteTag')
+}
+
+export async function checkoutToTag(
+  repository: Repository,
+  name: string
+): Promise<void> {
+  await git(['checkout', `tags/${name}`], repository.path, 'checkoutToTag')
+}
+
+export async function fetchRemoteTags(
+  repository: Repository,
+  force: Boolean = true
+): Promise<Map<string, string>> {
+  if (!force) { return remoteTags }
+  const args = ['ls-remote', '--tags']
+
+  const tags = await git(args, repository.path, 'fetchRemoteTags', {
+    successExitCodes: new Set([0, 1]), // when there are no tags, git exits with 1.
+  })
+
+  const tagsArray: Array<[string, string]> = tags.stdout
+    .split('\n')
+    .filter(line => line !== '')
+    .map(line => {
+      const [commitSha, rawTagName] = line.split('\t')
+
+      // Normalize tag names by removing the leading ref/tags/ and the trailing ^{}.
+      //
+      // git show-ref returns two entries for annotated tags:
+      // deadbeef refs/tags/annotated-tag
+      // de510b99 refs/tags/annotated-tag^{}
+      //
+      // The first entry sha correspond to the blob object of the annotation, while the second
+      // entry corresponds to the actual commit where the tag was created.
+      // By normalizing the tag name we can make sure that the commit sha gets stored in the returned
+      // Map of commits (since git will always print the entry with the commit sha at the end).
+      const tagName = rawTagName
+        .replace(/^refs\/tags\//, '')
+        .replace(/\^\{\}$/, '')
+
+      return [tagName, commitSha]
+    })
+
+  remoteTags = new Map(tagsArray)
+  cacheTags = cacheTags.map(t => ({...t, remote: !!remoteTags.get(t.name)}))
+  return remoteTags
+}
+
+export function getCachedTags(): Array<ITagItem> {
+  return cacheTags || []
 }
 
 /**
@@ -74,6 +138,35 @@ export async function getAllTags(
     })
 
   return new Map(tagsArray)
+}
+
+export async function fetchAllTags(
+  repository: Repository
+) : Promise<ReadonlyArray<ITagItem>> {
+
+  const args = ['for-each-ref', '--sort=creatordate', "--format='%(refname)|%(creatordate)|%(objectname)'", 'refs/tags']
+
+  const tags = await git(args, repository.path, 'getAllTags', {
+    successExitCodes: new Set([0, 1]), // when there are no tags, git exits with 1.
+  })
+
+  const tagsArray: Array<ITagItem> = tags.stdout
+    .split('\n')
+    .filter(line => line !== '')
+    .map(line => {
+      const [rawTagName, date, commitSha] = line
+        .replace("'", "")
+        .replace("'", "")
+        .split('|')
+
+      const tagName = rawTagName
+        .replace(/^refs\/tags\//, '')
+        .replace(/\^\{\}$/, '')
+
+      return {name: tagName, hash: commitSha, date, remote: !!remoteTags.get(tagName)}
+    })
+  cacheTags = tagsArray.reverse()
+  return cacheTags
 }
 
 /**

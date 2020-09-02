@@ -536,6 +536,7 @@
 
   .cm-keyword {
     color: var(--syntax-keyword-color);
+    font-weight: 600;
   }
 
   .cm-atom {
@@ -675,4 +676,9 @@
       }
     }
   }
+}
+
+.cm-property {
+  font-weight: 600;
+  color: var(--syntax-keyword-color);
 }

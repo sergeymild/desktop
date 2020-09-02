@@ -350,15 +350,15 @@ $overlay-background-color: rgba(0, 0, 0, 0.4);
   --diff-selected-gutter-color: #{$blue-600};
   --diff-selected-text-color: var(--background-color);
 
-  --diff-add-background-color: #{darken($green-000, 2%)};
-  --diff-add-border-color: #{$green-300};
+  --diff-add-background-color: #ddfbe6;
+  --diff-add-border-color: #c7f0d2;
   --diff-add-gutter-color: #{$green-300};
   --diff-add-gutter-background-color: #{darken($green-100, 3%)};
   --diff-add-inner-background-color: #acf2bd;
 
   --diff-add-text-color: var(--diff-text-color);
-  --diff-delete-background-color: #{$red-000};
-  --diff-delete-border-color: #{$red-200};
+  --diff-delete-background-color: #fbe9eb;
+  --diff-delete-border-color: #fac5cd;
   --diff-delete-gutter-color: #{$red-200};
   --diff-delete-gutter-background-color: #{$red-100};
   --diff-delete-inner-background-color: #fdb8c0;
@@ -386,9 +386,9 @@ $overlay-background-color: rgba(0, 0, 0, 0.4);
   --diff-delete-hover-text-color: var(--text-color);
 
   // Syntax highlighting text colors
-  --syntax-variable-color: #6f42c1;
+  --syntax-variable-color: #333;
   --syntax-alt-variable-color: #24292e;
-  --syntax-keyword-color: #d73a49;
+  --syntax-keyword-color: #900;
   --syntax-atom-color: #005cc5;
   --syntax-string-color: #032f62;
   --syntax-qualifier-color: #6f42c1;

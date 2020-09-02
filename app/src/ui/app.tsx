@@ -121,6 +121,7 @@ import { ChooseForkSettings } from './choose-fork-settings'
 import { DiscardSelection } from './discard-changes/discard-selection-dialog'
 import { LocalChangesOverwrittenDialog } from './local-changes-overwritten/local-changes-overwritten-dialog'
 import memoizeOne from 'memoize-one'
+import {TagsToolBarButton} from './toolbar/tagsButton'
 
 const MinuteInMilliseconds = 1000 * 60
 const HourInMilliseconds = MinuteInMilliseconds * 60
@@ -2450,6 +2451,18 @@ export class App extends React.Component<IAppProps, IAppState> {
     }
   }
 
+  private renderTagsToolbarButton(): JSX.Element | null {
+    const selection = this.state.selectedState
+
+    if (selection == null || selection.type !== SelectionType.Repository) {
+      return null
+    }
+    const repository = selection.repository
+    return <TagsToolBarButton
+      repository={repository}
+      dispatcher={this.props.dispatcher}/>
+  }
+
   private renderBranchToolbarButton(): JSX.Element | null {
     const selection = this.state.selectedState
 
@@ -2552,6 +2565,7 @@ export class App extends React.Component<IAppProps, IAppState> {
           {this.renderRepositoryToolbarButton()}
         </div>
         {this.renderBranchToolbarButton()}
+        {this.renderTagsToolbarButton()}
         {this.renderPushPullToolbarButton()}
       </Toolbar>
     )
