@@ -222,21 +222,21 @@ export class NoChanges extends React.Component<
     description?: string | JSX.Element,
     onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
   ) {
-    // const menuItem = this.getMenuItemInfo(itemId)
-    //
-    // if (menuItem === undefined) {
-    //   log.error(`Could not find matching menu item for ${itemId}`)
-    //   return null
-    // }
+    const menuItem = this.getMenuItemInfo(itemId)
+
+    if (menuItem === undefined) {
+      log.error(`Could not find matching menu item for ${itemId}`)
+      return null
+    }
 
     return (
       <MenuBackedSuggestedAction
         title={title}
         description={description}
-        discoverabilityContent={""}
+        discoverabilityContent={this.renderDiscoverabilityElements(menuItem)}
         menuItemId={itemId}
-        buttonText={formatMenuItemLabel("merge Into Develop")}
-        disabled={false}
+        buttonText={formatMenuItemLabel(menuItem.label)}
+        disabled={!menuItem.enabled}
         onClick={onClick}
       />
     )
@@ -265,11 +265,26 @@ export class NoChanges extends React.Component<
 
 
   private renderMergeIntoDevelop() {
-    return this.renderMenuBackedAction(
-      'merge-into-develop',
-      `Merge into develop`,
-      undefined,
-      this.onMergeIntoDevelopClick
+    const {
+      branchesState,
+    } = this.props.repositoryState
+    const { tip } = branchesState
+
+    if (tip.kind !== TipState.Valid) {
+      return null
+    }
+
+    const validTip = tip as IValidBranch
+
+    return (
+      <MenuBackedSuggestedAction
+        title={`Merge branches into ${validTip.branch.name}`}
+        discoverabilityContent={"Select branches witch merge"}
+        menuItemId="merge-branch"
+        buttonText={formatMenuItemLabel(`Merge`)}
+        disabled={false}
+        onClick={this.onMergeIntoDevelopClick}
+      />
     )
   }
 
