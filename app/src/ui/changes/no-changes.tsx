@@ -227,7 +227,7 @@ export class NoChanges extends React.Component<
 
     return (
       <MenuBackedSuggestedAction
-        title={`Merge branches into ${validTip.branch.name}`}
+        title={`Merge branches into <Ref>${validTip.branch.name}</Ref>`}
         discoverabilityContent={"Select branches witch merge"}
         menuItemId="merge-branch"
         buttonText={formatMenuItemLabel(`Merge`)}
