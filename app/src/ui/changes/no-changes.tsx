@@ -2,13 +2,11 @@ import * as React from 'react'
 
 import { encodePathAsUrl } from '../../lib/path'
 import { Repository } from '../../models/repository'
-import { LinkButton } from '../lib/link-button'
 import { MenuIDs } from '../../models/menu-ids'
 import { IMenu, MenuItem } from '../../models/app-menu'
 import memoizeOne from 'memoize-one'
 import { getPlatformSpecificNameOrSymbolForModifier } from '../../lib/menu-item'
 import { MenuBackedSuggestedAction } from '../suggested-actions'
-import { executeMenuItemById } from '../main-process-proxy'
 import { IRepositoryState } from '../../lib/app-state'
 import { TipState, IValidBranch } from '../../models/tip'
 import { Ref } from '../lib/ref'
@@ -192,15 +190,6 @@ export class NoChanges extends React.Component<
     return this.getMenuInfoMap(this.props.appMenu).get(menuItemId)
   }
 
-  private getPlatformFileManagerName() {
-    if (__DARWIN__) {
-      return 'Finder'
-    } else if (__WIN32__) {
-      return 'Explorer'
-    }
-    return 'your File Manager'
-  }
-
   private renderDiscoverabilityElements(menuItem: IMenuItemInfo) {
     const parentMenusText = formatParentMenuLabel(menuItem)
 
@@ -215,46 +204,6 @@ export class NoChanges extends React.Component<
   private renderDiscoverabilityKeyboardShortcut(menuItem: IMenuItemInfo) {
     return menuItem.acceleratorKeys.map((k, i) => <kbd key={k + i}>{k}</kbd>)
   }
-
-  private renderMenuBackedAction(
-    itemId: MenuIDs,
-    title: string,
-    description?: string | JSX.Element,
-    onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
-  ) {
-    const menuItem = this.getMenuItemInfo(itemId)
-
-    if (menuItem === undefined) {
-      log.error(`Could not find matching menu item for ${itemId}`)
-      return null
-    }
-
-    return (
-      <MenuBackedSuggestedAction
-        title={title}
-        description={description}
-        discoverabilityContent={this.renderDiscoverabilityElements(menuItem)}
-        menuItemId={itemId}
-        buttonText={formatMenuItemLabel(menuItem.label)}
-        disabled={!menuItem.enabled}
-        onClick={onClick}
-      />
-    )
-  }
-
-  private renderShowInFileManager() {
-    const fileManager = this.getPlatformFileManagerName()
-
-    return this.renderMenuBackedAction(
-      'open-working-directory',
-      `View the files of your repository in ${fileManager}`,
-      undefined,
-      this.onShowInFileManagerClicked
-    )
-  }
-
-  private onShowInFileManagerClicked = () =>
-    this.props.dispatcher.recordSuggestedStepOpenWorkingDirectory()
 
   private onMergeIntoDevelopClick = () => {
     this.props.dispatcher.showPopup({
@@ -287,70 +236,6 @@ export class NoChanges extends React.Component<
       />
     )
   }
-
-  private renderViewOnGitHub() {
-    const isGitHub = this.props.repository.gitHubRepository !== null
-
-    if (!isGitHub) {
-      return null
-    }
-
-    return this.renderMenuBackedAction(
-      'view-repository-on-github',
-      `Open the repository page on GitHub in your browser`,
-      undefined,
-      this.onViewOnGitHubClicked
-    )
-  }
-
-  private onViewOnGitHubClicked = () =>
-    this.props.dispatcher.recordSuggestedStepViewOnGitHub()
-
-  private openPreferences = () => {
-    executeMenuItemById('preferences')
-  }
-
-  private renderOpenInExternalEditor() {
-    if (!this.props.isExternalEditorAvailable) {
-      return null
-    }
-
-    const itemId: MenuIDs = 'open-external-editor'
-    const menuItem = this.getMenuItemInfo(itemId)
-
-    if (menuItem === undefined) {
-      log.error(`Could not find matching menu item for ${itemId}`)
-      return null
-    }
-
-    const preferencesMenuItem = this.getMenuItemInfo('preferences')
-
-    if (preferencesMenuItem === undefined) {
-      log.error(`Could not find matching menu item for ${itemId}`)
-      return null
-    }
-
-    const title = `Open the repository in your external editor`
-
-    const description = (
-      <>
-        Select your editor in{' '}
-        <LinkButton onClick={this.openPreferences}>
-          {__DARWIN__ ? 'Preferences' : 'Options'}
-        </LinkButton>
-      </>
-    )
-
-    return this.renderMenuBackedAction(
-      itemId,
-      title,
-      description,
-      this.onOpenInExternalEditorClicked
-    )
-  }
-
-  private onOpenInExternalEditorClicked = () =>
-    this.props.dispatcher.recordSuggestedStepOpenInExternalEditor()
 
   private renderRemoteAction() {
     const {
@@ -714,9 +599,6 @@ export class NoChanges extends React.Component<
           {this.renderViewStashAction() || this.renderRemoteAction()}
         </SuggestedActionGroup>
         <SuggestedActionGroup>
-          {this.renderOpenInExternalEditor()}
-          {this.renderShowInFileManager()}
-          {this.renderViewOnGitHub()}
           {this.renderMergeIntoDevelop()}
         </SuggestedActionGroup>
       </>
