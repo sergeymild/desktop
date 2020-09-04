@@ -32,7 +32,7 @@ import { ExternalEditor } from '../lib/editors'
 import { openFile } from './lib/open-file'
 
 /** The widest the sidebar can be with the minimum window size. */
-const MaxSidebarWidth = 495
+const MaxSidebarWidth = 700
 
 interface IRepositoryViewProps {
   readonly repository: Repository
