@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogFooter, OkCancelButtonGroup } from '../dia
 import { Repository } from '../../models/repository'
 import { GitHubRepository } from '../../models/github-repository'
 import { Commit } from '../../models/commit'
-import { getCommits } from '../../lib/git'
+import { getAheadBehind, getCommits, mergeCommitTree, revSymmetricDifference } from '../../lib/git'
 import { FilterList, IFilterListGroup, IFilterListItem } from '../lib/filter-list'
 import { IMatches } from '../../lib/fuzzy-find'
 import { RichText } from '../lib/rich-text'
@@ -13,6 +13,10 @@ import { RelativeTime } from '../relative-time'
 import { getAvatarUsersForCommit, IAvatarUser } from '../../models/avatar'
 import { AvatarStack } from '../lib/avatar-stack'
 import { Dispatcher } from '../dispatcher'
+import { ComputedAction } from '../../models/computed-action'
+import { promiseWithMinimumTimeout } from '../../lib/promise'
+import { MergeTreeResult } from '../../models/merge'
+import { ActionStatusIcon } from '../lib/action-status-icon'
 
 interface ICherryPickCommitListProps {
   /** The currently selected branch. */
@@ -48,6 +52,14 @@ interface ICherryPickCommitListState {
   commits: ReadonlyArray<Commit>,
   selectedItem: ICommitItem | null,
   readonly groups: ReadonlyArray<IFilterListGroup<ICommitItem>>
+  /** The merge result of comparing the selected branch to the current branch */
+  readonly mergeStatus: MergeTreeResult | null
+  /**
+   * The number of commits that would be brought in by the merge.
+   * undefined if no branch is selected or still calculating the
+   * number of commits.
+   */
+  readonly commitCount?: number
 }
 
 export class CherryPickCommitList extends React.Component<ICherryPickCommitListProps, ICherryPickCommitListState> {
@@ -60,6 +72,8 @@ export class CherryPickCommitList extends React.Component<ICherryPickCommitListP
       commits: [],
       groups: [],
       selectedItem: null,
+      mergeStatus: null,
+      commitCount: 0
     }
   }
 
@@ -91,7 +105,9 @@ export class CherryPickCommitList extends React.Component<ICherryPickCommitListP
       ...this.state,
       groups,
       commits: tags,
+      selectedItem: group.items[0]
     })
+    this.updateMergeStatus(group.items[0].commit)
   }
 
   private onFilterTextChanged = (text: string): void => {
@@ -133,15 +149,35 @@ export class CherryPickCommitList extends React.Component<ICherryPickCommitListP
     )
   }
 
+  private async updateMergeStatus(commit: Commit) {
+    this.setState({ mergeStatus: { kind: ComputedAction.Loading } })
+
+    const { currentBranch } = this.props
+
+    if (currentBranch != null) {
+      const mergeStatus = await promiseWithMinimumTimeout(
+        () => mergeCommitTree(this.props.repository, currentBranch, commit.sha),
+        500
+      )
+
+      this.setState({ mergeStatus })
+    }
+
+    const range = revSymmetricDifference('', commit.sha)
+    const aheadBehind = await getAheadBehind(this.props.repository, range)
+    const commitCount = aheadBehind ? aheadBehind.behind : 0
+    this.setState({ commitCount })
+  }
+
   private onSelectionChanged = async (item: ICommitItem | null) => {
     if (item === null) { return }
     this.setState({...this.state, selectedItem: item})
+    await this.updateMergeStatus(item.commit)
   }
 
   private merge = () => {
     const commit = this.state.selectedItem
     const branch = this.props.selectedBranch?.name
-    console.log(commit, this.props.selectedBranch)
     if (!commit) { return }
     if (!branch) { return }
     this.props.dispatcher.cherryPick(
@@ -153,7 +189,128 @@ export class CherryPickCommitList extends React.Component<ICherryPickCommitListP
     this.props.onDismissed()
   }
 
+  private renderMergeInfo() {
+    const { currentBranch } = this.props
+    const { mergeStatus, commitCount } = this.state
+    const selectedBranch = this.props.selectedBranch
+    if (
+      mergeStatus == null ||
+      currentBranch == null ||
+      selectedBranch == null ||
+      currentBranch.name === selectedBranch.name ||
+      commitCount == null
+    ) {
+      return null
+    }
+
+    return (
+      <div className="merge-status-component">
+        <ActionStatusIcon
+          status={this.state.mergeStatus}
+          classNamePrefix="merge-status"
+        />
+        <p className="merge-info">
+          {this.renderMergeStatusMessage(
+            mergeStatus,
+            selectedBranch,
+            currentBranch,
+            commitCount
+          )}
+        </p>
+      </div>
+    )
+  }
+
+
+  private renderMergeStatusMessage(
+    mergeStatus: MergeTreeResult,
+    branch: Branch,
+    currentBranch: Branch,
+    commitCount: number
+  ): JSX.Element {
+    if (mergeStatus.kind === ComputedAction.Loading) {
+      return this.renderLoadingMergeMessage()
+    }
+
+    if (mergeStatus.kind === ComputedAction.Clean) {
+      return this.renderCleanMergeMessage(branch, currentBranch, commitCount)
+    }
+
+    if (mergeStatus.kind === ComputedAction.Invalid) {
+      return this.renderInvalidMergeMessage()
+    }
+
+    return this.renderConflictedMergeMessage(
+      branch,
+      currentBranch,
+      mergeStatus.conflictedFiles
+    )
+  }
+
+  private renderLoadingMergeMessage() {
+    return (
+      <React.Fragment>
+        Checking for ability to merge automatically...
+      </React.Fragment>
+    )
+  }
+
+  private renderCleanMergeMessage(
+    branch: Branch,
+    currentBranch: Branch,
+    commitCount: number
+  ) {
+    if (commitCount === 0) {
+      return (
+        <React.Fragment>
+          {`This branch is up to date with `}
+          <strong>{branch.name}</strong>
+        </React.Fragment>
+      )
+    }
+
+    const pluralized = commitCount === 1 ? 'commit' : 'commits'
+    return (
+      <React.Fragment>
+        This will merge
+        <strong>{` ${commitCount} ${pluralized}`}</strong>
+        {` from `}
+        <strong>{branch.name}</strong>
+        {` into `}
+        <strong>{currentBranch.name}</strong>
+      </React.Fragment>
+    )
+  }
+
+  private renderInvalidMergeMessage() {
+    return (
+      <React.Fragment>
+        Unable to merge unrelated histories in this repository
+      </React.Fragment>
+    )
+  }
+
+  private renderConflictedMergeMessage(
+    branch: Branch,
+    currentBranch: Branch,
+    count: number
+  ) {
+    const pluralized = count === 1 ? 'file' : 'files'
+    return (
+      <React.Fragment>
+        There will be
+        <strong>{` ${count} conflicted ${pluralized}`}</strong>
+        {` when merging `}
+        <strong>{branch.name}</strong>
+        {` into `}
+        <strong>{currentBranch.name}</strong>
+      </React.Fragment>
+    )
+  }
+
   public render() {
+    const mergeInfo = this.renderMergeInfo()
+    console.log(mergeInfo)
     return (
       <Dialog
         id="merge"
@@ -182,6 +339,7 @@ export class CherryPickCommitList extends React.Component<ICherryPickCommitListP
           </div>
         </DialogContent>
         <DialogFooter>
+          {mergeInfo}
           <OkCancelButtonGroup
             okButtonText={
               <>

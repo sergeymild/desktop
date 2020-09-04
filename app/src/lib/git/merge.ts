@@ -79,30 +79,23 @@ export async function getMergeBase(
   return process.stdout.trim()
 }
 
-/**
- * Generate the merge result from two branches in a repository
- *
- * @param repository The repository containing the branches to merge
- * @param ours The current branch
- * @param theirs Another branch to merge into the current branch
- */
-export async function mergeTree(
+export async function mergeCommitTree(
   repository: Repository,
   ours: Branch,
-  theirs: Branch
+  commitSha: string
 ): Promise<MergeTreeResult | null> {
-  const mergeBase = await getMergeBase(repository, ours.tip.sha, theirs.tip.sha)
+  const mergeBase = await getMergeBase(repository, ours.tip.sha, commitSha)
 
   if (mergeBase === null) {
     return { kind: ComputedAction.Invalid }
   }
 
-  if (mergeBase === ours.tip.sha || mergeBase === theirs.tip.sha) {
+  if (mergeBase === ours.tip.sha || mergeBase === commitSha) {
     return { kind: ComputedAction.Clean, entries: [] }
   }
 
   const result = await spawnAndComplete(
-    ['merge-tree', mergeBase, ours.tip.sha, theirs.tip.sha],
+    ['merge-tree', mergeBase, ours.tip.sha, commitSha],
     repository.path,
     'mergeTree'
   )
@@ -115,6 +108,21 @@ export async function mergeTree(
   }
 
   return parseMergeTreeResult(output)
+}
+
+/**
+ * Generate the merge result from two branches in a repository
+ *
+ * @param repository The repository containing the branches to merge
+ * @param ours The current branch
+ * @param theirs Another branch to merge into the current branch
+ */
+export async function mergeTree(
+  repository: Repository,
+  ours: Branch,
+  theirs: Branch
+): Promise<MergeTreeResult | null> {
+  return mergeCommitTree(repository, ours, theirs.tip.sha)
 }
 
 /**
