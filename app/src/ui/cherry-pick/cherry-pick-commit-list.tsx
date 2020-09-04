@@ -57,12 +57,12 @@ export class CherryPickCommitList extends React.Component<ICherryPickCommitListP
   }
 
   public async componentDidMount() {
-    console.log(this.props.selectedBranch?.name)
     const localCommits = await getCommits(this.props.repository, this.props.selectedBranch!.name, 100, [
       '--not',
       '--remotes',
     ])
 
+    console.log(this.props.selectedBranch?.name, localCommits)
     this.createTagsGroup(localCommits)
   }
 

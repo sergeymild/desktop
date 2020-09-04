@@ -44,7 +44,6 @@ export class MergeConflictView extends React.Component<IMergeConflictProps, IMer
   }
 
   private async updateMergeStatus(commit: Commit) {
-    console.log("--- updateMergeStatus", commit)
     this.setState({ mergeStatus: { kind: ComputedAction.Loading } })
 
     const { currentBranch } = this.props
@@ -62,8 +61,6 @@ export class MergeConflictView extends React.Component<IMergeConflictProps, IMer
     const aheadBehind = await getAheadBehind(this.props.repository, range)
     const commitCount = aheadBehind ? aheadBehind.behind : 0
     this.setState({ commitCount })
-
-    console.log("--- updateMergeStatus complete")
   }
 
 
@@ -187,8 +184,6 @@ export class MergeConflictView extends React.Component<IMergeConflictProps, IMer
   }
 
   public render() {
-    const info = this.renderMergeInfo()
-    console.log("renderMergeInfo", info)
-    return info
+    return this.renderMergeInfo()
   }
 }
