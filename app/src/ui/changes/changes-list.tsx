@@ -664,8 +664,6 @@ export class ChangesList extends React.Component<
         focusCommitMessage={this.props.focusCommitMessage}
         autocompletionProviders={this.props.autocompletionProviders}
         isCommitting={isCommitting}
-        showCoAuthoredBy={this.props.showCoAuthoredBy}
-        coAuthors={this.props.coAuthors}
         placeholder={this.getPlaceholderMessage(
           filesSelected,
           prepopulateCommitSummary
