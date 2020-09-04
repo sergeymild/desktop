@@ -121,6 +121,8 @@ export class LocalChangesOverwrittenDialog extends React.Component<
         return 'pull'
       case RetryActionType.Merge:
         return 'merge'
+      case RetryActionType.CherryPick:
+        return 'cherry-pick'
       case RetryActionType.Rebase:
         return 'rebase'
       case RetryActionType.Clone:

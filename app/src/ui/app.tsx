@@ -122,6 +122,8 @@ import { DiscardSelection } from './discard-changes/discard-selection-dialog'
 import { LocalChangesOverwrittenDialog } from './local-changes-overwritten/local-changes-overwritten-dialog'
 import memoizeOne from 'memoize-one'
 import {TagsToolBarButton} from './toolbar/tagsButton'
+import { CherryPick } from './cherry-pick'
+import { CherryPickCommitList } from './cherry-pick/cherry-pick-commit-list'
 
 const MinuteInMilliseconds = 1000 * 60
 const HourInMilliseconds = MinuteInMilliseconds * 60
@@ -1429,6 +1431,62 @@ export class App extends React.Component<IAppProps, IAppState> {
           />
         )
       }
+
+      case PopupType.CherryPick: {
+        const { repository, branch } = popup
+        const state = this.props.repositoryStateManager.get(repository)
+
+        const tip = state.branchesState.tip
+
+        // we should never get in this state since we disable the menu
+        // item in a detatched HEAD state, this check is so TSC is happy
+        if (tip.kind !== TipState.Valid) {
+          return null
+        }
+
+        const currentBranch = tip.branch
+
+        return (
+          <CherryPick
+            key="cherry-pick-branch"
+            dispatcher={this.props.dispatcher}
+            repository={repository}
+            allBranches={state.branchesState.allBranches}
+            defaultBranch={state.branchesState.defaultBranch}
+            recentBranches={state.branchesState.recentBranches}
+            currentBranch={currentBranch}
+            initialBranch={branch}
+            onDismissed={onPopupDismissedFn}
+          />
+        )
+      }
+      case PopupType.CherryPickCommitList: {
+        const { repository, branch } = popup
+        const state = this.props.repositoryStateManager.get(repository)
+
+        const tip = state.branchesState.tip
+
+        // we should never get in this state since we disable the menu
+        // item in a detatched HEAD state, this check is so TSC is happy
+        if (tip.kind !== TipState.Valid) {
+          return null
+        }
+
+        const currentBranch = tip.branch
+        return (
+          <CherryPickCommitList
+            key="cherry-pick-branch-commit-list"
+            selectedBranch={branch}
+            repository={repository}
+            gitHubRepository={repository.gitHubRepository}
+            currentBranch={currentBranch}
+            onDismissed={onPopupDismissedFn}
+            dispatcher={this.props.dispatcher}
+            emoji={this.state.emoji}
+            onViewCommitOnGitHub={this.onViewCommitOnGitHub}/>
+        )
+      }
+
       case PopupType.RepositorySettings: {
         const repository = popup.repository
         const state = this.props.repositoryStateManager.get(repository)

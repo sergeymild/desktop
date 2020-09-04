@@ -11,6 +11,7 @@ import { SuccessfulMerge } from './successful-merge'
 import { RebaseConflictsBanner } from './rebase-conflicts-banner'
 import { SuccessfulRebase } from './successful-rebase'
 import { BranchAlreadyUpToDate } from './branch-already-up-to-date-banner'
+import { SuccessfulCherryPick } from './successful-cherry-pick'
 
 export function renderBanner(
   banner: Banner,
@@ -25,6 +26,15 @@ export function renderBanner(
           theirBranch={banner.theirBranch}
           onDismissed={onDismissed}
           key={'successful-merge'}
+        />
+      )
+    case BannerType.SuccessfulCherryPick:
+      return (
+        <SuccessfulCherryPick
+          ourBranch={banner.ourBranch}
+          theirBranch={banner.theirBranch}
+          onDismissed={onDismissed}
+          key={'successful-cherry-pick'}
         />
       )
     case BannerType.MergeConflictsFound:

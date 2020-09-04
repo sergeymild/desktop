@@ -90,6 +90,11 @@
     }
   }
 
+  .cherry-pick-commit-list .list-item {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
   .list-item.selected {
     .commit {
       .unpushed-indicator {

@@ -83,7 +83,7 @@ export class CommitList extends React.Component<ICommitListProps, {}> {
   private renderCommit = (row: number) => {
     const sha = this.props.commitSHAs[row]
     const commit = this.props.commitLookup.get(sha)
-
+    console.log("0-0-0-00-0-0-0-", row, commit)
     if (commit == null) {
       if (__DEV__) {
         log.warn(

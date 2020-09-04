@@ -274,6 +274,7 @@ import {
 } from './helpers/find-upstream-remote'
 import { WorkflowPreferences } from '../../models/workflow-preferences'
 import { getAttributableEmailsFor } from '../email'
+import { CherryPickResult } from '../git/cherry-pick'
 
 const LastSelectedRepositoryIDKey = 'last-selected-repository-id'
 
@@ -4286,6 +4287,48 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     return Promise.resolve()
   }
+
+  public async _cherryPickBranch(
+    repository: Repository,
+    commitSha: string,
+    branch: string,
+    mergeStatus: MergeTreeResult | null
+  ): Promise<void> {
+    const gitStore = this.gitStoreCache.get(repository)
+
+    if (mergeStatus !== null) {
+      if (mergeStatus.kind === ComputedAction.Clean) {
+        await this.statsStore.recordMergeHintSuccessAndUserProceeded()
+      } else if (mergeStatus.kind === ComputedAction.Conflicts) {
+        await this.statsStore.recordUserProceededAfterConflictWarning()
+      } else if (mergeStatus.kind === ComputedAction.Loading) {
+        await this.statsStore.recordUserProceededWhileLoading()
+      }
+    }
+
+    const cherryPickResult = await gitStore.cherryPick(branch, commitSha)
+    const { tip } = gitStore
+
+    if (cherryPickResult === CherryPickResult.Success && tip.kind === TipState.Valid) {
+      this._setBanner({
+        type: BannerType.SuccessfulCherryPick,
+        ourBranch: tip.branch.name,
+        theirBranch: branch,
+      })
+    } else if (
+      cherryPickResult === CherryPickResult.AlreadyUpToDate &&
+      tip.kind === TipState.Valid
+    ) {
+      this._setBanner({
+        type: BannerType.BranchAlreadyUpToDate,
+        ourBranch: tip.branch.name,
+        theirBranch: branch,
+      })
+    }
+
+    return this._refreshRepository(repository)
+  }
+
 
   public async _mergeBranch(
     repository: Repository,

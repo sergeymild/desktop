@@ -90,6 +90,7 @@ import { StatsStore } from '../stats'
 import { getTagsToPush, storeTagsToPush } from './helpers/tags-to-push-storage'
 import { DiffSelection, ITextDiff } from '../../models/diff'
 import { getDefaultBranch } from '../helpers/default-branch'
+import { cherryPick, CherryPickResult } from '../git/cherry-pick'
 
 /** The number of commits to load from history per batch. */
 const CommitBatchSize = 100
@@ -1404,6 +1405,33 @@ export class GitStore extends BaseStore {
         currentBranch,
         theirBranch: branch,
         repository: this.repository,
+      },
+    })
+  }
+
+  /** Cherry pick the named branch into the current branch. */
+  public cherryPick(branch: string, commitSha: string): Promise<CherryPickResult | undefined> {
+    if (this.tip.kind !== TipState.Valid) {
+      throw new Error(
+        `unable to cherry pick as tip state is '${this.tip.kind}' and the application expects the repository to be on a branch currently`
+      )
+    }
+
+    const currentBranch = this.tip.branch.name
+
+    return this.performFailableOperation(() => cherryPick(this.repository, commitSha, branch), {
+      gitContext: {
+        kind: 'cherry-pick',
+        currentBranch,
+        theirBranch: branch,
+      },
+
+      retryAction: {
+        type: RetryActionType.CherryPick,
+        repository: this.repository,
+        currentBranch: currentBranch,
+        theirBranch: branch,
+        commitSha: commitSha
       },
     })
   }

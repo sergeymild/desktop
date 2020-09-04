@@ -68,6 +68,8 @@ export enum PopupType {
   RebaseConflicts,
   ChooseForkSettings,
   ConfirmDiscardSelection,
+  CherryPick,
+  CherryPickCommitList,
 }
 
 export type Popup =
@@ -264,4 +266,15 @@ export type Popup =
       type: PopupType.LocalChangesOverwritten
       repository: Repository
       retryAction: RetryAction
+    }
+
+  | {
+      type: PopupType.CherryPick
+      repository: Repository
+      branch?: Branch
+    }
+  | {
+      type: PopupType.CherryPickCommitList
+      repository: Repository
+      branch: Branch
     }

@@ -2,6 +2,7 @@ import { Popup } from './popup'
 
 export enum BannerType {
   SuccessfulMerge = 'SuccessfulMerge',
+  SuccessfulCherryPick = 'SuccessfulCherryPick',
   MergeConflictsFound = 'MergeConflictsFound',
   SuccessfulRebase = 'SuccessfulRebase',
   RebaseConflictsFound = 'RebaseConflictsFound',
@@ -42,5 +43,12 @@ export type Banner =
       /** name of the branch that was merged into */
       readonly ourBranch: string
       /** name of the branch we merged into `ourBranch` */
+      readonly theirBranch?: string
+    }
+  | {
+      readonly type: BannerType.SuccessfulCherryPick
+      /** name of the branch that was cherry picked into */
+      readonly ourBranch: string
+      /** name of the branch we cherry picked into `ourBranch` */
       readonly theirBranch?: string
     }

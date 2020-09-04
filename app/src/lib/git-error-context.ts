@@ -2,7 +2,7 @@ import { Branch } from '../models/branch'
 
 type MergeOrPullConflictsErrorContext = {
   /** The Git operation that triggered the conflicted state */
-  readonly kind: 'merge' | 'pull'
+  readonly kind: 'merge' | 'pull' | 'cherry-pick'
   /** The branch being merged into the current branch, "theirs" in Git terminology */
   readonly theirBranch: string
 

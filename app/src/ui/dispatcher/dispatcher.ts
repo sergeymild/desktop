@@ -890,6 +890,15 @@ export class Dispatcher {
     return this.appStore._setAccessKeyHighlightState(highlight)
   }
 
+  public cherryPick(
+    repository: Repository,
+    commitSha: string,
+    branch: string,
+    mergeStatus: MergeTreeResult | null
+  ): Promise<void> {
+    return this.appStore._cherryPickBranch(repository, commitSha, branch, mergeStatus)
+  }
+
   /** Merge the named branch into the current branch. */
   public mergeBranch(
     repository: Repository,
@@ -1931,6 +1940,14 @@ export class Dispatcher {
       case RetryActionType.Merge:
         return this.mergeBranch(
           retryAction.repository,
+          retryAction.theirBranch,
+          null
+        )
+
+      case RetryActionType.CherryPick:
+        return this.cherryPick(
+          retryAction.repository,
+          retryAction.commitSha,
           retryAction.theirBranch,
           null
         )

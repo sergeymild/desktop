@@ -10,7 +10,7 @@ import { MenuBackedSuggestedAction } from '../suggested-actions'
 import { IRepositoryState } from '../../lib/app-state'
 import { TipState, IValidBranch } from '../../models/tip'
 import { Ref } from '../lib/ref'
-import { IAheadBehind } from '../../models/branch'
+import { Branch, IAheadBehind } from '../../models/branch'
 import { IRemote } from '../../models/remote'
 import { isCurrentBranchForcePush } from '../../lib/rebase'
 import { StashedChangesLoadStates } from '../../models/stash-entry'
@@ -205,15 +205,7 @@ export class NoChanges extends React.Component<
     return menuItem.acceleratorKeys.map((k, i) => <kbd key={k + i}>{k}</kbd>)
   }
 
-  private onMergeIntoDevelopClick = () => {
-    this.props.dispatcher.showPopup({
-      type: PopupType.MergeBranch,
-      repository: this.props.repository,
-    })
-  }
-
-
-  private renderMergeIntoDevelop() {
+  private currentBranch = (): Branch | null => {
     const {
       branchesState,
     } = this.props.repositoryState
@@ -223,16 +215,51 @@ export class NoChanges extends React.Component<
       return null
     }
 
-    const validTip = tip as IValidBranch
+    return (tip as IValidBranch).branch
+  }
+
+  private onMergeIntoClick = () => {
+    this.props.dispatcher.showPopup({
+      type: PopupType.MergeBranch,
+      repository: this.props.repository,
+    })
+  }
+
+  private renderMergeInto() {
+    const branch = this.currentBranch()
+    if (!branch) { return }
 
     return (
       <MenuBackedSuggestedAction
-        title={`Merge branches into ${validTip.branch.name}`}
+        title={`Merge branches into ${branch.name}`}
         discoverabilityContent={"Select branches witch merge"}
         menuItemId="merge-branch"
-        buttonText={formatMenuItemLabel(`Merge`)}
+        buttonText={formatMenuItemLabel(`Choose`)}
         disabled={false}
-        onClick={this.onMergeIntoDevelopClick}
+        onClick={this.onMergeIntoClick}
+      />
+    )
+  }
+
+  private onCherryPickInto = () => {
+    this.props.dispatcher.showPopup({
+      type: PopupType.CherryPick,
+      repository: this.props.repository,
+    })
+  }
+
+  private renderCherryPickInto() {
+    const branch = this.currentBranch()
+    if (!branch) { return }
+
+    return (
+      <MenuBackedSuggestedAction
+        title={`Cherry pick branches into ${branch.name}`}
+        discoverabilityContent={"Select branches witch you cherry pick"}
+        menuItemId="cherry-pick-branch"
+        buttonText={formatMenuItemLabel(`Choose`)}
+        disabled={false}
+        onClick={this.onCherryPickInto}
       />
     )
   }
@@ -475,6 +502,7 @@ export class NoChanges extends React.Component<
         key="pull-branch-action"
         title={title}
         menuItemId={itemId}
+
         description={description}
         discoverabilityContent={discoverabilityContent}
         buttonText={buttonText}
@@ -489,8 +517,7 @@ export class NoChanges extends React.Component<
     remote: IRemote,
     aheadBehind: IAheadBehind,
     tagsToPush: ReadonlyArray<string> | null
-  ) {
-    const itemId: MenuIDs = 'push'
+  ) {    const itemId: MenuIDs = 'push'
     const menuItem = this.getMenuItemInfo(itemId)
 
     if (menuItem === undefined) {
@@ -599,7 +626,8 @@ export class NoChanges extends React.Component<
           {this.renderViewStashAction() || this.renderRemoteAction()}
         </SuggestedActionGroup>
         <SuggestedActionGroup>
-          {this.renderMergeIntoDevelop()}
+          {this.renderMergeInto()}
+          {this.renderCherryPickInto()}
         </SuggestedActionGroup>
       </>
     )
