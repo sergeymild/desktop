@@ -57,10 +57,8 @@ export class CherryPickCommitList extends React.Component<ICherryPickCommitListP
   }
 
   public async componentDidMount() {
-    const localCommits = await getCommits(this.props.repository, this.props.selectedBranch!.name, 100, [
-      '--not',
-      '--remotes',
-    ])
+    const branchName = this.props.selectedBranch!.name
+    const localCommits = await getCommits(this.props.repository, branchName, 100)
 
     console.log(this.props.selectedBranch?.name, localCommits)
     this.createTagsGroup(localCommits)
@@ -159,17 +157,13 @@ export class CherryPickCommitList extends React.Component<ICherryPickCommitListP
         </DialogContent>
         <DialogFooter>
           <MergeConflictView
-            commit={this.state.selectedItem?.commit}
+            commitSha={this.state.selectedItem?.commit?.sha}
             selectedBranch={this.props.selectedBranch}
             repository={this.props.repository}
             currentBranch={this.props.currentBranch}
           />
           <OkCancelButtonGroup
-            okButtonText={
-              <>
-                Cherry pick {' '}
-              </>
-            }
+            okButtonText={<>Cherry pick {' '}</>}
             okButtonDisabled={false}
             cancelButtonVisible={false}
           />

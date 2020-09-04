@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { MergeTreeResult } from '../../models/merge'
-import { Commit } from '../../models/commit'
 import { ComputedAction } from '../../models/computed-action'
 import { promiseWithMinimumTimeout } from '../../lib/promise'
 import { getAheadBehind, mergeCommitTree, revSymmetricDifference } from '../../lib/git'
@@ -23,7 +22,7 @@ interface IMergeConflictProps {
   readonly currentBranch: Branch | null
   readonly selectedBranch: Branch | null
   readonly repository: Repository
-  readonly commit: Commit | undefined
+  readonly commitSha: string | undefined
 }
 
 export class MergeConflictView extends React.Component<IMergeConflictProps, IMergeConflictState> {
@@ -38,26 +37,26 @@ export class MergeConflictView extends React.Component<IMergeConflictProps, IMer
   }
 
   public componentWillReceiveProps(nextProps: Readonly<IMergeConflictProps>, nextContext: any) {
-    const commit = nextProps.commit
+    const commit = nextProps.commitSha
     if (!commit) { return }
     this.updateMergeStatus(commit)
   }
 
-  private async updateMergeStatus(commit: Commit) {
+  private async updateMergeStatus(commitSha: string) {
     this.setState({ mergeStatus: { kind: ComputedAction.Loading } })
 
     const { currentBranch } = this.props
 
     if (currentBranch != null) {
       const mergeStatus = await promiseWithMinimumTimeout(
-        () => mergeCommitTree(this.props.repository, currentBranch, commit.sha),
+        () => mergeCommitTree(this.props.repository, currentBranch, commitSha),
         500,
       )
 
       this.setState({ mergeStatus })
     }
 
-    const range = revSymmetricDifference('', commit.sha)
+    const range = revSymmetricDifference('', commitSha)
     const aheadBehind = await getAheadBehind(this.props.repository, range)
     const commitCount = aheadBehind ? aheadBehind.behind : 0
     this.setState({ commitCount })
