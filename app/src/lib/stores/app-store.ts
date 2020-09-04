@@ -1295,30 +1295,25 @@ export class AppStore extends TypedBaseStore<IAppState> {
     })
 
     this.emitUpdate()
+  }
 
-    const { branchesState, compareState } = this.repositoryStateCache.get(
-      repository
-    )
+  public async _searchCommits(repository: Repository, query: string): Promise<void> {
+    const gitStore = this.gitStoreCache.get(repository)
+    const state = this.repositoryStateCache.get(repository)
+    const { formState } = state.compareState
+    if (formState.kind === HistoryTabMode.History) {
+      const branchesState = state.branchesState
+      if (branchesState.tip.kind !== TipState.Valid) {
+        return
+      }
 
-    if (branchesState.tip.kind !== TipState.Valid) {
-      return
-    }
+      const newCommits = await gitStore.searchCommits(branchesState.tip.branch.name, query)
+      if (newCommits == null) { return }
 
-    if (this.currentAheadBehindUpdater === null) {
-      return
-    }
-
-    if (compareState.showBranchList) {
-      const currentBranch = branchesState.tip.branch
-
-      this.currentAheadBehindUpdater.schedule(
-        currentBranch,
-        compareState.defaultBranch,
-        compareState.recentBranches,
-        compareState.allBranches
-      )
-    } else {
-      this.currentAheadBehindUpdater.clear()
+      this.repositoryStateCache.updateCompareState(repository, () => ({
+        commitSHAs: newCommits,
+      }))
+      this.emitUpdate()
     }
   }
 

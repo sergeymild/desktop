@@ -198,6 +198,11 @@ export class Dispatcher {
     return this.appStore._loadNextCommitBatch(repository)
   }
 
+  /** Load the next batch of history for the repository. */
+  public searchCommits(repository: Repository, query: string): Promise<void> {
+    return this.appStore._searchCommits(repository, query)
+  }
+
   /** Load the changed files for the current history selection. */
   public loadChangedFilesForCurrentSelection(
     repository: Repository

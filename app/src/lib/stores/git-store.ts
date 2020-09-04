@@ -66,7 +66,7 @@ import {
   createTag,
   getAllTags,
   deleteTag,
-  MergeResult,
+  MergeResult, searchCommits,
 } from '../git'
 import { GitError as DugiteError } from '../../lib/git'
 import { GitError } from 'dugite'
@@ -229,6 +229,31 @@ export class GitStore extends BaseStore {
     this.storeCommits(commits)
     this.requestsInFight.delete(requestKey)
     this.emitUpdate()
+  }
+
+  public async searchCommits(branchName: string, query: string) {
+    if (this.requestsInFight.has(LoadingHistoryRequestKey)) {
+      return null
+    }
+
+    const requestKey = `history/compare/${query}`
+    if (this.requestsInFight.has(requestKey)) {
+      return null
+    }
+
+    this.requestsInFight.add(requestKey)
+
+    const commits = await this.performFailableOperation(() =>
+      searchCommits(this.repository, branchName, CommitBatchSize, query)
+    )
+
+    this.requestsInFight.delete(requestKey)
+    if (!commits) {
+      return null
+    }
+
+    this.storeCommits(commits)
+    return commits.map(c => c.sha)
   }
 
   /** Load a batch of commits from the repository, using a given commitish object as the starting point */
