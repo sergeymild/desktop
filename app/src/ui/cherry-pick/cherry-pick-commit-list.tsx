@@ -4,14 +4,11 @@ import { Dialog, DialogContent, DialogFooter, OkCancelButtonGroup } from '../dia
 import { Repository } from '../../models/repository'
 import { GitHubRepository } from '../../models/github-repository'
 import { Commit } from '../../models/commit'
-import { getCommits } from '../../lib/git'
-import { FilterList, IFilterListGroup } from '../lib/filter-list'
-import { IMatches } from '../../lib/fuzzy-find'
-import { getAvatarUsersForCommit } from '../../models/avatar'
+import { IFilterListGroup } from '../lib/filter-list'
 import { Dispatcher } from '../dispatcher'
-import { MergeTreeResult } from '../../models/merge'
-import { CherryPickCommitListItem, ICommitItem } from './cherry-pick-commit-list-item'
+import { ICommitItem } from './cherry-pick-commit-list-item'
 import { MergeConflictView } from './merge-conflict-view'
+import { SimpleCommitList } from '../history/simple-commit-list'
 
 interface ICherryPickCommitListProps {
   readonly selectedBranch: Branch | null
@@ -31,14 +28,6 @@ interface ICherryPickCommitListState {
   commits: ReadonlyArray<Commit>,
   selectedItem: ICommitItem | null,
   readonly groups: ReadonlyArray<IFilterListGroup<ICommitItem>>
-  /** The merge result of comparing the selected branch to the current branch */
-  readonly mergeStatus: MergeTreeResult | null
-  /**
-   * The number of commits that would be brought in by the merge.
-   * undefined if no branch is selected or still calculating the
-   * number of commits.
-   */
-  readonly commitCount?: number
 }
 
 export class CherryPickCommitList extends React.Component<ICherryPickCommitListProps, ICherryPickCommitListState> {
@@ -51,55 +40,7 @@ export class CherryPickCommitList extends React.Component<ICherryPickCommitListP
       commits: [],
       groups: [],
       selectedItem: null,
-      mergeStatus: null,
-      commitCount: 0,
     }
-  }
-
-  public async componentDidMount() {
-    const branchName = this.props.selectedBranch!.name
-    const localCommits = await getCommits(this.props.repository, branchName, 100)
-
-    console.log(this.props.selectedBranch?.name, localCommits)
-    this.createTagsGroup(localCommits)
-  }
-
-  private createTagsGroup = (tags: ReadonlyArray<Commit>) => {
-    const groups = new Array<IFilterListGroup<ICommitItem>>()
-    const group: IFilterListGroup<ICommitItem> = {
-      identifier: 'Tags',
-      items: tags.map(k => (
-        {
-          id: k.sha,
-          commit: k, text: [k.summary, k.sha],
-          avatarUsers: getAvatarUsersForCommit(null, k),
-        })),
-    }
-
-
-    groups.push(group)
-    this.setState({
-      ...this.state,
-      groups,
-      commits: tags,
-      selectedItem: group.items[0],
-    })
-  }
-
-  private onFilterTextChanged = (text: string): void => {
-    this.setState({ ...this.state, filterText: text })
-  }
-
-
-  private renderItem = (item: ICommitItem, matches: IMatches): JSX.Element => {
-
-    return (
-      <CherryPickCommitListItem
-        commit={item}
-        matches={matches}
-        gitHubRepository={this.props.gitHubRepository}
-        emoji={this.props.emoji}/>
-    )
   }
 
   private onSelectionChanged = async (item: ICommitItem | null) => {
@@ -141,19 +82,14 @@ export class CherryPickCommitList extends React.Component<ICherryPickCommitListP
         }
       >
         <DialogContent>
-          <div id="commit-list">
-            <FilterList<ICommitItem>
-              className="cherry-pick-commit-list"
-              rowHeight={50}
-              filterText={this.state.filterText}
-              onFilterTextChanged={this.onFilterTextChanged}
-              selectedItem={this.state.selectedItem}
-              onSelectionChanged={this.onSelectionChanged}
-              renderItem={this.renderItem}
-              groups={this.state.groups}
-              invalidationProps={''}
-            />
-          </div>
+          <SimpleCommitList
+            repository={this.props.repository}
+            emoji={this.props.emoji}
+            gitHubRepository={this.props.gitHubRepository}
+            branchName={this.props.selectedBranch!.name}
+            onItemSelect={this.onSelectionChanged}
+            selectedItem={null}
+          />
         </DialogContent>
         <DialogFooter>
           <MergeConflictView

@@ -164,7 +164,7 @@ export class CompareSidebar extends React.Component<
 
         <div className="compare-form">
           <FancyTextBox
-            symbol={OcticonSymbol.gitBranch}
+            symbol={OcticonSymbol.commit}
             type="search"
             placeholder={placeholderText}
             onFocus={this.onTextBoxFocused}
@@ -507,9 +507,10 @@ export class CompareSidebar extends React.Component<
       this.setState({ focusedBranch: null })
     }
 
-    this.props.dispatcher.updateCompareForm(this.props.repository, {
-      filterText,
-    })
+
+    // this.props.dispatcher.updateCompareForm(this.props.repository, {
+    //   filterText,
+    // })
   }
 
   private clearFilterState = () => {

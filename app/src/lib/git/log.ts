@@ -57,6 +57,107 @@ function mapStatus(
   return { kind: AppFileStatusKind.Modified }
 }
 
+export async function searchCommits(
+  repository: Repository,
+  revisionRange: string,
+  limit: number,
+  query: string
+): Promise<ReadonlyArray<Commit>> {
+  const delimiter = '1F'
+  const delimiterString = String.fromCharCode(parseInt(delimiter, 16))
+  const prettyFormat = [
+    '%H', // SHA
+    '%h', // short SHA
+    '%s', // summary
+    '%b', // body
+    // author identity string, matching format of GIT_AUTHOR_IDENT.
+    //   author name <author email> <author date>
+    // author date format dependent on --date arg, should be raw
+    '%an <%ae> %ad',
+    '%cn <%ce> %cd',
+    '%P', // parent SHAs,
+    '%(trailers:unfold,only)',
+    '%D', // refs
+  ].join(`%x${delimiter}`)
+
+  const result = await git(
+    [
+      'log',
+      revisionRange,
+      `--grep=${query}`,
+      `--date=raw`,
+      `--max-count=${limit}`,
+      `--pretty=${prettyFormat}`,
+      '-z',
+      '--no-show-signature',
+      '--no-color',
+    ],
+    repository.path,
+    'getCommits',
+    { successExitCodes: new Set([0, 128]) }
+  )
+
+  console.log(result)
+
+  // if the repository has an unborn HEAD, return an empty history of commits
+  if (result.exitCode === 128) {
+    return new Array<Commit>()
+  }
+
+  const out = result.stdout
+  const lines = out.split('\0')
+  // Remove the trailing empty line
+  lines.splice(-1, 1)
+
+  if (lines.length === 0) {
+    return []
+  }
+
+  const trailerSeparators = await getTrailerSeparatorCharacters(repository)
+
+  const commits = lines.map(line => {
+    const pieces = line.split(delimiterString)
+    const sha = pieces[0]
+    const shortSha = pieces[1]
+    const summary = pieces[2]
+    const body = pieces[3]
+    const authorIdentity = pieces[4]
+    const committerIdentity = pieces[5]
+    const shaList = pieces[6]
+
+    const parentSHAs = shaList.length ? shaList.split(' ') : []
+    const trailers = parseRawUnfoldedTrailers(pieces[7], trailerSeparators)
+    const tags = getCaptures(pieces[8], /tag: ([^\s,]+)/g)
+      .filter(i => i[0] !== undefined)
+      .map(i => i[0])
+    const author = CommitIdentity.parseIdentity(authorIdentity)
+
+    if (!author) {
+      throw new Error(`Couldn't parse author identity for '${shortSha}'`)
+    }
+
+    const committer = CommitIdentity.parseIdentity(committerIdentity)
+
+    if (!committer) {
+      throw new Error(`Couldn't parse committer identity for '${shortSha}'`)
+    }
+
+    return new Commit(
+      sha,
+      shortSha,
+      summary,
+      body,
+      author,
+      committer,
+      parentSHAs,
+      trailers,
+      tags
+    )
+  })
+
+  return commits
+}
+
 /**
  * Get the repository's commits using `revisionRange` and limited to `limit`
  */
