@@ -276,6 +276,7 @@ export type Foldout =
 export enum RepositorySectionTab {
   Changes,
   History,
+  Stash,
 }
 
 /**
@@ -599,6 +600,7 @@ export interface IChangesState {
 export enum HistoryTabMode {
   History = 'History',
   Compare = 'Compare',
+  Stash = 'Stash',
 }
 
 /**

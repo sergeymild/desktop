@@ -2712,6 +2712,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
         includingStatus: false,
         clearPartialState: false,
       })
+    } else if (section === RepositorySectionTab.Stash) {
+      refreshSectionPromise = new Promise<void>(resolve => resolve())
     } else {
       return assertNever(section, `Unknown section: ${section}`)
     }

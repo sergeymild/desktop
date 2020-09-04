@@ -1,0 +1,44 @@
+@import '../mixins';
+
+.stashes-list {
+  .list-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+
+    .stash-list-item {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      border-bottom: var(--base-border);
+      padding-right: calc(var(--spacing) + var(--spacing-half));
+      padding-left: var(--spacing);
+
+      .info {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        margin-top: -4px;
+        overflow: hidden;
+        min-width: 50px;
+
+        .summary {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          font-weight: var(--font-weight-semibold);
+        }
+
+        .description {
+          display: flex;
+          flex-direction: row;
+          margin-top: 3px;
+        }
+      }
+    }
+  }
+}

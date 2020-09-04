@@ -34,11 +34,75 @@ type StashResult = {
   readonly stashEntryCount: number
 }
 
+export async function fetchStashes(repository: Repository): Promise<StashResult> {
+  const delimiter = '1F'
+  const delimiterString = String.fromCharCode(parseInt(delimiter, 16))
+  const format = ['%gD', '%H', '%gs'].join(`%x${delimiter}`)
+
+  const result = await git(
+    ['log', '-g', '-z', `--pretty=${format}`, 'refs/stash'],
+    repository.path,
+    'getStashEntries',
+    {
+      successExitCodes: new Set([0, 128]),
+    }
+  )
+
+  // There's no refs/stashes reflog in the repository or it's not
+  // even a repository. In either case we don't care
+  if (result.exitCode === 128) {
+    return { desktopEntries: [], stashEntryCount: 0 }
+  }
+
+  const desktopStashEntries: Array<IStashEntry> = []
+  const files: StashedFileChanges = {
+    kind: StashedChangesLoadStates.NotLoaded,
+  }
+
+  const entries = result.stdout.split('\0').filter(s => s !== '')
+  for (const entry of entries) {
+    const pieces = entry.split(delimiterString)
+    console.log("----")
+    console.log(pieces)
+
+    if (pieces.length === 3) {
+      const [name, stashSha] = pieces
+
+      desktopStashEntries.push({
+        name,
+        branchName: "unknown",
+        stashSha,
+        files,
+      })
+    }
+  }
+
+  return {
+    desktopEntries: desktopStashEntries,
+    stashEntryCount: entries.length - 1,
+  }
+}
+
 /**
  * Get the list of stash entries created by Desktop in the current repository
  * using the default ordering of refs (which is LIFO ordering),
  * as well as the total amount of stash entries.
  */
+export async function getStashesCount(repository: Repository): Promise<number> {
+  const result = await git(
+    ['log', '-g', '-z', `--pretty=['%gD']`, 'refs/stash'],
+    repository.path,
+    'getStashEntries',
+    {
+      successExitCodes: new Set([0, 128]),
+    }
+  )
+  if (result.exitCode === 128) {
+    return 0
+  }
+  return result.stdout.split('\0').filter(s => s !== '').length
+}
+
 export async function getStashes(repository: Repository): Promise<StashResult> {
   const delimiter = '1F'
   const delimiterString = String.fromCharCode(parseInt(delimiter, 16))

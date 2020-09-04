@@ -7,29 +7,28 @@ import { Changes, ChangesSidebar } from './changes'
 import { NoChanges } from './changes/no-changes'
 import { MultipleSelection } from './changes/multiple-selection'
 import { FilesChangedBadge } from './changes/files-changed-badge'
-import { SelectedCommit, CompareSidebar } from './history'
+import { CompareSidebar, SelectedCommit } from './history'
 import { Resizable } from './resizable'
 import { TabBar } from './tab-bar'
-import {
-  IRepositoryState,
-  RepositorySectionTab,
-  ChangesSelectionKind,
-} from '../lib/app-state'
+import { ChangesSelectionKind, IRepositoryState, RepositorySectionTab } from '../lib/app-state'
 import { Dispatcher } from './dispatcher'
-import { IssuesStore, GitHubUserStore } from '../lib/stores'
+import { GitHubUserStore, IssuesStore } from '../lib/stores'
 import { assertNever } from '../lib/fatal-error'
 import { Account } from '../models/account'
 import { FocusContainer } from './lib/focus-container'
-import { OcticonSymbol, Octicon } from './octicons'
+import { Octicon, OcticonSymbol } from './octicons'
 import { ImageDiffType } from '../models/diff'
 import { IMenu } from '../models/app-menu'
 import { StashDiffViewer } from './stashing'
-import { StashedChangesLoadStates } from '../models/stash-entry'
-import { TutorialPanel, TutorialWelcome, TutorialDone } from './tutorial'
+import { IStashEntry, StashedChangesLoadStates } from '../models/stash-entry'
+import { TutorialDone, TutorialPanel, TutorialWelcome } from './tutorial'
 import { enableNDDBBanner } from '../lib/feature-flag'
-import { TutorialStep, isValidTutorialStep } from '../models/tutorial-step'
+import { isValidTutorialStep, TutorialStep } from '../models/tutorial-step'
 import { ExternalEditor } from '../lib/editors'
 import { openFile } from './lib/open-file'
+import { StashesSidebarContentView } from './stashes-view/stashes-sidebar-content-view'
+import { StashesListView } from './stashes-view/stashes-list-view'
+import { getStashesCount } from '../lib/git/stash'
 
 /** The widest the sidebar can be with the minimum window size. */
 const MaxSidebarWidth = 700
@@ -89,17 +88,18 @@ interface IRepositoryViewProps {
 interface IRepositoryViewState {
   readonly changesListScrollTop: number
   readonly compareListScrollTop: number
+  selectedStash: IStashEntry | null
+  stashesCount: number
 }
 
 const enum Tab {
   Changes = 0,
   History = 1,
+  Stash = 2,
 }
 
-export class RepositoryView extends React.Component<
-  IRepositoryViewProps,
-  IRepositoryViewState
-> {
+export class RepositoryView extends React.Component<IRepositoryViewProps,
+  IRepositoryViewState> {
   private previousSection: RepositorySectionTab = this.props.state
     .selectedSection
 
@@ -109,6 +109,8 @@ export class RepositoryView extends React.Component<
     this.state = {
       changesListScrollTop: 0,
       compareListScrollTop: 0,
+      stashesCount: 0,
+      selectedStash: null,
     }
   }
 
@@ -128,14 +130,26 @@ export class RepositoryView extends React.Component<
       return null
     }
 
-    return <FilesChangedBadge filesChangedCount={filesChangedCount} />
+    return <FilesChangedBadge filesChangedCount={filesChangedCount}/>
+  }
+
+  private renderStashesCount(): JSX.Element {
+    return <FilesChangedBadge filesChangedCount={this.state.stashesCount}/>
   }
 
   private renderTabs(): JSX.Element {
-    const selectedTab =
-      this.props.state.selectedSection === RepositorySectionTab.Changes
-        ? Tab.Changes
-        : Tab.History
+    let selectedTab
+    switch (this.props.state.selectedSection) {
+      case RepositorySectionTab.Changes:
+        selectedTab = Tab.Changes
+        break
+      case RepositorySectionTab.History:
+        selectedTab = Tab.History
+        break
+      case RepositorySectionTab.Stash:
+        selectedTab = Tab.Stash
+        break
+    }
 
     return (
       <TabBar selectedIndex={selectedTab} onTabClicked={this.onTabClicked}>
@@ -149,9 +163,14 @@ export class RepositoryView extends React.Component<
           {enableNDDBBanner() &&
           this.props.state.compareState.divergingBranchBannerState
             .isNudgeVisible ? (
-            <Octicon className="indicator" symbol={OcticonSymbol.dotFill} />
+            <Octicon className="indicator" symbol={OcticonSymbol.dotFill}/>
           ) : null}
         </div>
+
+        <span className="with-indicator">
+          <span>Stashes</span>
+          {this.renderStashesCount()}
+        </span>
       </TabBar>
     )
   }
@@ -214,6 +233,16 @@ export class RepositoryView extends React.Component<
     )
   }
 
+  private handleStashSelect = (item: IStashEntry) => {
+    this.setState({ ...this.state, selectedStash: item })
+  }
+
+  private renderStashes(): JSX.Element {
+    return <StashesListView
+      repository={this.props.repository}
+      handleStashSelect={this.handleStashSelect}/>
+  }
+
   private renderCompareSidebar(): JSX.Element {
     const tip = this.props.state.branchesState.tip
     const currentBranch = tip.kind === TipState.Valid ? tip.branch : null
@@ -252,6 +281,8 @@ export class RepositoryView extends React.Component<
       return this.renderChangesSidebar()
     } else if (selectedSection === RepositorySectionTab.History) {
       return this.renderCompareSidebar()
+    } else if (selectedSection === RepositorySectionTab.Stash) {
+      return this.renderStashes()
     } else {
       return assertNever(selectedSection, 'Unknown repository section')
     }
@@ -361,7 +392,7 @@ export class RepositoryView extends React.Component<
         />
       )
     } else {
-      return <TutorialWelcome />
+      return <TutorialWelcome/>
     }
   }
 
@@ -376,7 +407,7 @@ export class RepositoryView extends React.Component<
     const { selectedFileIDs, diff } = selection
 
     if (selectedFileIDs.length > 1) {
-      return <MultipleSelection count={selectedFileIDs.length} />
+      return <MultipleSelection count={selectedFileIDs.length}/>
     }
 
     if (workingDirectory.files.length === 0) {
@@ -426,12 +457,12 @@ export class RepositoryView extends React.Component<
     }
   }
 
-  private onOpenBinaryFile = (fullPath: string) => {
-    openFile(fullPath, this.props.dispatcher)
+  private onOpenBinaryFile = async (fullPath: string) => {
+    await openFile(fullPath, this.props.dispatcher)
   }
 
-  private onChangeImageDiffType = (imageDiffType: ImageDiffType) => {
-    this.props.dispatcher.changeImageDiffType(imageDiffType)
+  private onChangeImageDiffType = async (imageDiffType: ImageDiffType) => {
+    await this.props.dispatcher.changeImageDiffType(imageDiffType)
   }
 
   private renderContent(): JSX.Element | null {
@@ -440,6 +471,16 @@ export class RepositoryView extends React.Component<
       return this.renderContentForChanges()
     } else if (selectedSection === RepositorySectionTab.History) {
       return this.renderContentForHistory()
+    } else if (selectedSection === RepositorySectionTab.Stash) {
+      return <StashesSidebarContentView
+        selectedStash={this.state.selectedStash}
+        repository={this.props.repository}
+        commitSummaryWidth={this.props.commitSummaryWidth}
+        dispatcher={this.props.dispatcher}
+        selectedDiffType={this.props.imageDiffType}
+        hideWhitespaceInDiff={this.props.hideWhitespaceInDiff}
+        onChangeImageDiffType={this.onChangeImageDiffType}
+        onOpenBinaryFile={this.onOpenBinaryFile}/>
     } else {
       return assertNever(selectedSection, 'Unknown repository section')
     }
@@ -459,8 +500,13 @@ export class RepositoryView extends React.Component<
     this.props.dispatcher.revertCommit(this.props.repository, commit)
   }
 
-  public componentDidMount() {
+  public async componentDidMount() {
     window.addEventListener('keydown', this.onGlobalKeyDown)
+
+    this.setState({
+      ...this.state,
+      stashesCount: await getStashesCount(this.props.repository)
+    })
   }
 
   public componentWillUnmount() {
@@ -493,19 +539,23 @@ export class RepositoryView extends React.Component<
 
     this.props.dispatcher.changeRepositorySection(
       this.props.repository,
-      section
+      section,
     )
   }
 
   private onTabClicked = (tab: Tab) => {
-    const section =
-      tab === Tab.History
-        ? RepositorySectionTab.History
-        : RepositorySectionTab.Changes
+    let section
+    if (tab === Tab.History) {
+      section = RepositorySectionTab.History
+    } else if (tab === Tab.Changes) {
+      section = RepositorySectionTab.Changes
+    } else {
+      section = RepositorySectionTab.Stash
+    }
 
     this.props.dispatcher.changeRepositorySection(
       this.props.repository,
-      section
+      section,
     )
     if (!!section) {
       this.props.dispatcher.updateCompareForm(this.props.repository, {
