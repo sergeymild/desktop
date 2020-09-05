@@ -5791,6 +5791,19 @@ export class AppStore extends TypedBaseStore<IAppState> {
     await this._refreshRepository(repository)
   }
 
+  public async _stashChanges(
+    repository: Repository,
+    branchName: string,
+    paths: ReadonlyArray<WorkingDirectoryFileChange>
+  ) {
+    const gitStore = this.gitStoreCache.get(repository)
+    const stashCreated = await gitStore.performFailableOperation(() => {
+      return createDesktopStashEntry(repository, branchName, paths)
+    })
+    if (!stashCreated) { return }
+    this._refreshRepository(repository)
+  }
+
   public async _removeStashEntry(
     repository: Repository,
     stashName: string

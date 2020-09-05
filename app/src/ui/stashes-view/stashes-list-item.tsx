@@ -20,7 +20,7 @@ export const StashListItem: React.FC<IStashListItemProps> = ({ item, onContextMe
           {item.stash.name}
         </div>
         <div className="description">
-          <Octicon className="icon" symbol={OcticonSymbol.tag}/>
+          <Octicon className="icon" symbol={OcticonSymbol.stashIcon}/>
           &nbsp;
           {item.stash.stashSha}
         </div>

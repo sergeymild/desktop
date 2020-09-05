@@ -288,6 +288,22 @@ export class ChangesList extends React.Component<
     this.props.dispatcher.createStashForCurrentBranch(this.props.repository)
   }
 
+  private stashItems = (files: ReadonlyArray<string>) => {
+    const workingDirectory = this.props.workingDirectory
+    const workingFiles = files.map(f => {
+      return workingDirectory.files.find(wf => wf.path === f)
+    })
+    const branch = this.props.branch
+    if (!branch) { return }
+
+    this.props.dispatcher
+      .stash(
+        this.props.repository,
+        branch,
+        workingFiles as ReadonlyArray<WorkingDirectoryFileChange>
+      )
+  }
+
   private onDiscardChanges = (files: ReadonlyArray<string>) => {
     const workingDirectory = this.props.workingDirectory
 
@@ -381,6 +397,15 @@ export class ChangesList extends React.Component<
     }
   }
 
+  private getStashMenuItem = (
+    paths: ReadonlyArray<string>
+  ): IMenuItem => {
+    return {
+      label: paths.length > 0 ? "Stash items" : "Stash item",
+      action: () => this.stashItems(paths),
+    }
+  }
+
   private getCopyPathMenuItem = (
     file: WorkingDirectoryFileChange
   ): IMenuItem => {
@@ -462,6 +487,8 @@ export class ChangesList extends React.Component<
 
     const items: IMenuItem[] = [
       this.getDiscardChangesMenuItem(paths),
+      { type: 'separator' },
+      this.getStashMenuItem(paths),
       { type: 'separator' },
     ]
     if (paths.length === 1) {

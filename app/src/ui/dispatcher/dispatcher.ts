@@ -2431,6 +2431,15 @@ export class Dispatcher {
     )
   }
 
+  /** Stash changes */
+  public stash(
+    repository: Repository,
+    branchName: string,
+    paths: ReadonlyArray<WorkingDirectoryFileChange>
+  ) {
+    return this.appStore._stashChanges(repository, branchName, paths)
+  }
+
   /** Removes the given stash in the given repository */
   public removeStash(repository: Repository, stashName: string) {
     return this.appStore._removeStashEntry(repository, stashName)
