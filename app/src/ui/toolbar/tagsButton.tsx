@@ -56,7 +56,6 @@ class TagListItem extends React.Component<ITagListItemProps, {}> {
   }
 
   public render() {
-    console.log("render", this.props.item.tag.name)
     const {remote} = this.props.item.tag
     const icon = remote ? OcticonSymbol.server : OcticonSymbol.tag
 
@@ -201,13 +200,11 @@ class TagsToolBarButton extends React.Component<ITagsButtonProps, ITagsToolBarBu
     }
   }
   private renderBranchFoldout = (): JSX.Element | null => {
-    console.log("renderBranchFoldout")
     return <TagsList repository={this.props.repository} dispatcher={this.props.dispatcher}/>
   }
 
   private onDropDownStateChanged = (state: DropdownState): void => {
     // Don't allow opening the drop down when checkout is in progress
-    console.log("onDropDownStateChanged", state)
     this.setState({dropdownState: state})
   }
 
