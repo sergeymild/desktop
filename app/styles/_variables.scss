@@ -263,6 +263,7 @@ $overlay-background-color: rgba(0, 0, 0, 0.4);
   /** Count bubble colors when used inside of a tab bar item */
   --tab-bar-count-color: var(--text-color);
   --tab-bar-count-background-color: #{$gray-200};
+  --foldout-background-color: var(--background-color);
 
   /**
     * Badge colors when used inside of list items.

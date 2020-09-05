@@ -89,7 +89,16 @@
     background-color: var(--toolbar-button-background-color);
     color: var(--toolbar-button-color);
 
-    border-right: 1px solid var(--toolbar-button-border-color);
+    .border-right {
+      background: var(--toolbar-button-border-color);
+      position: absolute;
+      width: 1px;
+      top: 8px;
+      right: 0;
+      bottom: -8px;
+      border-radius: 1px;
+      height: calc(100% - 16px);
+    }
 
     .icon {
       flex-shrink: 0;

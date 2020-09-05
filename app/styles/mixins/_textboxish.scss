@@ -25,8 +25,7 @@
 
 @mixin textboxish-focus-styles {
   outline: none;
-  border-color: var(--focus-color);
-  box-shadow: 0 0 0 1px var(--text-field-focus-shadow-color);
+  border-color: var(--text-field-focus-shadow-color);
 }
 
 @mixin textboxish-disabled-styles {

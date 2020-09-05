@@ -12,10 +12,6 @@
   // important but if we don't clip the overflow we may end up covering
   // borders and we don't want that.
   overflow: hidden;
-
-  .ReactVirtualized__Grid {
-    background: var(--background-color);
-  }
 }
 
 @include win32-context {

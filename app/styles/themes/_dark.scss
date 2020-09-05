@@ -14,7 +14,7 @@ body.theme-dark {
 
   --text-color: #{$gray-300};
   --text-secondary-color: #{$gray-400};
-  --background-color: #{$gray-900};
+  --background-color: rgb(40, 42, 48);
 
   --button-background: #{$blue};
   --button-hover-background: #{lighten($blue, 5%)};
@@ -60,7 +60,7 @@ body.theme-dark {
   // to decide what states to support (active selection, selection, etc).
 
   --box-background-color: #{darken($gray-900, 3%)};
-  --box-alt-background-color: #{$gray-800};
+  --box-alt-background-color: rgb(52, 54, 62);
 
   /**
    * Background color for skeleton or "loading" boxes
@@ -71,13 +71,13 @@ body.theme-dark {
   /**
    * Border color for boxes.
    */
-  --box-border-color: #141414;
+  --box-border-color: #3f4249;
   --box-border-accent-color: #{$blue};
 
   /**
    * Background color for selected boxes without keyboard focus
    */
-  --box-selected-background-color: #{$gray-700};
+  --box-selected-background-color: rgba(#444d56, 0.4);
 
   /**
    * Text color for when a user hovers over a boxe with a
@@ -107,12 +107,12 @@ body.theme-dark {
   /**
    * Background color for selected boxes with active keyboard focus
    */
-  --box-selected-active-background-color: #{$blue};
+  --box-selected-active-background-color: rgb(45, 52, 68);
 
   /**
    * Text color for selected boxes with active keyboard focus
    */
-  --box-selected-active-text-color: #{$white};
+  --box-selected-active-text-color: var(--text-color);
 
   /**
    * Border color for selected boxes with active keyboard focus
@@ -142,10 +142,10 @@ body.theme-dark {
   --shadow-color: #{rgba(black, 0.5)};
   --base-box-shadow: 0 2px 7px var(--shadow-color);
 
-  --toolbar-background-color: #{darken($gray-900, 3%)};
+  --toolbar-background-color: rgb(41, 44, 52);
   --toolbar-border-color: var(--box-border-color);
   --toolbar-text-color: var(--text-color);
-  --toolbar-text-secondary-color: var(--text-secondary-color);
+  --toolbar-text-secondary-color: rgb(127, 128, 133);
 
   --toolbar-button-color: var(--toolbar-text-color);
   --toolbar-button-background-color: transparent;
@@ -194,8 +194,9 @@ body.theme-dark {
   --tab-bar-hover-background-color: #{$gray-800};
 
   /** Count bubble colors when used inside of a tab bar item */
-  --tab-bar-count-color: var(--text-color);
-  --tab-bar-count-background-color: #{$gray-700};
+  --tab-bar-count-color: rgb(147, 164, 224);
+  --tab-bar-count-background-color: transparent;
+  --foldout-background-color: rgb(63, 68, 82);
 
   /**
     * Badge colors when used inside of list items.
@@ -230,13 +231,13 @@ body.theme-dark {
   /**
    * Variables for form elements
    */
-  --text-field-focus-shadow-color: #{rgba($blue, 0.25)};
+  --text-field-focus-shadow-color: rgb(93, 137, 249);
 
   /**
    * Blankslate actions, see `BlankslateAction` component.
    */
-  --primary-suggested-action-background: #{$blue-900};
-  --primary-suggested-action-border-color: #{$blue-700};
+  --primary-suggested-action-background: var(--box-alt-background-color);
+  --primary-suggested-action-border-color: var(--box-alt-background-color);
   --suggested-action-icon-color: #{$blue-400};
 
   /**
@@ -312,7 +313,7 @@ body.theme-dark {
   --form-error-text-color: var(--text-color);
 
   /** Overlay is used as a background for both modals and foldouts */
-  --overlay-background-color: rgba(0, 0, 0, 0.5);
+  --overlay-background-color: rgba(0, 0, 0, 0.2);
 
   /** Dialog */
   --dialog-warning-color: #{$yellow-600};
