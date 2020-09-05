@@ -234,7 +234,7 @@ import {
   createDesktopStashEntry,
   getLastDesktopStashEntryForBranch,
   popStashEntry,
-  dropDesktopStashEntry,
+  dropDesktopStashEntry, getStashesCount,
 } from '../git/stash'
 import {
   UncommittedChangesStrategy,
@@ -379,6 +379,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private windowState: WindowState
   private windowZoomFactor: number = 1
   private isUpdateAvailableBannerVisible: boolean = false
+  private localStashesCount: number = 0
 
   private askForConfirmationOnRepositoryRemoval: boolean = confirmRepoRemovalDefault
   private confirmDiscardChanges: boolean = confirmDiscardChangesDefault
@@ -451,6 +452,15 @@ export class AppStore extends TypedBaseStore<IAppState> {
     this.tutorialAssessor = new OnboardingTutorialAssessor(
       this.getResolvedExternalEditor
     )
+  }
+
+  private async _loadLocalStashesCount() {
+    const repository = this.selectedRepository
+    if (!repository) { return }
+    if (repository instanceof Repository) {
+      this.localStashesCount = await getStashesCount(repository as Repository)
+      this.emitUpdate()
+    }
   }
 
   /** Figure out what step of the tutorial the user needs to do next */
@@ -737,6 +747,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       apiRepositories: this.apiRepositoriesStore.getState(),
       optOutOfUsageTracking: this.statsStore.getOptOut(),
       currentOnboardingTutorialStep: this.currentOnboardingTutorialStep,
+      localStashesCount: this.localStashesCount,
     }
   }
 
@@ -1472,6 +1483,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     this.stopPullRequestUpdater()
     this._clearBanner()
     this.stopBackgroundPruner()
+    this._loadLocalStashesCount()
 
     if (repository == null) {
       return Promise.resolve(null)

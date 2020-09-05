@@ -28,7 +28,6 @@ import { ExternalEditor } from '../lib/editors'
 import { openFile } from './lib/open-file'
 import { StashesSidebarContentView } from './stashes-view/stashes-sidebar-content-view'
 import { StashesListView } from './stashes-view/stashes-list-view'
-import { getStashesCount } from '../lib/git/stash'
 
 /** The widest the sidebar can be with the minimum window size. */
 const MaxSidebarWidth = 700
@@ -49,6 +48,7 @@ interface IRepositoryViewProps {
   readonly askForConfirmationOnDiscardChanges: boolean
   readonly focusCommitMessage: boolean
   readonly accounts: ReadonlyArray<Account>
+  readonly stashesCount: number
 
   /**
    * A value indicating whether or not the application is currently presenting
@@ -89,7 +89,6 @@ interface IRepositoryViewState {
   readonly changesListScrollTop: number
   readonly compareListScrollTop: number
   selectedStash: IStashEntry | null
-  stashesCount: number
 }
 
 const enum Tab {
@@ -109,7 +108,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
     this.state = {
       changesListScrollTop: 0,
       compareListScrollTop: 0,
-      stashesCount: 0,
       selectedStash: null,
     }
   }
@@ -134,7 +132,7 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
   }
 
   private renderStashesCount(): JSX.Element {
-    return <FilesChangedBadge filesChangedCount={this.state.stashesCount}/>
+    return <FilesChangedBadge filesChangedCount={this.props.stashesCount}/>
   }
 
   private renderTabs(): JSX.Element {
@@ -503,10 +501,10 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
   public async componentDidMount() {
     window.addEventListener('keydown', this.onGlobalKeyDown)
 
-    this.setState({
-      ...this.state,
-      stashesCount: await getStashesCount(this.props.repository)
-    })
+    // this.setState({
+    //   ...this.state,
+    //   stashesCount: await getStashesCount(this.props.repository)
+    // })
   }
 
   public componentWillUnmount() {
