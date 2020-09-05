@@ -11,8 +11,7 @@ import { RetryAction } from './retry-actions'
 import { WorkingDirectoryFileChange } from './status'
 import { PreferencesTab } from './preferences'
 import { ICommitContext } from './commit'
-import { IStashEntry } from './stash-entry'
-import { Account } from '../models/account'
+import { Account } from './account'
 import { Progress } from './progress'
 import { ITextDiff, DiffSelection } from './diff'
 
@@ -55,7 +54,6 @@ export enum PopupType {
   ConfirmForcePush,
   StashAndSwitchBranch,
   ConfirmOverwriteStash,
-  ConfirmDiscardStash,
   CreateTutorialRepository,
   ConfirmExitTutorial,
   PushRejectedDueToMissingWorkflowScope,
@@ -212,11 +210,6 @@ export type Popup =
       type: PopupType.ConfirmOverwriteStash
       repository: Repository
       branchToCheckout: Branch | null
-    }
-  | {
-      type: PopupType.ConfirmDiscardStash
-      repository: Repository
-      stash: IStashEntry
     }
   | {
       type: PopupType.CreateTutorialRepository

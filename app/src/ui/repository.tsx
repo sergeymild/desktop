@@ -10,7 +10,7 @@ import { FilesChangedBadge } from './changes/files-changed-badge'
 import { CompareSidebar, SelectedCommit } from './history'
 import { Resizable } from './resizable'
 import { TabBar } from './tab-bar'
-import { ChangesSelectionKind, IRepositoryState, RepositorySectionTab } from '../lib/app-state'
+import { IRepositoryState, RepositorySectionTab } from '../lib/app-state'
 import { Dispatcher } from './dispatcher'
 import { GitHubUserStore, IssuesStore } from '../lib/stores'
 import { assertNever } from '../lib/fatal-error'
@@ -19,8 +19,7 @@ import { FocusContainer } from './lib/focus-container'
 import { Octicon, OcticonSymbol } from './octicons'
 import { ImageDiffType } from '../models/diff'
 import { IMenu } from '../models/app-menu'
-import { StashDiffViewer } from './stashing'
-import { IStashEntry, StashedChangesLoadStates } from '../models/stash-entry'
+import { IStashEntry } from '../models/stash-entry'
 import { TutorialDone, TutorialPanel, TutorialWelcome } from './tutorial'
 import { enableNDDBBanner } from '../lib/feature-flag'
 import { isValidTutorialStep, TutorialStep } from '../models/tutorial-step'
@@ -323,34 +322,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
     }
   }
 
-  private renderStashedChangesContent(): JSX.Element | null {
-    const { changesState } = this.props.state
-    const { selection, stashEntry, workingDirectory } = changesState
-    const isWorkingTreeClean = workingDirectory.files.length === 0
-
-    if (selection.kind !== ChangesSelectionKind.Stash || stashEntry === null) {
-      return null
-    }
-
-    if (stashEntry.files.kind === StashedChangesLoadStates.Loaded) {
-      return (
-        <StashDiffViewer
-          stashEntry={stashEntry}
-          selectedStashedFile={selection.selectedStashedFile}
-          stashedFileDiff={selection.selectedStashedFileDiff}
-          imageDiffType={this.props.imageDiffType}
-          fileListWidth={this.props.stashedFilesWidth}
-          repository={this.props.repository}
-          dispatcher={this.props.dispatcher}
-          isWorkingTreeClean={isWorkingTreeClean}
-          onOpenBinaryFile={this.onOpenBinaryFile}
-          onChangeImageDiffType={this.onChangeImageDiffType}
-        />
-      )
-    }
-
-    return null
-  }
 
   private renderContentForHistory(): JSX.Element {
     const { commitSelection } = this.props.state
@@ -398,10 +369,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
   private renderContentForChanges(): JSX.Element | null {
     const { changesState } = this.props.state
     const { workingDirectory, selection } = changesState
-
-    if (selection.kind === ChangesSelectionKind.Stash) {
-      return this.renderStashedChangesContent()
-    }
 
     const { selectedFileIDs, diff } = selection
 
@@ -501,11 +468,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
 
   public async componentDidMount() {
     window.addEventListener('keydown', this.onGlobalKeyDown)
-
-    // this.setState({
-    //   ...this.state,
-    //   stashesCount: await getStashesCount(this.props.repository)
-    // })
   }
 
   public componentWillUnmount() {

@@ -380,8 +380,6 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
         ? selection.selectedFileIDs
         : []
 
-    const isShowingStashEntry = selection.kind === ChangesSelectionKind.Stash
-
     return (
       <div className="panel">
         <ChangesList
@@ -416,8 +414,6 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
           onOpenInExternalEditor={this.props.onOpenInExternalEditor}
           onChangesListScrolled={this.props.onChangesListScrolled}
           changesListScrollTop={this.props.changesListScrollTop}
-          stashEntry={this.props.changes.stashEntry}
-          isShowingStashEntry={isShowingStashEntry}
           currentBranchProtected={currentBranchProtected}
           shouldNudgeToCommit={this.props.shouldNudgeToCommit}
         />

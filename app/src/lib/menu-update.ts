@@ -1,6 +1,6 @@
 import { MenuIDs } from '../models/menu-ids'
 import { merge } from './merge'
-import { IAppState, SelectionType } from '../lib/app-state'
+import { IAppState, SelectionType } from './app-state'
 import {
   Repository,
   isRepositoryWithGitHubRepository,
@@ -9,7 +9,6 @@ import { CloningRepository } from '../models/cloning-repository'
 import { TipState } from '../models/tip'
 import { updateMenuState as ipcUpdateMenuState } from '../ui/main-process-proxy'
 import { AppMenu, MenuItem } from '../models/app-menu'
-import { hasConflictedFiles } from './status'
 
 export interface IMenuItemState {
   readonly enabled?: boolean
@@ -105,7 +104,6 @@ const allMenuIds: ReadonlyArray<MenuIDs> = [
   'rename-branch',
   'delete-branch',
   'discard-all-changes',
-  'stash-all-changes',
   'preferences',
   'update-branch',
   'compare-to-branch',
@@ -156,14 +154,12 @@ function getRepositoryMenuBuilder(state: IAppState): MenuStateBuilder {
   let onBranch = false
   let onDetachedHead = false
   let hasChangedFiles = false
-  let hasConflicts = false
   let hasDefaultBranch = false
   let hasPublishedBranch = false
   let networkActionInProgress = false
   let tipStateIsUnknown = false
   let branchIsUnborn = false
   let rebaseInProgress = false
-  let branchHasStashEntry = false
   // check that its a github repo and if so, that is has issues enabled
   const repoIssuesEnabled =
     selectedState !== null &&
@@ -173,7 +169,7 @@ function getRepositoryMenuBuilder(state: IAppState): MenuStateBuilder {
   if (selectedState && selectedState.type === SelectionType.Repository) {
     repositorySelected = true
 
-    const { branchesState, changesState } = selectedState.state
+    const { branchesState } = selectedState.state
     const tip = branchesState.tip
     const defaultBranch = branchesState.defaultBranch
 
@@ -197,7 +193,6 @@ function getRepositoryMenuBuilder(state: IAppState): MenuStateBuilder {
       }
 
       hasPublishedBranch = !!tip.branch.upstream
-      branchHasStashEntry = changesState.stashEntry !== null
     } else {
       onNonDefaultBranch = true
     }
@@ -207,9 +202,6 @@ function getRepositoryMenuBuilder(state: IAppState): MenuStateBuilder {
     const { conflictState, workingDirectory } = selectedState.state.changesState
 
     rebaseInProgress = conflictState !== null && conflictState.kind === 'rebase'
-    hasConflicts =
-      changesState.conflictState !== null ||
-      hasConflictedFiles(workingDirectory)
     hasChangedFiles = workingDirectory.files.length > 0
   }
 
@@ -290,13 +282,7 @@ function getRepositoryMenuBuilder(state: IAppState): MenuStateBuilder {
       repositoryActive && hasChangedFiles && !rebaseInProgress
     )
 
-    menuStateBuilder.setEnabled(
-      'stash-all-changes',
-      hasChangedFiles && onBranch && !rebaseInProgress && !hasConflicts
-    )
-
     menuStateBuilder.setEnabled('compare-to-branch', !onDetachedHead)
-    menuStateBuilder.setEnabled('toggle-stashed-changes', branchHasStashEntry)
 
     if (
       selectedState &&
@@ -326,7 +312,6 @@ function getRepositoryMenuBuilder(state: IAppState): MenuStateBuilder {
     menuStateBuilder.disable('rename-branch')
     menuStateBuilder.disable('delete-branch')
     menuStateBuilder.disable('discard-all-changes')
-    menuStateBuilder.disable('stash-all-changes')
     menuStateBuilder.disable('update-branch')
     menuStateBuilder.disable('merge-branch')
     menuStateBuilder.disable('rebase-branch')
@@ -335,7 +320,6 @@ function getRepositoryMenuBuilder(state: IAppState): MenuStateBuilder {
     menuStateBuilder.disable('pull')
     menuStateBuilder.disable('compare-to-branch')
     menuStateBuilder.disable('compare-on-github')
-    menuStateBuilder.disable('toggle-stashed-changes')
   }
 
   return menuStateBuilder

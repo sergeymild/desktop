@@ -21,12 +21,6 @@ const showPullRequestLabel = __DARWIN__
 const defaultBranchNameValue = __DARWIN__ ? 'Default Branch' : 'default branch'
 const confirmRepositoryRemovalLabel = __DARWIN__ ? 'Remove…' : '&Remove…'
 const repositoryRemovalLabel = __DARWIN__ ? 'Remove' : '&Remove'
-const confirmStashAllChangesLabel = __DARWIN__
-  ? 'Stash All Changes…'
-  : '&Stash all changes…'
-const stashAllChangesLabel = __DARWIN__
-  ? 'Stash All Changes'
-  : '&Stash all changes'
 
 enum ZoomDirection {
   Reset,
@@ -42,8 +36,6 @@ export function buildDefaultMenu({
   hasCurrentPullRequest = false,
   defaultBranchName = defaultBranchNameValue,
   isForcePushForCurrentRepository = false,
-  isStashedChangesVisible = false,
-  askForConfirmationWhenStashingAllChanges = true,
 }: MenuLabelsEvent): Electron.Menu {
   defaultBranchName = truncateWithEllipsis(defaultBranchName, 25)
 
@@ -209,14 +201,6 @@ export function buildDefaultMenu({
         click: emit('go-to-commit-message'),
       },
       {
-        label: getStashedChangesLabel(isStashedChangesVisible),
-        id: 'toggle-stashed-changes',
-        accelerator: 'Ctrl+H',
-        click: isStashedChangesVisible
-          ? emit('hide-stashed-changes')
-          : emit('show-stashed-changes'),
-      },
-      {
         label: __DARWIN__ ? 'Toggle Full Screen' : 'Toggle &full screen',
         role: 'togglefullscreen',
       },
@@ -374,14 +358,6 @@ export function buildDefaultMenu({
         id: 'discard-all-changes',
         accelerator: 'CmdOrCtrl+Shift+Backspace',
         click: emit('discard-all-changes'),
-      },
-      {
-        label: askForConfirmationWhenStashingAllChanges
-          ? confirmStashAllChangesLabel
-          : stashAllChangesLabel,
-        id: 'stash-all-changes',
-        accelerator: 'CmdOrCtrl+Shift+S',
-        click: emit('stash-all-changes'),
       },
       separator,
       {
@@ -578,14 +554,6 @@ function getPushLabel(
   }
 
   return __DARWIN__ ? 'Force Push' : 'Force P&ush'
-}
-
-function getStashedChangesLabel(isStashedChangesVisible: boolean): string {
-  if (isStashedChangesVisible) {
-    return __DARWIN__ ? 'Hide Stashed Changes' : 'H&ide stashed changes'
-  }
-
-  return __DARWIN__ ? 'Show Stashed Changes' : 'Sho&w stashed changes'
 }
 
 type ClickHandler = (

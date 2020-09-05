@@ -277,21 +277,6 @@ export class Dispatcher {
   }
 
   /**
-   * Changes the selection in the changes view to the stash entry view and
-   * optionally selects a particular file from the current stash entry.
-   *
-   *  @param file  A file to select when showing the stash entry.
-   *               If undefined this method will preserve the previously selected
-   *               file or pick the first changed file if no selection exists.
-   */
-  public selectStashedFile(
-    repository: Repository,
-    file?: CommittedFileChange | null
-  ): Promise<void> {
-    return this.appStore._selectStashedFile(repository, file)
-  }
-
-  /**
    * Commit the changes which were marked for inclusion, using the given commit
    * summary and description and optionally any number of commit message trailers
    * which will be merged into the final commit message.
@@ -2413,24 +2398,6 @@ export class Dispatcher {
     return this.commitStatusStore.subscribe(repository, ref, callback)
   }
 
-  /**
-   * Creates a stash for the current branch. Note that this will
-   * override any stash that already exists for the current branch.
-   *
-   * @param repository
-   * @param showConfirmationDialog  Whether to show a confirmation dialog if an
-   *                                existing stash exists (defaults to true).
-   */
-  public createStashForCurrentBranch(
-    repository: Repository,
-    showConfirmationDialog: boolean = true
-  ) {
-    return this.appStore._createStashForCurrentBranch(
-      repository,
-      showConfirmationDialog
-    )
-  }
-
   /** Stash changes */
   public stash(
     repository: Repository,
@@ -2479,11 +2446,6 @@ export class Dispatcher {
    */
   public resetStashedFilesWidth = (): Promise<void> => {
     return this.appStore._resetStashedFilesWidth()
-  }
-
-  /** Hide the diff for stashed changes */
-  public hideStashedChanges(repository: Repository) {
-    return this.appStore._hideStashedChanges(repository)
   }
 
   /**
@@ -2535,14 +2497,6 @@ export class Dispatcher {
   }
 
   /**
-   * Increment the number of times the user has used the View Stash suggestion
-   * in the suggested next steps view.
-   */
-  public recordSuggestedStepViewStash(): Promise<void> {
-    return this.statsStore.recordSuggestedStepViewStash()
-  }
-
-  /**
    * Moves unconmitted changes to the branch being checked out
    */
   public async moveChangesToBranchAndCheckout(
@@ -2553,16 +2507,6 @@ export class Dispatcher {
       repository,
       branchToCheckout
     )
-  }
-
-  /** Record when the user takes no action on the stash entry */
-  public recordNoActionTakenOnStash(): Promise<void> {
-    return this.statsStore.recordNoActionTakenOnStash()
-  }
-
-  /** Record when the user views the stash entry */
-  public recordStashView(): Promise<void> {
-    return this.statsStore.recordStashView()
   }
 
   /** Call when the user opts to skip the pick editor step of the onboarding tutorial */

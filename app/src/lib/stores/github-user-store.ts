@@ -4,7 +4,7 @@ import { API } from '../api'
 import {
   GitHubUserDatabase,
   IMentionableUser,
-} from '../databases/github-user-database'
+} from '../databases'
 
 import { compare } from '../compare'
 import { BaseStore } from './base-store'

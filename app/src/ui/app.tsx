@@ -103,7 +103,6 @@ import {
 import { BannerType } from '../models/banner'
 import { StashAndSwitchBranch } from './stash-changes/stash-and-switch-branch-dialog'
 import { OverwriteStash } from './stash-changes/overwrite-stashed-changes-dialog'
-import { ConfirmDiscardStashDialog } from './stashing/confirm-discard-stash'
 import { CreateTutorialRepositoryDialog } from './no-repositories/create-tutorial-repository-dialog'
 import { enableForkyCreateBranchUI } from '../lib/feature-flag'
 import { ConfirmExitTutorial } from './tutorial'
@@ -355,8 +354,6 @@ export class App extends React.Component<IAppProps, IAppState> {
         return this.deleteBranch()
       case 'discard-all-changes':
         return this.discardAllChanges()
-      case 'stash-all-changes':
-        return this.stashAllChanges()
       case 'show-preferences':
         return this.props.dispatcher.showPopup({ type: PopupType.Preferences })
       case 'open-working-directory':
@@ -400,10 +397,6 @@ export class App extends React.Component<IAppProps, IAppState> {
         return this.selectAll()
       case 'show-release-notes-popup':
         return this.showFakeReleaseNotesPopup()
-      case 'show-stashed-changes':
-        return this.showStashedChanges()
-      case 'hide-stashed-changes':
-        return this.hideStashedChanges()
       case 'test-prune-branches':
         return this.testPruneBranches()
       case 'find-text':
@@ -690,14 +683,6 @@ export class App extends React.Component<IAppProps, IAppState> {
     })
   }
 
-  private stashAllChanges() {
-    const repository = this.getRepository()
-
-    if (repository !== null && repository instanceof Repository) {
-      this.props.dispatcher.createStashForCurrentBranch(repository)
-    }
-  }
-
   private showAddLocalRepo = () => {
     return this.props.dispatcher.showPopup({ type: PopupType.AddRepository })
   }
@@ -848,24 +833,6 @@ export class App extends React.Component<IAppProps, IAppState> {
     }
 
     this.props.dispatcher.pull(state.repository)
-  }
-
-  private showStashedChanges() {
-    const state = this.state.selectedState
-    if (state == null || state.type !== SelectionType.Repository) {
-      return
-    }
-
-    this.props.dispatcher.selectStashedFile(state.repository)
-  }
-
-  private hideStashedChanges() {
-    const state = this.state.selectedState
-    if (state == null || state.type !== SelectionType.Repository) {
-      return
-    }
-
-    this.props.dispatcher.hideStashedChanges(state.repository)
   }
 
   public componentDidMount() {
@@ -1313,11 +1280,7 @@ export class App extends React.Component<IAppProps, IAppState> {
 
     switch (popup.type) {
       case PopupType.RenameBranch:
-        const stash =
-          this.state.selectedState !== null &&
-          this.state.selectedState.type === SelectionType.Repository
-            ? this.state.selectedState.state.changesState.stashEntry
-            : null
+        const stash = null
         return (
           <RenameBranch
             key="rename-branch"
@@ -1921,7 +1884,6 @@ export class App extends React.Component<IAppProps, IAppState> {
         const { repository, branchToCheckout } = popup
         const {
           branchesState,
-          changesState,
         } = this.props.repositoryStateManager.get(repository)
         const { tip } = branchesState
 
@@ -1930,7 +1892,6 @@ export class App extends React.Component<IAppProps, IAppState> {
         }
 
         const currentBranch = tip.branch
-        const hasAssociatedStash = changesState.stashEntry !== null
 
         return (
           <StashAndSwitchBranch
@@ -1939,7 +1900,7 @@ export class App extends React.Component<IAppProps, IAppState> {
             repository={popup.repository}
             currentBranch={currentBranch}
             branchToCheckout={branchToCheckout}
-            hasAssociatedStash={hasAssociatedStash}
+            hasAssociatedStash={false}
             onDismissed={onPopupDismissedFn}
           />
         )
@@ -1952,19 +1913,6 @@ export class App extends React.Component<IAppProps, IAppState> {
             dispatcher={this.props.dispatcher}
             repository={repository}
             branchToCheckout={branchToCheckout}
-            onDismissed={onPopupDismissedFn}
-          />
-        )
-      }
-      case PopupType.ConfirmDiscardStash: {
-        const { repository, stash } = popup
-
-        return (
-          <ConfirmDiscardStashDialog
-            key="confirm-discard-stash-dialog"
-            dispatcher={this.props.dispatcher}
-            repository={repository}
-            stash={stash}
             onDismissed={onPopupDismissedFn}
           />
         )
@@ -2058,19 +2006,10 @@ export class App extends React.Component<IAppProps, IAppState> {
         )
       }
       case PopupType.LocalChangesOverwritten:
-        const selectedState = this.state.selectedState
-
-        const existingStash =
-          selectedState !== null &&
-          selectedState.type === SelectionType.Repository
-            ? selectedState.state.changesState.stashEntry
-            : null
-
         return (
           <LocalChangesOverwrittenDialog
             repository={popup.repository}
             dispatcher={this.props.dispatcher}
-            hasExistingStash={existingStash !== null}
             retryAction={popup.retryAction}
             onDismissed={onPopupDismissedFn}
           />
@@ -2534,9 +2473,7 @@ export class App extends React.Component<IAppProps, IAppState> {
       currentFoldout !== null && currentFoldout.type === FoldoutType.Branch
 
     const repository = selection.repository
-    const { branchesState, changesState } = selection.state
-    const hasAssociatedStash = changesState.stashEntry !== null
-    const hasChanges = changesState.workingDirectory.files.length > 0
+    const { branchesState } = selection.state
 
     return (
       <BranchDropdown
@@ -2555,7 +2492,7 @@ export class App extends React.Component<IAppProps, IAppState> {
         selectedUncommittedChangesStrategy={getUncommittedChangesStrategy(
           this.state.uncommittedChangesStrategyKind
         )}
-        couldOverwriteStash={hasChanges && hasAssociatedStash}
+        couldOverwriteStash={false}
       />
     )
   }

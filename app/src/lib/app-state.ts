@@ -1,7 +1,7 @@
 import { Account } from '../models/account'
 import { CommitIdentity } from '../models/commit-identity'
 import { IDiff, ImageDiffType } from '../models/diff'
-import { Repository, ILocalRepositoryState } from '../models/repository'
+import { ILocalRepositoryState, Repository } from '../models/repository'
 import { Branch, IAheadBehind } from '../models/branch'
 import { Tip } from '../models/tip'
 import { Commit, CommitOneLine } from '../models/commit'
@@ -15,15 +15,10 @@ import { PullRequest } from '../models/pull-request'
 import { IAuthor } from '../models/author'
 import { MergeTreeResult } from '../models/merge'
 import { ICommitMessage } from '../models/commit-message'
-import {
-  IRevertProgress,
-  Progress,
-  ICheckoutProgress,
-  ICloneProgress,
-} from '../models/progress'
+import { ICheckoutProgress, ICloneProgress, IRevertProgress, Progress } from '../models/progress'
 import { Popup } from '../models/popup'
 
-import { SignInState } from './stores/sign-in-store'
+import { SignInState } from './stores'
 
 import { WindowState } from './window-state'
 import { ExternalEditor } from './editors'
@@ -36,7 +31,6 @@ import { ManualConflictResolution } from '../models/manual-conflict-resolution'
 import { Banner } from '../models/banner'
 import { GitRebaseProgress } from '../models/rebase'
 import { RebaseFlowStep } from '../models/rebase-flow-step'
-import { IStashEntry } from '../models/stash-entry'
 import { TutorialStep } from '../models/tutorial-step'
 import { UncommittedChangesStrategyKind } from '../models/uncommitted-changes-strategy'
 
@@ -520,7 +514,6 @@ export interface ICommitSelection {
 
 export enum ChangesSelectionKind {
   WorkingDirectory = 'WorkingDirectory',
-  Stash = 'Stash',
 }
 
 export type ChangesWorkingDirectorySelection = {
@@ -534,19 +527,8 @@ export type ChangesWorkingDirectorySelection = {
   readonly diff: IDiff | null
 }
 
-export type ChangesStashSelection = {
-  readonly kind: ChangesSelectionKind.Stash
-
-  /** Currently selected file in the stash diff viewer UI (aka the file we want to show the diff for) */
-  readonly selectedStashedFile: CommittedFileChange | null
-
-  /** Currently selected file's diff */
-  readonly selectedStashedFileDiff: IDiff | null
-}
-
 export type ChangesSelection =
   | ChangesWorkingDirectorySelection
-  | ChangesStashSelection
 
 export interface IChangesState {
   readonly workingDirectory: WorkingDirectoryStatus
@@ -575,12 +557,6 @@ export interface IChangesState {
    * The absence of a value means there is no merge or rebase conflict underway
    */
   readonly conflictState: ConflictState | null
-
-  /**
-   * The latest GitHub Desktop stash entry for the current branch, or `null`
-   * if no stash exists for the current branch.
-   */
-  readonly stashEntry: IStashEntry | null
 
   /**
    * The current selection state in the Changes view. Can be either

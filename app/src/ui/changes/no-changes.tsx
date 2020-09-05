@@ -13,7 +13,6 @@ import { Ref } from '../lib/ref'
 import { Branch, IAheadBehind } from '../../models/branch'
 import { IRemote } from '../../models/remote'
 import { isCurrentBranchForcePush } from '../../lib/rebase'
-import { StashedChangesLoadStates } from '../../models/stash-entry'
 import { Dispatcher } from '../dispatcher'
 import { SuggestedActionGroup } from '../suggested-actions'
 import { PopupType } from '../../models/popup'
@@ -317,61 +316,6 @@ export class NoChanges extends React.Component<
     return null
   }
 
-  private renderViewStashAction() {
-    const { changesState, branchesState } = this.props.repositoryState
-
-    const { tip } = branchesState
-    if (tip.kind !== TipState.Valid) {
-      return null
-    }
-
-    const { stashEntry } = changesState
-    if (stashEntry === null) {
-      return null
-    }
-
-    if (stashEntry.files.kind !== StashedChangesLoadStates.Loaded) {
-      return null
-    }
-
-    const numChanges = stashEntry.files.files.length
-    const description = (
-      <>
-        You have {numChanges} {numChanges === 1 ? 'change' : 'changes'} in
-        progress that you have not yet committed.
-      </>
-    )
-    const discoverabilityContent = (
-      <>
-        When a stash exists, access it at the bottom of the Changes tab to the
-        left.
-      </>
-    )
-    const itemId: MenuIDs = 'toggle-stashed-changes'
-    const menuItem = this.getMenuItemInfo(itemId)
-    if (menuItem === undefined) {
-      log.error(`Could not find matching menu item for ${itemId}`)
-      return null
-    }
-
-    return (
-      <MenuBackedSuggestedAction
-        key="view-stash-action"
-        title="View your stashed changes"
-        menuItemId={itemId}
-        description={description}
-        discoverabilityContent={discoverabilityContent}
-        buttonText="View stash"
-        type="primary"
-        disabled={menuItem !== null && !menuItem.enabled}
-        onClick={this.onViewStashClicked}
-      />
-    )
-  }
-
-  private onViewStashClicked = () =>
-    this.props.dispatcher.recordSuggestedStepViewStash()
-
   private renderPublishRepositoryAction() {
     // This is a bit confusing, there's no dedicated
     // publish menu item, the 'Push' menu item will initiate
@@ -623,7 +567,7 @@ export class NoChanges extends React.Component<
           transitions={'replace'}
           enableTransitions={this.state.enableTransitions}
         >
-          {this.renderViewStashAction() || this.renderRemoteAction()}
+          {this.renderRemoteAction()}
         </SuggestedActionGroup>
         <SuggestedActionGroup>
           {this.renderMergeInto()}

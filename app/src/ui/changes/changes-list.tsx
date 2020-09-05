@@ -33,26 +33,10 @@ import { basename } from 'path'
 import { ICommitContext } from '../../models/commit'
 import { RebaseConflictState, ConflictState } from '../../lib/app-state'
 import { ContinueRebase } from './continue-rebase'
-import { Octicon, OcticonSymbol } from '../octicons'
-import { IStashEntry } from '../../models/stash-entry'
-import classNames from 'classnames'
 import { hasWritePermission } from '../../models/github-repository'
-import { hasConflictedFiles } from '../../lib/status'
 
 const RowHeight = 29
-const StashIcon = new OcticonSymbol(
-  16,
-  16,
-  'M10.5 1.286h-9a.214.214 0 0 0-.214.214v9a.214.214 0 0 0 .214.214h9a.214.214 0 0 0 ' +
-    '.214-.214v-9a.214.214 0 0 0-.214-.214zM1.5 0h9A1.5 1.5 0 0 1 12 1.5v9a1.5 1.5 0 0 1-1.5 ' +
-    '1.5h-9A1.5 1.5 0 0 1 0 10.5v-9A1.5 1.5 0 0 1 1.5 0zm5.712 7.212a1.714 1.714 0 1 ' +
-    '1-2.424-2.424 1.714 1.714 0 0 1 2.424 2.424zM2.015 12.71c.102.729.728 1.29 1.485 ' +
-    '1.29h9a1.5 1.5 0 0 0 1.5-1.5v-9a1.5 1.5 0 0 0-1.29-1.485v1.442a.216.216 0 0 1 ' +
-    '.004.043v9a.214.214 0 0 1-.214.214h-9a.216.216 0 0 1-.043-.004H2.015zm2 2c.102.729.728 ' +
-    '1.29 1.485 1.29h9a1.5 1.5 0 0 0 1.5-1.5v-9a1.5 1.5 0 0 0-1.29-1.485v1.442a.216.216 0 0 1 ' +
-    '.004.043v9a.214.214 0 0 1-.214.214h-9a.216.216 0 0 1-.043-.004H4.015z',
-  'evenodd'
-)
+
 
 const GitIgnoreFileName = '.gitignore'
 
@@ -177,10 +161,6 @@ interface IChangesListProps {
    */
   readonly onOpenInExternalEditor: (fullPath: string) => void
 
-  readonly stashEntry: IStashEntry | null
-
-  readonly isShowingStashEntry: boolean
-
   /**
    * Whether we should show the onboarding tutorial nudge
    * arrow pointing at the commit summary box
@@ -284,10 +264,6 @@ export class ChangesList extends React.Component<
     )
   }
 
-  private onStashChanges = () => {
-    this.props.dispatcher.createStashForCurrentBranch(this.props.repository)
-  }
-
   private stashItems = (files: ReadonlyArray<string>) => {
     const workingDirectory = this.props.workingDirectory
     const workingFiles = files.map(f => {
@@ -360,28 +336,11 @@ export class ChangesList extends React.Component<
     }
 
     const hasLocalChanges = this.props.workingDirectory.files.length > 0
-    const hasStash = this.props.stashEntry !== null
-    const hasConflicts =
-      this.props.conflictState !== null ||
-      hasConflictedFiles(this.props.workingDirectory)
-
-    const stashAllChangesLabel = __DARWIN__
-      ? 'Stash All Changes'
-      : 'Stash all changes'
-    const confirmStashAllChangesLabel = __DARWIN__
-      ? 'Stash All Changes…'
-      : 'Stash all changes…'
-
     const items: IMenuItem[] = [
       {
         label: __DARWIN__ ? 'Discard All Changes…' : 'Discard all changes…',
         action: this.onDiscardAllChanges,
         enabled: hasLocalChanges,
-      },
-      {
-        label: hasStash ? confirmStashAllChangesLabel : stashAllChangesLabel,
-        action: this.onStashChanges,
-        enabled: hasLocalChanges && this.props.branch !== null && !hasConflicts,
       },
     ]
 
@@ -704,44 +663,6 @@ export class ChangesList extends React.Component<
     )
   }
 
-  private onStashEntryClicked = () => {
-    const { isShowingStashEntry, dispatcher, repository } = this.props
-
-    if (isShowingStashEntry) {
-      dispatcher.selectWorkingDirectoryFiles(repository)
-
-      // If the button is clicked, that implies the stash was not restored or discarded
-      dispatcher.recordNoActionTakenOnStash()
-    } else {
-      dispatcher.selectStashedFile(repository)
-      dispatcher.recordStashView()
-    }
-  }
-
-  private renderStashedChanges() {
-    if (this.props.stashEntry === null) {
-      return null
-    }
-
-    const className = classNames(
-      'stashed-changes-button',
-      this.props.isShowingStashEntry ? 'selected' : null
-    )
-
-    return (
-      <button
-        className={className}
-        onClick={this.onStashEntryClicked}
-        tabIndex={0}
-        aria-selected={this.props.isShowingStashEntry}
-      >
-        <Octicon className="stack-icon" symbol={StashIcon} />
-        <div className="text">Stashed Changes</div>
-        <Octicon symbol={OcticonSymbol.chevronRight} />
-      </button>
-    )
-  }
-
   private onRowKeyDown = (
     _row: number,
     event: React.KeyboardEvent<HTMLDivElement>
@@ -807,7 +728,6 @@ export class ChangesList extends React.Component<
           setScrollTop={this.props.changesListScrollTop}
           onRowKeyDown={this.onRowKeyDown}
         />
-        {this.renderStashedChanges()}
         {this.renderCommitMessageForm()}
       </div>
     )

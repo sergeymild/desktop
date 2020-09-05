@@ -5,7 +5,7 @@ import {
   DialogFooter,
   DefaultDialogFooter,
 } from '../dialog'
-import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { OkCancelButtonGroup } from '../dialog'
 import { Repository } from '../../models/repository'
 import { RetryAction, RetryActionType } from '../../models/retry-actions'
 import { Dispatcher } from '../dispatcher'
@@ -14,10 +14,6 @@ import { assertNever } from '../../lib/fatal-error'
 interface ILocalChangesOverwrittenDialogProps {
   readonly repository: Repository
   readonly dispatcher: Dispatcher
-  /**
-   * Whether there's already a stash entry for the local branch.
-   */
-  readonly hasExistingStash: boolean
   /**
    * The action that should get executed if the user selects "Stash and Continue".
    */
@@ -63,7 +59,7 @@ export class LocalChangesOverwrittenDialog extends React.Component<
   }
 
   private renderStashText() {
-    if (this.props.hasExistingStash && !this.state.stashingAndRetrying) {
+    if (!this.state.stashingAndRetrying) {
       return null
     }
 
@@ -71,7 +67,7 @@ export class LocalChangesOverwrittenDialog extends React.Component<
   }
 
   private renderFooter() {
-    if (this.props.hasExistingStash && !this.state.stashingAndRetrying) {
+    if (!this.state.stashingAndRetrying) {
       return <DefaultDialogFooter />
     }
 
@@ -91,20 +87,8 @@ export class LocalChangesOverwrittenDialog extends React.Component<
   }
 
   private onSubmit = async () => {
-    if (this.props.hasExistingStash) {
-      // When there's an existing stash we don't let the user stash the changes and we
-      // only show a "Close" button on the modal.
-      // In that case, the "Close" button submits the dialog and should only dismiss it.
-      this.props.onDismissed()
-      return
-    }
 
     this.setState({ stashingAndRetrying: true })
-
-    await this.props.dispatcher.createStashForCurrentBranch(
-      this.props.repository,
-      true
-    )
     await this.props.dispatcher.performRetry(this.props.retryAction)
 
     this.props.onDismissed()

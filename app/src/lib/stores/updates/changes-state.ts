@@ -15,9 +15,8 @@ import {
 } from '../../app-state'
 import { DiffSelectionType } from '../../../models/diff'
 import { caseInsensitiveCompare } from '../../compare'
-import { IStatsStore } from '../../stats/stats-store'
+import { IStatsStore } from '../../stats'
 import { ManualConflictResolution } from '../../../models/manual-conflict-resolution'
-import { assertNever } from '../../fatal-error'
 
 /**
  * Internal shape of the return value from this response because the compiler
@@ -72,46 +71,33 @@ export function updateChangedFiles(
   // diff we had, if not we'll clear it.
   const workingDirectory = WorkingDirectoryStatus.fromFiles(mergedFiles)
 
-  const selectionKind = state.selection.kind
-  if (state.selection.kind === ChangesSelectionKind.WorkingDirectory) {
-    // The previously selected files might not be available in the working
-    // directory any more due to having been committed or discarded so we'll
-    // do a pass over and filter out any selected files that aren't available.
-    let selectedFileIDs = state.selection.selectedFileIDs.filter(id =>
-      mergedFileIds.has(id)
-    )
+  // The previously selected files might not be available in the working
+  // directory any more due to having been committed or discarded so we'll
+  // do a pass over and filter out any selected files that aren't available.
+  let selectedFileIDs = state.selection.selectedFileIDs.filter(id =>
+    mergedFileIds.has(id)
+  )
 
-    // Select the first file if we don't have anything selected and we
-    // have something to select.
-    if (selectedFileIDs.length === 0 && mergedFiles.length > 0) {
-      selectedFileIDs = [mergedFiles[0].id]
-    }
+  // Select the first file if we don't have anything selected and we
+  // have something to select.
+  if (selectedFileIDs.length === 0 && mergedFiles.length > 0) {
+    selectedFileIDs = [mergedFiles[0].id]
+  }
 
-    const diff =
-      selectedFileIDs.length === 1 &&
-      state.selection.selectedFileIDs.length === 1 &&
-      state.selection.selectedFileIDs[0] === selectedFileIDs[0]
-        ? state.selection.diff
-        : null
+  const diff =
+    selectedFileIDs.length === 1 &&
+    state.selection.selectedFileIDs.length === 1 &&
+    state.selection.selectedFileIDs[0] === selectedFileIDs[0]
+      ? state.selection.diff
+      : null
 
-    return {
-      workingDirectory,
-      selection: {
-        kind: ChangesSelectionKind.WorkingDirectory,
-        selectedFileIDs,
-        diff,
-      },
-    }
-  } else if (state.selection.kind === ChangesSelectionKind.Stash) {
-    return {
-      workingDirectory,
-      selection: state.selection,
-    }
-  } else {
-    return assertNever(
-      state.selection,
-      `Unknown selection kind ${selectionKind}`
-    )
+  return {
+    workingDirectory,
+    selection: {
+      kind: ChangesSelectionKind.WorkingDirectory,
+      selectedFileIDs,
+      diff,
+    },
   }
 }
 
