@@ -7,6 +7,8 @@ export enum BannerType {
   SuccessfulRebase = 'SuccessfulRebase',
   RebaseConflictsFound = 'RebaseConflictsFound',
   BranchAlreadyUpToDate = 'BranchAlreadyUpToDate',
+  StashApplied = 'StashApplied',
+  StashPopped = 'StashPopped',
 }
 
 export type Banner =
@@ -51,4 +53,13 @@ export type Banner =
       readonly ourBranch: string
       /** name of the branch we cherry picked into `ourBranch` */
       readonly theirBranch?: string
+    }
+  | {
+      readonly type: BannerType.StashApplied
+      readonly stashName: string
+    }
+
+  | {
+      readonly type: BannerType.StashPopped
+      readonly stashName: string
     }

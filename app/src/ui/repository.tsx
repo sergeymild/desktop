@@ -27,7 +27,7 @@ import { isValidTutorialStep, TutorialStep } from '../models/tutorial-step'
 import { ExternalEditor } from '../lib/editors'
 import { openFile } from './lib/open-file'
 import { StashesSidebarContentView } from './stashes-view/stashes-sidebar-content-view'
-import { StashesListView } from './stashes-view/stashes-list-view'
+import { StashesSidebarListView } from './stashes-view/stashes-sidebar-list-view'
 
 /** The widest the sidebar can be with the minimum window size. */
 const MaxSidebarWidth = 700
@@ -236,9 +236,10 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
   }
 
   private renderStashes(): JSX.Element {
-    return <StashesListView
+    return <StashesSidebarListView
       repository={this.props.repository}
-      handleStashSelect={this.handleStashSelect}/>
+      handleStashSelect={this.handleStashSelect}
+      dispatcher={this.props.dispatcher}/>
   }
 
   private renderCompareSidebar(): JSX.Element {

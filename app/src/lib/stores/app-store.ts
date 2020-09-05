@@ -234,7 +234,7 @@ import {
   createDesktopStashEntry,
   getLastDesktopStashEntryForBranch,
   popStashEntry,
-  dropDesktopStashEntry, getStashesCount,
+  dropDesktopStashEntry, getStashesCount, removeStashEntry, applyStashEntry,
 } from '../git/stash'
 import {
   UncommittedChangesStrategy,
@@ -1483,7 +1483,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     this.stopPullRequestUpdater()
     this._clearBanner()
     this.stopBackgroundPruner()
-    this._loadLocalStashesCount()
 
     if (repository == null) {
       return Promise.resolve(null)
@@ -2735,6 +2734,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       gitStore.updateLastFetched(),
       gitStore.loadStashEntries(),
       this.refreshAuthor(repository),
+      this._loadLocalStashesCount(),
       refreshSectionPromise,
     ])
 
@@ -5750,6 +5750,34 @@ export class AppStore extends TypedBaseStore<IAppState> {
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */
+  public async _applyStashEntry(repository: Repository, stashName: string) {
+    const gitStore = this.gitStoreCache.get(repository)
+    await gitStore.performFailableOperation(() => {
+      return applyStashEntry(repository, stashName)
+    })
+    log.info(
+      `[AppStore. _applyStashEntry] applied stash with commit name ${stashName}`
+    )
+
+    this.statsStore.recordStashRestore()
+    await this._refreshRepository(repository)
+  }
+
+  public async _popStash(repository: Repository, stashName: string) {
+    const gitStore = this.gitStoreCache.get(repository)
+    await gitStore.performFailableOperation(() => {
+      return popStashEntry(repository, stashName)
+    })
+    log.info(
+      `[AppStore. _popStash] popped stash with commit name ${stashName}`
+    )
+
+    this.statsStore.recordStashRestore()
+    await this._refreshRepository(repository)
+    await this._loadLocalStashesCount()
+  }
+
+  /** This shouldn't be called directly. See `Dispatcher`. */
   public async _popStashEntry(repository: Repository, stashEntry: IStashEntry) {
     const gitStore = this.gitStoreCache.get(repository)
     await gitStore.performFailableOperation(() => {
@@ -5761,6 +5789,22 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     this.statsStore.recordStashRestore()
     await this._refreshRepository(repository)
+  }
+
+  public async _removeStashEntry(
+    repository: Repository,
+    stashName: string
+  ) {
+    const gitStore = this.gitStoreCache.get(repository)
+    await gitStore.performFailableOperation(() => {
+      return removeStashEntry(repository, stashName)
+    })
+    log.info(
+      `[AppStore. _dropStashEntry] dropped stash with commit name ${stashName}`
+    )
+
+    await this.statsStore.recordStashDiscard()
+    await this._loadLocalStashesCount()
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */

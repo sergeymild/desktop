@@ -34,6 +34,20 @@ type StashResult = {
   readonly stashEntryCount: number
 }
 
+/**
+ * Removes the given stash entry if it exists
+ *
+ * @param repository current working repository
+ * @param stashName the Name that identifies the stash entry
+ */
+export async function removeStashEntry(
+  repository: Repository,
+  stashName: string
+) {
+  const args = ['stash', 'drop', stashName]
+  await git(args, repository.path, 'removeStashEntry')
+}
+
 export async function fetchStashes(repository: Repository): Promise<StashResult> {
   const delimiter = '1F'
   const delimiterString = String.fromCharCode(parseInt(delimiter, 16))
@@ -228,6 +242,7 @@ async function getStashEntryMatchingSha(repository: Repository, sha: string) {
 /**
  * Removes the given stash entry if it exists
  *
+ * @param repository current working repository
  * @param stashSha the SHA that identifies the stash entry
  */
 export async function dropDesktopStashEntry(
@@ -251,36 +266,68 @@ export async function dropDesktopStashEntry(
  */
 export async function popStashEntry(
   repository: Repository,
-  stashSha: string
+  stashName: string
 ): Promise<void> {
   // ignoring these git errors for now, this will change when we start
   // implementing the stash conflict flow
   const expectedErrors = new Set<DugiteError>([DugiteError.MergeConflicts])
   const successExitCodes = new Set<number>([0, 1])
-  const stashToPop = await getStashEntryMatchingSha(repository, stashSha)
 
-  if (stashToPop !== null) {
-    const args = ['stash', 'pop', '--quiet', `${stashToPop.name}`]
-    const result = await git(args, repository.path, 'popStashEntry', {
-      expectedErrors,
-      successExitCodes,
-    })
+  const args = ['stash', 'pop', '--quiet', `${stashName}`]
+  const result = await git(args, repository.path, 'popStashEntry', {
+    expectedErrors,
+    successExitCodes,
+  })
 
-    // popping a stashes that create conflicts in the working directory
-    // report an exit code of `1` and are not dropped after being applied.
-    // so, we check for this case and drop them manually
-    if (result.exitCode === 1) {
-      if (result.stderr.length > 0) {
-        // rethrow, because anything in stderr should prevent the stash from being popped
-        throw new GitError(result, args)
-      }
-
-      log.info(
-        `[popStashEntry] a stash was popped successfully but exit code ${result.exitCode} reported.`
-      )
-      // bye bye
-      await dropDesktopStashEntry(repository, stashSha)
+  // popping a stashes that create conflicts in the working directory
+  // report an exit code of `1` and are not dropped after being applied.
+  // so, we check for this case and drop them manually
+  if (result.exitCode === 1) {
+    if (result.stderr.length > 0) {
+      // rethrow, because anything in stderr should prevent the stash from being popped
+      throw new GitError(result, args)
     }
+
+    log.info(
+      `[popStashEntry] a stash was popped successfully but exit code ${result.exitCode} reported.`
+    )
+  }
+}
+
+/**
+ * Pops the stash entry identified by matching `stashSha` to its commit hash.
+ *
+ * To see the commit hash of stash entry, run
+ * `git log -g refs/stash --pretty="%nentry: %gd%nsubject: %gs%nhash: %H%n"`
+ * in a repo with some stash entries.
+ */
+export async function applyStashEntry(
+  repository: Repository,
+  stashName: string
+): Promise<void> {
+  // ignoring these git errors for now, this will change when we start
+  // implementing the stash conflict flow
+  const expectedErrors = new Set<DugiteError>([DugiteError.MergeConflicts])
+  const successExitCodes = new Set<number>([0, 1])
+
+  const args = ['stash', 'apply', '--quiet', `${stashName}`]
+  const result = await git(args, repository.path, 'applyStashEntry', {
+    expectedErrors,
+    successExitCodes,
+  })
+
+  // popping a stashes that create conflicts in the working directory
+  // report an exit code of `1` and are not dropped after being applied.
+  // so, we check for this case and drop them manually
+  if (result.exitCode === 1) {
+    if (result.stderr.length > 0) {
+      // rethrow, because anything in stderr should prevent the stash from being popped
+      throw new GitError(result, args)
+    }
+
+    log.info(
+      `[applyStashEntry] a stash was applied successfully but exit code ${result.exitCode} reported.`
+    )
   }
 }
 

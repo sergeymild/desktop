@@ -2431,6 +2431,16 @@ export class Dispatcher {
     )
   }
 
+  /** Removes the given stash in the given repository */
+  public removeStash(repository: Repository, stashName: string) {
+    return this.appStore._removeStashEntry(repository, stashName)
+  }
+
+  /** Apply the given stash in the given repository */
+  public applyStash(repository: Repository, stashName: string) {
+    return this.appStore._applyStashEntry(repository, stashName)
+  }
+
   /** Drops the given stash in the given repository */
   public dropStash(repository: Repository, stashEntry: IStashEntry) {
     return this.appStore._dropStashEntry(repository, stashEntry)
@@ -2439,6 +2449,11 @@ export class Dispatcher {
   /** Pop the given stash in the given repository */
   public popStash(repository: Repository, stashEntry: IStashEntry) {
     return this.appStore._popStashEntry(repository, stashEntry)
+  }
+
+  /** Pop the given stash in the given repository */
+  public popStashWithName(repository: Repository, stashName: string) {
+    return this.appStore._popStash(repository, stashName)
   }
 
   /**

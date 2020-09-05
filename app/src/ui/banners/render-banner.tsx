@@ -12,6 +12,8 @@ import { RebaseConflictsBanner } from './rebase-conflicts-banner'
 import { SuccessfulRebase } from './successful-rebase'
 import { BranchAlreadyUpToDate } from './branch-already-up-to-date-banner'
 import { SuccessfulCherryPick } from './successful-cherry-pick'
+import { StashApplied } from './banner-stash-applied'
+import { StashPopped } from './banner-stash-popped'
 
 export function renderBanner(
   banner: Banner,
@@ -73,7 +75,23 @@ export function renderBanner(
           theirBranch={banner.theirBranch}
           onDismissed={onDismissed}
           key={'branch-already-up-to-date'}
-        ></BranchAlreadyUpToDate>
+        />
+      )
+    case BannerType.StashApplied:
+      return (
+        <StashApplied
+          stashName={banner.stashName}
+          onDismissed={onDismissed}
+          key={'stash-applied'}
+        />
+      )
+    case BannerType.StashPopped:
+      return (
+        <StashPopped
+          stashName={banner.stashName}
+          onDismissed={onDismissed}
+          key={'stash-applied'}
+        />
       )
     default:
       return assertNever(banner, `Unknown popup type: ${banner}`)
