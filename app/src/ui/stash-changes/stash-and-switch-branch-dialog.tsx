@@ -1,18 +1,12 @@
 import * as React from 'react'
-import { Dialog, DialogContent, DialogFooter } from '../dialog'
+import { Dialog, DialogContent, DialogFooter, OkCancelButtonGroup } from '../dialog'
 import { Repository } from '../../models/repository'
 import { Dispatcher } from '../dispatcher'
 import { VerticalSegmentedControl } from '../lib/vertical-segmented-control'
 import { Row } from '../lib/row'
 import { Branch } from '../../models/branch'
-import {
-  UncommittedChangesStrategyKind,
-  stashOnCurrentBranch,
-} from '../../models/uncommitted-changes-strategy'
-import { Octicon, OcticonSymbol } from '../octicons'
-import { PopupType } from '../../models/popup'
+import { stashOnCurrentBranch, UncommittedChangesStrategyKind } from '../../models/uncommitted-changes-strategy'
 import { startTimer } from '../lib/timing'
-import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
 
 enum StashAction {
   StashOnCurrentBranch,
@@ -27,8 +21,6 @@ interface ISwitchBranchProps {
   /** The branch to checkout after the user selects a stash action */
   readonly branchToCheckout: Branch
 
-  /** Whether `currentBranch` has an existing stash association */
-  readonly hasAssociatedStash: boolean
   readonly onDismissed: () => void
 }
 
@@ -69,7 +61,6 @@ export class StashAndSwitchBranch extends React.Component<
       >
         <DialogContent>
           {this.renderStashActions()}
-          {this.renderStashOverwriteWarning()}
         </DialogContent>
         <DialogFooter>
           <OkCancelButtonGroup
@@ -77,22 +68,6 @@ export class StashAndSwitchBranch extends React.Component<
           />
         </DialogFooter>
       </Dialog>
-    )
-  }
-
-  private renderStashOverwriteWarning() {
-    if (
-      !this.props.hasAssociatedStash ||
-      this.state.selectedStashAction !== StashAction.StashOnCurrentBranch
-    ) {
-      return null
-    }
-
-    return (
-      <Row>
-        <Octicon symbol={OcticonSymbol.alert} /> Your current stash will be
-        overwritten by creating a new stash
-      </Row>
     )
   }
 
@@ -133,21 +108,8 @@ export class StashAndSwitchBranch extends React.Component<
       repository,
       branchToCheckout,
       dispatcher,
-      hasAssociatedStash,
     } = this.props
     const { selectedStashAction } = this.state
-
-    if (
-      selectedStashAction === StashAction.StashOnCurrentBranch &&
-      hasAssociatedStash
-    ) {
-      dispatcher.showPopup({
-        type: PopupType.ConfirmOverwriteStash,
-        repository,
-        branchToCheckout,
-      })
-      return
-    }
 
     this.setState({ isStashingChanges: true })
 

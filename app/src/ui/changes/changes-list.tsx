@@ -1,27 +1,24 @@
 import * as React from 'react'
 import * as Path from 'path'
+import { basename } from 'path'
 
 import { Dispatcher } from '../dispatcher'
 import { IMenuItem } from '../../lib/menu-item'
 import { revealInFileManager } from '../../lib/app-shell'
-import {
-  WorkingDirectoryStatus,
-  WorkingDirectoryFileChange,
-  AppFileStatusKind,
-} from '../../models/status'
+import { AppFileStatusKind, WorkingDirectoryFileChange, WorkingDirectoryStatus } from '../../models/status'
 import { DiffSelectionType } from '../../models/diff'
 import { CommitIdentity } from '../../models/commit-identity'
 import { ICommitMessage } from '../../models/commit-message'
 import { Repository } from '../../models/repository'
 import { IAuthor } from '../../models/author'
-import { List, ClickSource } from '../lib/list'
+import { ClickSource, List } from '../lib/list'
 import { Checkbox, CheckboxValue } from '../lib/checkbox'
 import {
-  isSafeFileExtension,
-  DefaultEditorLabel,
   CopyFilePathLabel,
-  RevealInFileManagerLabel,
+  DefaultEditorLabel,
+  isSafeFileExtension,
   OpenWithDefaultProgramLabel,
+  RevealInFileManagerLabel,
 } from '../lib/context-menu'
 import { CommitMessage } from './commit-message'
 import { ChangedFile } from './changed-file'
@@ -29,11 +26,11 @@ import { IAutocompletionProvider } from '../autocompletion'
 import { showContextualMenu } from '../main-process-proxy'
 import { arrayEquals } from '../../lib/equality'
 import { clipboard } from 'electron'
-import { basename } from 'path'
 import { ICommitContext } from '../../models/commit'
-import { RebaseConflictState, ConflictState } from '../../lib/app-state'
+import { ConflictState, RebaseConflictState } from '../../lib/app-state'
 import { ContinueRebase } from './continue-rebase'
 import { hasWritePermission } from '../../models/github-repository'
+import { hasConflictedFiles } from '../../lib/status'
 
 const RowHeight = 29
 
@@ -264,22 +261,6 @@ export class ChangesList extends React.Component<
     )
   }
 
-  private stashItems = (files: ReadonlyArray<string>) => {
-    const workingDirectory = this.props.workingDirectory
-    const workingFiles = files.map(f => {
-      return workingDirectory.files.find(wf => wf.path === f)
-    })
-    const branch = this.props.branch
-    if (!branch) { return }
-
-    this.props.dispatcher
-      .stash(
-        this.props.repository,
-        branch,
-        workingFiles as ReadonlyArray<WorkingDirectoryFileChange>
-      )
-  }
-
   private onDiscardChanges = (files: ReadonlyArray<string>) => {
     const workingDirectory = this.props.workingDirectory
 
@@ -314,6 +295,10 @@ export class ChangesList extends React.Component<
     }
   }
 
+  private onStashChanges = () => {
+    this.props.dispatcher.createStashForCurrentBranch(this.props.repository)
+  }
+
   private getDiscardChangesMenuItemLabel = (files: ReadonlyArray<string>) => {
     const label =
       files.length === 1
@@ -335,12 +320,26 @@ export class ChangesList extends React.Component<
       return
     }
 
+    const stashAllChangesLabel = __DARWIN__
+      ? 'Stash All Changes'
+      : 'Stash all changes'
+
+    const hasConflicts =
+      this.props.conflictState !== null ||
+      hasConflictedFiles(this.props.workingDirectory)
+
     const hasLocalChanges = this.props.workingDirectory.files.length > 0
     const items: IMenuItem[] = [
       {
         label: __DARWIN__ ? 'Discard All Changes…' : 'Discard all changes…',
         action: this.onDiscardAllChanges,
         enabled: hasLocalChanges,
+      },
+
+      {
+        label: stashAllChangesLabel,
+        action: this.onStashChanges,
+        enabled: hasLocalChanges && this.props.branch !== null && !hasConflicts,
       },
     ]
 
@@ -353,15 +352,6 @@ export class ChangesList extends React.Component<
     return {
       label: this.getDiscardChangesMenuItemLabel(paths),
       action: () => this.onDiscardChanges(paths),
-    }
-  }
-
-  private getStashMenuItem = (
-    paths: ReadonlyArray<string>
-  ): IMenuItem => {
-    return {
-      label: paths.length > 0 ? "Stash items" : "Stash item",
-      action: () => this.stashItems(paths),
     }
   }
 
@@ -446,8 +436,6 @@ export class ChangesList extends React.Component<
 
     const items: IMenuItem[] = [
       this.getDiscardChangesMenuItem(paths),
-      { type: 'separator' },
-      this.getStashMenuItem(paths),
       { type: 'separator' },
     ]
     if (paths.length === 1) {

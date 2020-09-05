@@ -2398,13 +2398,14 @@ export class Dispatcher {
     return this.commitStatusStore.subscribe(repository, ref, callback)
   }
 
-  /** Stash changes */
-  public stash(
-    repository: Repository,
-    branchName: string,
-    paths: ReadonlyArray<WorkingDirectoryFileChange>
-  ) {
-    return this.appStore._stashChanges(repository, branchName, paths)
+  /**
+   * Creates a stash for the current branch. Note that this will
+   * override any stash that already exists for the current branch.
+   *
+   * @param repository
+   */
+  public createStashForCurrentBranch(repository: Repository) {
+    return this.appStore._createStashForCurrentBranch(repository)
   }
 
   /** Removes the given stash in the given repository */

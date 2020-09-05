@@ -4,7 +4,6 @@ import { Repository } from '../../../src/models/repository'
 import { setupEmptyRepository } from '../../helpers/repositories'
 import { GitProcess } from 'dugite'
 import {
-  createDesktopStashMessage,
   createDesktopStashEntry,
   getLastDesktopStashEntryForBranch,
   dropDesktopStashEntry,
@@ -148,16 +147,6 @@ describe('git/stash', () => {
     })
   })
 
-  describe('createDesktopStashMessage', () => {
-    it('creates message that matches Desktop stash entry format', () => {
-      const branchName = 'master'
-
-      const message = createDesktopStashMessage(branchName)
-
-      expect(message).toBe('!!GitHub_Desktop<master>')
-    })
-  })
-
   describe('dropDesktopStashEntry', () => {
     let repository: Repository
     let readme: string
@@ -195,6 +184,8 @@ describe('git/stash', () => {
         name: 'refs/stash@{0}',
         branchName: 'master',
         stashSha: 'xyz',
+        uiName: "WIP on master",
+        createdAt: 0,
         files: { kind: StashedChangesLoadStates.NotLoaded },
       }
 
@@ -213,6 +204,8 @@ describe('git/stash', () => {
         name: 'refs/stash@{4}',
         branchName: 'master',
         stashSha: 'xyz',
+        uiName: "WIP on master",
+        createdAt: 0,
         files: { kind: StashedChangesLoadStates.NotLoaded },
       }
       await generateTestStashEntry(repository, 'master', true)
@@ -322,7 +315,7 @@ async function stash(
   message: string | null
 ): Promise<void> {
   const result = await GitProcess.exec(
-    ['stash', 'push', '-m', message || createDesktopStashMessage(branchName)],
+    ['stash', 'push', '-m', message || branchName],
     repository.path
   )
 

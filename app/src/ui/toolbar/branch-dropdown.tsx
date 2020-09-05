@@ -48,8 +48,6 @@ interface IBranchDropdownProps {
   readonly shouldNudge: boolean
 
   readonly selectedUncommittedChangesStrategy: UncommittedChangesStrategy
-
-  readonly couldOverwriteStash: boolean
 }
 
 /**
@@ -81,7 +79,6 @@ export class BranchDropdown extends React.Component<IBranchDropdownProps> {
         selectedUncommittedChangesStrategy={
           this.props.selectedUncommittedChangesStrategy
         }
-        couldOverwriteStash={this.props.couldOverwriteStash}
       />
     )
   }

@@ -138,7 +138,9 @@ export class RelativeTime extends React.Component<
 
   public render() {
     return (
-      <span title={this.state.absoluteText}>{this.state.relativeText}</span>
+      <time
+        dateTime={this.state.absoluteText}
+        title={this.state.absoluteText}>{this.state.relativeText}</time>
     )
   }
 }

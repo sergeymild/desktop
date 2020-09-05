@@ -102,7 +102,6 @@ import {
 } from '../lib/rebase'
 import { BannerType } from '../models/banner'
 import { StashAndSwitchBranch } from './stash-changes/stash-and-switch-branch-dialog'
-import { OverwriteStash } from './stash-changes/overwrite-stashed-changes-dialog'
 import { CreateTutorialRepositoryDialog } from './no-repositories/create-tutorial-repository-dialog'
 import { enableForkyCreateBranchUI } from '../lib/feature-flag'
 import { ConfirmExitTutorial } from './tutorial'
@@ -1900,19 +1899,6 @@ export class App extends React.Component<IAppProps, IAppState> {
             repository={popup.repository}
             currentBranch={currentBranch}
             branchToCheckout={branchToCheckout}
-            hasAssociatedStash={false}
-            onDismissed={onPopupDismissedFn}
-          />
-        )
-      }
-      case PopupType.ConfirmOverwriteStash: {
-        const { repository, branchToCheckout: branchToCheckout } = popup
-        return (
-          <OverwriteStash
-            key="overwite-stash"
-            dispatcher={this.props.dispatcher}
-            repository={repository}
-            branchToCheckout={branchToCheckout}
             onDismissed={onPopupDismissedFn}
           />
         )
@@ -2492,7 +2478,6 @@ export class App extends React.Component<IAppProps, IAppState> {
         selectedUncommittedChangesStrategy={getUncommittedChangesStrategy(
           this.state.uncommittedChangesStrategyKind
         )}
-        couldOverwriteStash={false}
       />
     )
   }

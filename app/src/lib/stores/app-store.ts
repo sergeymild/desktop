@@ -3018,24 +3018,13 @@ export class AppStore extends TypedBaseStore<IAppState> {
    * @param showConfirmationDialog  Whether to show a confirmation
    *                                dialog if an existing stash exists.
    */
-  public async _createStashForCurrentBranch(
-    repository: Repository,
-    showConfirmationDialog: boolean
-  ) {
+  public async _createStashForCurrentBranch(repository: Repository) {
     const repositoryState = this.repositoryStateCache.get(repository)
     const tip = repositoryState.branchesState.tip
     const currentBranch = tip.kind === TipState.Valid ? tip.branch : null
 
     if (currentBranch === null) {
       return
-    }
-
-    if (showConfirmationDialog) {
-      return this._showPopup({
-        type: PopupType.ConfirmOverwriteStash,
-        branchToCheckout: null,
-        repository,
-      })
     }
 
     await this._createStashAndDropPreviousEntry(repository, currentBranch.name)
@@ -5452,21 +5441,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
     repository: Repository,
     branchName: string
   ) {
-    const previousStashEntry = await getLastDesktopStashEntryForBranch(
-      repository,
-      branchName
-    )
 
-    if (previousStashEntry !== null) {
-      await dropDesktopStashEntry(repository, previousStashEntry.stashSha)
-      log.info(
-        `Dropped stash '${previousStashEntry.stashSha}' associated with ${previousStashEntry.branchName}`
-      )
-    }
-
-    const {
-      changesState: { workingDirectory },
-    } = this.repositoryStateCache.get(repository)
+    const { changesState: { workingDirectory } } =
+      this.repositoryStateCache.get(repository)
 
     await createDesktopStashEntry(
       repository,

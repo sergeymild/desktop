@@ -13,8 +13,6 @@ import {
 import { parseChangedFiles } from './log'
 import { stageFiles } from './update-index'
 
-export const DesktopStashEntryMarker = '!!GitHub_Desktop'
-
 /**
  * RegEx for determining if a stash entry is created by Desktop
  *
@@ -51,7 +49,7 @@ export async function removeStashEntry(
 export async function fetchStashes(repository: Repository): Promise<StashResult> {
   const delimiter = '1F'
   const delimiterString = String.fromCharCode(parseInt(delimiter, 16))
-  const format = ['%gD', '%H', '%gs'].join(`%x${delimiter}`)
+  const format = ['%gD', '%H', '%gs', '%ct'].join(`%x${delimiter}`)
 
   const result = await git(
     ['log', '-g', '-z', `--pretty=${format}`, 'refs/stash'],
@@ -79,14 +77,16 @@ export async function fetchStashes(repository: Repository): Promise<StashResult>
     console.log("----")
     console.log(pieces)
 
-    if (pieces.length === 3) {
-      const [name, stashSha] = pieces
+    if (pieces.length > 3) {
+      const [name, stashSha, uiName, createdAt] = pieces
 
       desktopStashEntries.push({
         name,
+        uiName: uiName.replace("WIP on ", ""),
         branchName: "unknown",
         stashSha,
         files,
+        createdAt: parseInt(createdAt, 10)
       })
     }
   }
@@ -120,7 +120,7 @@ export async function getStashesCount(repository: Repository): Promise<number> {
 export async function getStashes(repository: Repository): Promise<StashResult> {
   const delimiter = '1F'
   const delimiterString = String.fromCharCode(parseInt(delimiter, 16))
-  const format = ['%gD', '%H', '%gs'].join(`%x${delimiter}`)
+  const format = ['%gD', '%H', '%gs', '%ct'].join(`%x${delimiter}`)
 
   const result = await git(
     ['log', '-g', '-z', `--pretty=${format}`, 'refs/stash'],
@@ -146,8 +146,8 @@ export async function getStashes(repository: Repository): Promise<StashResult> {
   for (const entry of entries) {
     const pieces = entry.split(delimiterString)
 
-    if (pieces.length === 3) {
-      const [name, stashSha, message] = pieces
+    if (pieces.length > 3) {
+      const [name, stashSha, message, createdAt] = pieces
       const branchName = extractBranchFromMessage(message)
 
       if (branchName !== null) {
@@ -156,6 +156,8 @@ export async function getStashes(repository: Repository): Promise<StashResult> {
           branchName,
           stashSha,
           files,
+          uiName: message.replace("WIP on", ""),
+          createdAt: parseInt(createdAt, 10)
         })
       }
     }
@@ -183,11 +185,6 @@ export async function getLastDesktopStashEntryForBranch(
   )
 }
 
-/** Creates a stash entry message that idicates the entry was created by Desktop */
-export function createDesktopStashMessage(branchName: string) {
-  return `${DesktopStashEntryMarker}<${branchName}>`
-}
-
 /**
  * Stash the working directory changes for the current branch
  */
@@ -205,8 +202,7 @@ export async function createDesktopStashEntry(
   )
   await stageFiles(repository, fullySelectedUntrackedFiles)
 
-  const message = createDesktopStashMessage(branchName)
-  const args = ['stash', 'push', '-m', message]
+  const args = ['stash', 'push', '-m', branchName]
 
   const result = await git(args, repository.path, 'createStashEntry', {
     successExitCodes: new Set<number>([0, 1]),

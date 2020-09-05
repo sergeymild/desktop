@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { IStashItem } from './stashes-sidebar-list-view'
 import { Octicon, OcticonSymbol } from '../octicons'
+import { RelativeTime } from '../relative-time'
 
 interface IStashListItemProps {
   item: IStashItem
@@ -14,15 +15,15 @@ export const StashListItem: React.FC<IStashListItemProps> = ({ item, onContextMe
   }
 
   return (
-    <div className="stash-list-item" data-name={item.stash.name} onContextMenu={handleContextMenu}>
+    <div className="stash-list-item" onContextMenu={handleContextMenu}>
       <div className="info">
-        <div className="summary" title={item.stash.name}>
-          {item.stash.name}
+        <div className="summary" title={item.stash.uiName}>
+          {item.stash.uiName}
         </div>
         <div className="description">
           <Octicon className="icon" symbol={OcticonSymbol.stashIcon}/>
-          &nbsp;
-          {item.stash.stashSha}
+          <span className="stash-sha">{item.stash.stashSha}</span>
+          {<RelativeTime date={new Date(item.stash.createdAt * 1000)} abbreviate={true} />}
         </div>
       </div>
     </div>

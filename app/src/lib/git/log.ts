@@ -97,8 +97,6 @@ export async function searchCommits(
     { successExitCodes: new Set([0, 128]) }
   )
 
-  console.log(result)
-
   // if the repository has an unborn HEAD, return an empty history of commits
   if (result.exitCode === 128) {
     return new Array<Commit>()
