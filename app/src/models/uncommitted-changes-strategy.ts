@@ -4,6 +4,7 @@ import { assertNever } from '../lib/fatal-error'
 export enum UncommittedChangesStrategyKind {
   AskForConfirmation = 'AskForConfirmation',
   StashOnCurrentBranch = 'StashOnCurrentBranch',
+  DiscardOnCurrentBranch = 'DiscardOnCurrentBranch',
   MoveToNewBranch = 'MoveToNewBranch',
 }
 
@@ -13,6 +14,7 @@ export const uncommittedChangesStrategyKindDefault: UncommittedChangesStrategyKi
 export type UncommittedChangesStrategy =
   | { kind: UncommittedChangesStrategyKind.AskForConfirmation }
   | { kind: UncommittedChangesStrategyKind.StashOnCurrentBranch }
+  | { kind: UncommittedChangesStrategyKind.DiscardOnCurrentBranch }
   | {
       kind: UncommittedChangesStrategyKind.MoveToNewBranch
       transientStashEntry: IStashEntry | null
@@ -27,6 +29,10 @@ export const stashOnCurrentBranch: UncommittedChangesStrategy = {
 export const moveToNewBranch: UncommittedChangesStrategy = {
   kind: UncommittedChangesStrategyKind.MoveToNewBranch,
   transientStashEntry: null,
+}
+
+export const discardOnCurrentBranch: UncommittedChangesStrategy = {
+  kind: UncommittedChangesStrategyKind.DiscardOnCurrentBranch
 }
 
 /**
@@ -46,6 +52,8 @@ export function getUncommittedChangesStrategy(
       return moveToNewBranch
     case UncommittedChangesStrategyKind.StashOnCurrentBranch:
       return stashOnCurrentBranch
+    case UncommittedChangesStrategyKind.DiscardOnCurrentBranch:
+      return discardOnCurrentBranch
     default:
       return assertNever(
         kind,
@@ -68,6 +76,8 @@ export function parseStrategy(
       return UncommittedChangesStrategyKind.StashOnCurrentBranch
     case UncommittedChangesStrategyKind.MoveToNewBranch:
       return UncommittedChangesStrategyKind.MoveToNewBranch
+    case UncommittedChangesStrategyKind.DiscardOnCurrentBranch:
+      return UncommittedChangesStrategyKind.DiscardOnCurrentBranch
     default:
       return null
   }

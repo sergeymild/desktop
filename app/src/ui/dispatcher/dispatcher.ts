@@ -1,49 +1,25 @@
 import { remote } from 'electron'
 import { Disposable, IDisposable } from 'event-kit'
 
-import {
-  IAPIOrganization,
-  IAPIRepository,
-  IAPIPullRequest,
-} from '../../lib/api'
+import { IAPIOrganization, IAPIPullRequest, IAPIRepository } from '../../lib/api'
 import { shell } from '../../lib/app-shell'
 import {
   CompareAction,
   Foldout,
   FoldoutType,
   ICompareFormUpdate,
-  RepositorySectionTab,
   isMergeConflictState,
   RebaseConflictState,
+  RepositorySectionTab,
 } from '../../lib/app-state'
 import { ExternalEditor } from '../../lib/editors'
 import { assertNever, fatalError } from '../../lib/fatal-error'
-import {
-  setGenericPassword,
-  setGenericUsername,
-} from '../../lib/generic-git-auth'
-import {
-  isGitRepository,
-  RebaseResult,
-  PushOptions,
-  getCommitsInRange,
-  getBranches,
-} from '../../lib/git'
+import { setGenericPassword, setGenericUsername } from '../../lib/generic-git-auth'
+import { getBranches, getCommitsInRange, isGitRepository, PushOptions, RebaseResult } from '../../lib/git'
 import { isGitOnPath } from '../../lib/is-git-on-path'
-import {
-  rejectOAuthRequest,
-  requestAuthenticatedUser,
-  resolveOAuthRequest,
-} from '../../lib/oauth'
-import {
-  IOpenRepositoryFromURLAction,
-  IUnknownAction,
-  URLActionType,
-} from '../../lib/parse-app-url'
-import {
-  matchExistingRepository,
-  urlsMatch,
-} from '../../lib/repository-matching'
+import { rejectOAuthRequest, requestAuthenticatedUser, resolveOAuthRequest } from '../../lib/oauth'
+import { IOpenRepositoryFromURLAction, IUnknownAction, URLActionType } from '../../lib/parse-app-url'
+import { matchExistingRepository, urlsMatch } from '../../lib/repository-matching'
 import { Shell } from '../../lib/shells'
 import { ILaunchStats, StatsStore } from '../../lib/stats'
 import { AppStore } from '../../lib/stores/app-store'
@@ -59,7 +35,7 @@ import { Branch } from '../../models/branch'
 import { BranchesTab } from '../../models/branches-tab'
 import { CloneRepositoryTab } from '../../models/clone-repository-tab'
 import { CloningRepository } from '../../models/cloning-repository'
-import { Commit, ICommitContext, CommitOneLine } from '../../models/commit'
+import { Commit, CommitOneLine, ICommitContext } from '../../models/commit'
 import { ICommitMessage } from '../../models/commit-message'
 import { DiffSelection, ImageDiffType, ITextDiff } from '../../models/diff'
 import { FetchType } from '../../models/fetch'
@@ -68,34 +44,23 @@ import { ManualConflictResolution } from '../../models/manual-conflict-resolutio
 import { Popup, PopupType } from '../../models/popup'
 import { PullRequest } from '../../models/pull-request'
 import {
-  Repository,
-  RepositoryWithGitHubRepository,
-  isRepositoryWithGitHubRepository,
   getGitHubHtmlUrl,
   isRepositoryWithForkedGitHubRepository,
+  isRepositoryWithGitHubRepository,
+  Repository,
+  RepositoryWithGitHubRepository,
 } from '../../models/repository'
 import { RetryAction, RetryActionType } from '../../models/retry-actions'
-import {
-  CommittedFileChange,
-  WorkingDirectoryFileChange,
-  WorkingDirectoryStatus,
-} from '../../models/status'
-import { TipState, IValidBranch } from '../../models/tip'
+import { CommittedFileChange, WorkingDirectoryFileChange, WorkingDirectoryStatus } from '../../models/status'
+import { IValidBranch, TipState } from '../../models/tip'
 import { Banner, BannerType } from '../../models/banner'
 
 import { ApplicationTheme } from '../lib/application-theme'
 import { installCLI } from '../lib/install-cli'
 import { executeMenuItem } from '../main-process-proxy'
-import {
-  CommitStatusStore,
-  StatusCallBack,
-  ICombinedRefCheck,
-} from '../../lib/stores/commit-status-store'
+import { CommitStatusStore, ICombinedRefCheck, StatusCallBack } from '../../lib/stores/commit-status-store'
 import { MergeTreeResult } from '../../models/merge'
-import {
-  UncommittedChangesStrategy,
-  UncommittedChangesStrategyKind,
-} from '../../models/uncommitted-changes-strategy'
+import { UncommittedChangesStrategy, UncommittedChangesStrategyKind } from '../../models/uncommitted-changes-strategy'
 import { RebaseFlowStep, RebaseStep } from '../../models/rebase-flow-step'
 import { IStashEntry } from '../../models/stash-entry'
 import { WorkflowPreferences } from '../../models/workflow-preferences'
@@ -533,6 +498,29 @@ export class Dispatcher {
       repository,
       tagName,
     })
+  }
+
+  public checkoutToTag(
+    repository: Repository,
+    tagName: string
+  ) {
+    this.appStore._checkoutToTag(repository, tagName)
+  }
+
+  public async discardAndCheckout(
+    repository: Repository,
+    tagName: string
+  ) {
+    this.closePopup()
+    this.appStore._discardAndCheckout(repository, tagName)
+  }
+
+  public async stashAndCheckout(
+    repository: Repository,
+    tagName: string
+  ) {
+    this.closePopup()
+    this.appStore._stashAndCheckout(repository, tagName)
   }
 
   /** Check out the given branch. */

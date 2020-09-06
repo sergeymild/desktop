@@ -122,6 +122,7 @@ import memoizeOne from 'memoize-one'
 import {TagsToolBarButton} from './toolbar/tagsButton'
 import { CherryPick } from './cherry-pick'
 import { CherryPickCommitList } from './cherry-pick/cherry-pick-commit-list'
+import { CheckoutToTag } from './stash-changes/checkout-to-tag'
 
 const MinuteInMilliseconds = 1000 * 60
 const HourInMilliseconds = MinuteInMilliseconds * 60
@@ -1886,11 +1887,10 @@ export class App extends React.Component<IAppProps, IAppState> {
         } = this.props.repositoryStateManager.get(repository)
         const { tip } = branchesState
 
-        if (tip.kind !== TipState.Valid) {
-          return null
+        let currentBranch: Branch | null = null
+        if (tip.kind === TipState.Valid) {
+          currentBranch = tip.branch
         }
-
-        const currentBranch = tip.branch
 
         return (
           <StashAndSwitchBranch
@@ -1900,6 +1900,7 @@ export class App extends React.Component<IAppProps, IAppState> {
             currentBranch={currentBranch}
             branchToCheckout={branchToCheckout}
             onDismissed={onPopupDismissedFn}
+            isValidBranch={tip.kind === TipState.Valid}
           />
         )
       }
@@ -2000,6 +2001,13 @@ export class App extends React.Component<IAppProps, IAppState> {
             onDismissed={onPopupDismissedFn}
           />
         )
+      case PopupType.CheckoutToTag:
+        return <CheckoutToTag
+        dispatcher={this.props.dispatcher}
+        repository={popup.repository}
+        tagName={popup.tagName}
+        onDismissed={onPopupDismissedFn}
+        />
       default:
         return assertNever(popup, `Unknown popup type: ${popup}`)
     }

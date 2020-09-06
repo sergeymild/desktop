@@ -46,6 +46,17 @@ export type Tip =
   | IDetachedHead
   | IValidBranch
 
+export const branchOfSha = (tip: Tip, defaultValue: string | null = null): string | null => {
+  if (tip.kind === TipState.Valid) {
+    return tip.branch.name
+  }
+
+  if (tip.kind === TipState.Detached) {
+    return tip.currentSha
+  }
+  return defaultValue
+}
+
 /**
  * Gets a value indicating whether two Tip instances refer to the
  * same canonical Git state.

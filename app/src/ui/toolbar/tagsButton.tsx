@@ -1,7 +1,7 @@
-import React from "react";
+import React from 'react'
 import { DropdownState, ToolbarDropdown } from './dropdown'
 import { Octicon, OcticonSymbol } from '../octicons'
-import { deleteTag, fetchAllTags, getCachedTags, checkoutToTag, ITagItem, fetchRemoteTags } from '../../lib/git'
+import { deleteTag, fetchAllTags, fetchRemoteTags, getCachedTags, ITagItem } from '../../lib/git'
 import { Repository } from '../../models/repository'
 import { FilterList, IFilterListGroup, IFilterListItem } from '../lib/filter-list'
 import { IMatches } from '../../lib/fuzzy-find'
@@ -16,6 +16,12 @@ const RowHeight = 30;
 interface ITagsButtonProps {
   readonly repository: Repository
   readonly dispatcher: Dispatcher
+}
+
+interface ITagListProps {
+  readonly repository: Repository
+  readonly dispatcher: Dispatcher
+  readonly closeTags: () => void
 }
 
 interface ITagsListState {
@@ -73,9 +79,9 @@ class TagListItem extends React.Component<ITagListItemProps, {}> {
   }
 }
 
-class TagsList extends React.Component<ITagsButtonProps, ITagsListState> {
+class TagsList extends React.Component<ITagListProps, ITagsListState> {
 
-  public constructor(props: ITagsButtonProps) {
+  public constructor(props: ITagListProps) {
     super(props);
 
     this.state = {
@@ -120,6 +126,7 @@ class TagsList extends React.Component<ITagsButtonProps, ITagsListState> {
 
   private deleteTag = async (item: ITagListItem) => {
     try {
+      this.props.closeTags()
       await deleteTag(this.props.repository, item.tag.name)
       this.createTagsGroup(this.state.tags.filter(t => t.hash !== item.tag.hash))
     } catch (e) {
@@ -128,10 +135,18 @@ class TagsList extends React.Component<ITagsButtonProps, ITagsListState> {
   }
 
   private checkoutToTag = async (item: ITagListItem) => {
-    try {
-      await checkoutToTag(this.props.repository, item.tag.name)
-    } catch (e) {
-      console.error(e)
+    this.props.closeTags()
+    this.props.dispatcher.checkoutToTag(this.props.repository, item.tag.name)
+  }
+
+  private tagSelectionChange = (item: ITagListItem | null) => {
+    this.setState({selectedItem: item})
+  }
+
+  private handleTagClick = (item: ITagListItem | null) => {
+    if (item != null) {
+      this.props.closeTags()
+      this.props.dispatcher.checkoutToTag(this.props.repository, item.tag.name)
     }
   }
 
@@ -181,6 +196,8 @@ class TagsList extends React.Component<ITagsButtonProps, ITagsListState> {
         filterText={this.state.filterText}
         onFilterTextChanged={this.onFilterTextChanged}
         selectedItem={this.state.selectedItem}
+        onSelectionChanged={this.tagSelectionChange}
+        onItemClick={this.handleTagClick}
         renderItem={this.renderItem}
         renderGroupHeader={this.renderGroupHeader}
         groups={this.state.groups}
@@ -200,7 +217,11 @@ class TagsToolBarButton extends React.Component<ITagsButtonProps, ITagsToolBarBu
     }
   }
   private renderBranchFoldout = (): JSX.Element | null => {
-    return <TagsList repository={this.props.repository} dispatcher={this.props.dispatcher}/>
+    return <TagsList
+      repository={this.props.repository}
+      dispatcher={this.props.dispatcher}
+      closeTags={() => this.setState({dropdownState: "closed"})}
+    />
   }
 
   private onDropDownStateChanged = (state: DropdownState): void => {

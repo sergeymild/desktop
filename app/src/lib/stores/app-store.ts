@@ -19,103 +19,75 @@ import { Branch, IAheadBehind } from '../../models/branch'
 import { BranchesTab } from '../../models/branches-tab'
 import { CloneRepositoryTab } from '../../models/clone-repository-tab'
 import { CloningRepository } from '../../models/cloning-repository'
-import { Commit, ICommitContext, CommitOneLine } from '../../models/commit'
-import {
-  DiffSelection,
-  DiffSelectionType,
-  DiffType,
-  ImageDiffType,
-  ITextDiff,
-} from '../../models/diff'
+import { Commit, CommitOneLine, ICommitContext } from '../../models/commit'
+import { DiffSelection, DiffSelectionType, DiffType, ImageDiffType, ITextDiff } from '../../models/diff'
 import { FetchType } from '../../models/fetch'
-import {
-  GitHubRepository,
-  hasWritePermission,
-} from '../../models/github-repository'
+import { GitHubRepository, hasWritePermission } from '../../models/github-repository'
 import { Owner } from '../../models/owner'
 import { PullRequest } from '../../models/pull-request'
+import { forkPullRequestRemoteName, IRemote, remoteEquals } from '../../models/remote'
 import {
-  forkPullRequestRemoteName,
-  IRemote,
-  remoteEquals,
-} from '../../models/remote'
-import {
+  getNonForkGitHubRepository,
   ILocalRepositoryState,
+  isRepositoryWithGitHubRepository,
   nameOf,
   Repository,
-  isRepositoryWithGitHubRepository,
   RepositoryWithGitHubRepository,
-  getNonForkGitHubRepository,
 } from '../../models/repository'
 import {
+  AppFileStatusKind,
   CommittedFileChange,
   WorkingDirectoryFileChange,
   WorkingDirectoryStatus,
-  AppFileStatusKind,
 } from '../../models/status'
-import { TipState, tipEquals } from '../../models/tip'
+import { branchOfSha, tipEquals, TipState } from '../../models/tip'
 import { ICommitMessage } from '../../models/commit-message'
-import {
-  Progress,
-  ICheckoutProgress,
-  IFetchProgress,
-  IRevertProgress,
-  IRebaseProgress,
-} from '../../models/progress'
+import { ICheckoutProgress, IFetchProgress, IRebaseProgress, IRevertProgress, Progress } from '../../models/progress'
 import { Popup, PopupType } from '../../models/popup'
 import { IGitAccount } from '../../models/git-account'
 import { themeChangeMonitor } from '../../ui/lib/theme-change-monitor'
 import { getAppPath } from '../../ui/lib/app-proxy'
 import {
   ApplicationTheme,
-  getPersistedTheme,
-  setPersistedTheme,
   getAutoSwitchPersistedTheme,
+  getPersistedTheme,
   setAutoSwitchPersistedTheme,
+  setPersistedTheme,
 } from '../../ui/lib/application-theme'
-import {
-  getAppMenu,
-  updatePreferredAppMenuItemLabels,
-} from '../../ui/main-process-proxy'
+import { getAppMenu, updatePreferredAppMenuItemLabels } from '../../ui/main-process-proxy'
 import {
   API,
   getAccountForEndpoint,
   getDotComAPIEndpoint,
+  getEndpointForRepository,
   IAPIOrganization,
   IAPIRepository,
-  getEndpointForRepository,
 } from '../api'
 import { shell } from '../app-shell'
 import {
+  ChangesSelectionKind,
+  ChangesWorkingDirectorySelection,
   CompareAction,
-  HistoryTabMode,
+  ComparisonMode,
   Foldout,
   FoldoutType,
+  HistoryTabMode,
   IAppState,
   ICompareBranch,
   ICompareFormUpdate,
   ICompareToBranch,
   IDisplayHistory,
-  PossibleSelections,
-  RepositorySectionTab,
-  SelectionType,
-  ComparisonMode,
-  MergeConflictState,
-  isMergeConflictState,
-  RebaseConflictState,
+  IDivergingBranchBannerState,
   IRebaseState,
   IRepositoryState,
-  ChangesSelectionKind,
-  ChangesWorkingDirectorySelection,
-  IDivergingBranchBannerState,
+  isMergeConflictState,
+  MergeConflictState,
+  PossibleSelections,
+  RebaseConflictState,
+  RepositorySectionTab,
+  SelectionType,
 } from '../app-state'
-import {
-  ExternalEditor,
-  findEditorOrDefault,
-  getAvailableEditors,
-  launchExternalEditor,
-  parse,
-} from '../editors'
+import { ExternalEditor, findEditorOrDefault, getAvailableEditors, launchExternalEditor, parse } from '../editors'
 import { assertNever, fatalError, forceUnwrap } from '../fatal-error'
 
 import { formatCommitMessage } from '../format-commit-message'
@@ -123,77 +95,52 @@ import { getGenericHostname, getGenericUsername } from '../generic-git-auth'
 import { getAccountForRepository } from '../get-account-for-repository'
 import {
   abortMerge,
+  abortRebase,
   addRemote,
+  appendIgnoreRule,
   checkoutBranch,
+  checkoutToTag,
+  continueRebase,
   createBranch,
   createCommit,
+  createMergeCommit,
   deleteBranch,
   formatAsLocalRef,
   getAuthorIdentity,
   getBranchAheadBehind,
+  getBranchesPointedAt,
   getChangedFiles,
   getCommitDiff,
   getMergeBase,
+  getRebaseSnapshot,
   getRemotes,
   getWorkingDirectoryDiff,
+  GitError,
   isCoAuthoredByTrailer,
+  isGitRepository,
+  IStatusResult,
+  MergeResult,
   mergeTree,
   pull as pullRepo,
   push as pushRepo,
-  renameBranch,
-  updateRef,
-  saveGitIgnore,
-  appendIgnoreRule,
-  createMergeCommit,
-  getBranchesPointedAt,
-  isGitRepository,
-  abortRebase,
-  continueRebase,
-  rebase,
   PushOptions,
+  rebase,
   RebaseResult,
-  getRebaseSnapshot,
-  IStatusResult,
-  GitError,
-  MergeResult,
+  renameBranch,
+  saveGitIgnore,
+  updateRef,
 } from '../git'
-import {
-  installGlobalLFSFilters,
-  installLFSHooks,
-  isUsingLFS,
-} from '../git/lfs'
+import { installGlobalLFSFilters, installLFSHooks, isUsingLFS } from '../git/lfs'
 import { inferLastPushForRepository } from '../infer-last-push-for-repository'
 import { updateMenuState } from '../menu-update'
 import { merge } from '../merge'
-import {
-  IMatchedGitHubRepository,
-  matchGitHubRepository,
-} from '../repository-matching'
-import {
-  initializeRebaseFlowForConflictedRepository,
-  formatRebaseValue,
-  isCurrentBranchForcePush,
-} from '../rebase'
+import { IMatchedGitHubRepository, matchGitHubRepository } from '../repository-matching'
+import { formatRebaseValue, initializeRebaseFlowForConflictedRepository, isCurrentBranchForcePush } from '../rebase'
 import { RetryAction, RetryActionType } from '../../models/retry-actions'
-import {
-  Default as DefaultShell,
-  findShellOrDefault,
-  launchShell,
-  parse as parseShell,
-  Shell,
-} from '../shells'
-import {
-  ILaunchStats,
-  StatsStore,
-  markUsageStatsNoteSeen,
-  hasSeenUsageStatsNote,
-} from '../stats'
+import { Default as DefaultShell, findShellOrDefault, launchShell, parse as parseShell, Shell } from '../shells'
+import { hasSeenUsageStatsNote, ILaunchStats, markUsageStatsNoteSeen, StatsStore } from '../stats'
 import { hasShownWelcomeFlow, markWelcomeFlowComplete } from '../welcome'
-import {
-  getWindowState,
-  WindowState,
-  windowStateChannelName,
-} from '../window-state'
+import { getWindowState, WindowState, windowStateChannelName } from '../window-state'
 import { TypedBaseStore } from './base-store'
 import { AheadBehindUpdater } from './helpers/ahead-behind-updater'
 import { MergeTreeResult } from '../../models/merge'
@@ -205,43 +152,35 @@ import { RepositoryStateCache } from './repository-state-cache'
 import { readEmoji } from '../read-emoji'
 import { GitStoreCache } from './git-store-cache'
 import { GitErrorContext } from '../git-error-context'
-import {
-  setNumber,
-  setBoolean,
-  getBoolean,
-  getNumber,
-  getNumberArray,
-  setNumberArray,
-} from '../local-storage'
+import { getBoolean, getNumber, getNumberArray, setBoolean, setNumber, setNumberArray } from '../local-storage'
 import { ExternalEditorError } from '../editors/shared'
 import { ApiRepositoriesStore } from './api-repositories-store'
-import {
-  updateChangedFiles,
-  updateConflictState,
-  selectWorkingDirectoryFiles,
-} from './updates/changes-state'
-import {
-  ManualConflictResolution,
-  ManualConflictResolutionKind,
-} from '../../models/manual-conflict-resolution'
+import { selectWorkingDirectoryFiles, updateChangedFiles, updateConflictState } from './updates/changes-state'
+import { ManualConflictResolution, ManualConflictResolutionKind } from '../../models/manual-conflict-resolution'
 import { BranchPruner } from './helpers/branch-pruner'
-import { enableUpdateRemoteUrl } from '../feature-flag'
+import { enableProgressBarOnIcon, enableUpdateRemoteUrl } from '../feature-flag'
 import { Banner, BannerType } from '../../models/banner'
 import { isDarkModeEnabled } from '../../ui/lib/dark-theme'
 import { ComputedAction } from '../../models/computed-action'
 import {
+  applyStashEntry,
   createDesktopStashEntry,
+  dropDesktopStashEntry,
   getLastDesktopStashEntryForBranch,
+  getStashesCount,
   popStashEntry,
-  dropDesktopStashEntry, getStashesCount, removeStashEntry, applyStashEntry,
+  removeStashEntry,
 } from '../git/stash'
 import {
+  askToStash,
+  discardOnCurrentBranch,
+  getUncommittedChangesStrategy,
+  moveToNewBranch,
+  parseStrategy,
+  stashOnCurrentBranch,
   UncommittedChangesStrategy,
   UncommittedChangesStrategyKind,
   uncommittedChangesStrategyKindDefault,
-  getUncommittedChangesStrategy,
-  askToStash,
-  parseStrategy,
 } from '../../models/uncommitted-changes-strategy'
 import { IStashEntry } from '../../models/stash-entry'
 import { RebaseFlowStep, RebaseStep } from '../../models/rebase-flow-step'
@@ -250,27 +189,16 @@ import { MenuLabelsEvent } from '../../models/menu-labels'
 import { findRemoteBranchName } from './helpers/find-branch-name'
 import { updateRemoteUrl } from './updates/update-remote-url'
 import { findBranchesForFastForward } from './helpers/find-branches-for-fast-forward'
-import {
-  TutorialStep,
-  orderedTutorialSteps,
-  isValidTutorialStep,
-} from '../../models/tutorial-step'
+import { isValidTutorialStep, orderedTutorialSteps, TutorialStep } from '../../models/tutorial-step'
 import { OnboardingTutorialAssessor } from './helpers/tutorial-assessor'
 import { getUntrackedFiles } from '../status'
-import { enableProgressBarOnIcon } from '../feature-flag'
 import { isBranchPushable } from '../helpers/push-control'
-import {
-  findAssociatedPullRequest,
-  isPullRequestAssociatedWithBranch,
-} from '../helpers/pull-request-matching'
+import { findAssociatedPullRequest, isPullRequestAssociatedWithBranch } from '../helpers/pull-request-matching'
 import { parseRemote } from '../../lib/remote-parsing'
 import { createTutorialRepository } from './helpers/create-tutorial-repository'
 import { sendNonFatalException } from '../helpers/non-fatal-exception'
 import { getDefaultDir } from '../../ui/lib/default-dir'
-import {
-  UpstreamRemoteName,
-  findUpstreamRemote,
-} from './helpers/find-upstream-remote'
+import { findUpstreamRemote, UpstreamRemoteName } from './helpers/find-upstream-remote'
 import { WorkflowPreferences } from '../../models/workflow-preferences'
 import { getAttributableEmailsFor } from '../email'
 import { CherryPickResult } from '../git/cherry-pick'
@@ -2847,6 +2775,64 @@ export class AppStore extends TypedBaseStore<IAppState> {
     )
   }
 
+  public async _checkoutToTag(
+    repository: Repository,
+    tagName: string,
+  ) {
+    const { changesState } = this.repositoryStateCache.get(
+      repository
+    )
+
+    const hasChanges = changesState.workingDirectory.files.length > 0
+    if (!hasChanges) {
+      await checkoutToTag(repository, tagName)
+      await this._refreshRepository(repository)
+      return
+    }
+
+    this._showPopup({
+      type: PopupType.CheckoutToTag,
+      tagName,
+      repository
+    })
+  }
+
+  public async _stashAndCheckout(
+    repository: Repository,
+    tagName: string
+  ) {
+    const { changesState, branchesState: {tip} } = this.repositoryStateCache.get(
+      repository
+    )
+
+    const success = await createDesktopStashEntry(
+      repository,
+      branchOfSha(tip, tip.kind.toString()),
+      changesState.workingDirectory.files
+    )
+
+    if (!success) { return }
+    await this._refreshRepository(repository)
+    await this._checkoutToTag(repository, tagName)
+  }
+
+  public async _discardAndCheckout(
+    repository: Repository,
+    tagName: string
+  ) {
+
+    const { changesState } = this.repositoryStateCache.get(
+      repository
+    )
+
+    await this._discardChanges(
+      repository,
+      changesState.workingDirectory.files
+    )
+
+    await this._checkoutToTag(repository, tagName)
+  }
+
   /** This shouldn't be called directly. See `Dispatcher`. */
   public async _checkoutBranch(
     repository: Repository,
@@ -2865,8 +2851,10 @@ export class AppStore extends TypedBaseStore<IAppState> {
     let stashToPop: IStashEntry | null = null
 
     const hasChanges = changesState.workingDirectory.files.length > 0
+    const strategyKind = uncommittedChangesStrategy.kind
     if (hasChanges) {
-      if (uncommittedChangesStrategy.kind === askToStash.kind) {
+      console.log("-0-0-0-0-0-", strategyKind)
+      if (strategyKind === askToStash.kind) {
         this._showPopup({
           type: PopupType.StashAndSwitchBranch,
           branchToCheckout: branch,
@@ -2875,11 +2863,28 @@ export class AppStore extends TypedBaseStore<IAppState> {
         return repository
       }
 
-      stashToPop = await this.stashToPopAfterBranchCheckout(
-        repository,
-        branch,
-        uncommittedChangesStrategy
-      )
+      if (strategyKind === discardOnCurrentBranch.kind) {
+        await this._discardChanges(
+          repository,
+          changesState.workingDirectory.files
+        )
+      }
+
+      if (strategyKind === stashOnCurrentBranch.kind) {
+        await createDesktopStashEntry(
+          repository,
+          branch.name,
+          changesState.workingDirectory.files
+        )
+      }
+
+      if (strategyKind === moveToNewBranch.kind) {
+        await createDesktopStashEntry(
+          repository,
+          branch.name,
+          changesState.workingDirectory.files
+        )
+      }
     }
 
     const checkoutSucceeded =
@@ -2908,22 +2913,12 @@ export class AppStore extends TypedBaseStore<IAppState> {
       this.clearBranchProtectionState(repository)
     }
 
-    if (
-      uncommittedChangesStrategy.kind ===
-        UncommittedChangesStrategyKind.MoveToNewBranch &&
-      checkoutSucceeded
-    ) {
-      // We increment the metric after checkout succeeds to guard
-      // against double counting when an error occurs on checkout.
-      // When an error occurs, one of our error handlers will inspect
-      // it and make a call to `moveChangesToBranchAndCheckout` which will
-      // call this method again once the working directory has been cleared.
-      this.statsStore.recordChangesTakenToNewBranch()
-
+    if (strategyKind === moveToNewBranch.kind && checkoutSucceeded) {
+      stashToPop = await getLastDesktopStashEntryForBranch(repository)
       if (stashToPop) {
-        const stashSha = stashToPop.stashSha
+        const stashName = stashToPop.name
         await gitStore.performFailableOperation(() => {
-          return popStashEntry(repository, stashSha)
+          return popStashEntry(repository, stashName)
         })
       }
     }
@@ -2953,62 +2948,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     }
 
     return repository
-  }
-
-  // Depending on the UncommittedChangesStrategy and the state of the uncomitted
-  // changes there could be a stash to pop after checking out a branch. This method
-  // handles retrieving or creating the stash so it can be popped after the checkout
-  // is complete.
-  private async stashToPopAfterBranchCheckout(
-    repository: Repository,
-    branch: Branch,
-    uncommittedChangesStrategy: UncommittedChangesStrategy = getUncommittedChangesStrategy(
-      this.uncommittedChangesStrategyKind
-    )
-  ): Promise<IStashEntry | null> {
-    const {
-      changesState,
-      branchesState: { tip },
-    } = this.repositoryStateCache.get(repository)
-    const currentBranch = tip.kind === TipState.Valid ? tip.branch : null
-
-    if (
-      currentBranch !== null &&
-      uncommittedChangesStrategy.kind ===
-        UncommittedChangesStrategyKind.StashOnCurrentBranch
-    ) {
-      await this._createStashAndDropPreviousEntry(
-        repository,
-        currentBranch.name
-      )
-      this.statsStore.recordStashCreatedOnCurrentBranch()
-    } else if (
-      uncommittedChangesStrategy.kind ===
-      UncommittedChangesStrategyKind.MoveToNewBranch
-    ) {
-      const hasDeletedFiles = changesState.workingDirectory.files.some(
-        file => file.status.kind === AppFileStatusKind.Deleted
-      )
-      const { transientStashEntry } = uncommittedChangesStrategy
-      if (hasDeletedFiles && !transientStashEntry) {
-        const gitStore = this.gitStoreCache.get(repository)
-        const stashCreated = await gitStore.performFailableOperation(() => {
-          return createDesktopStashEntry(
-            repository,
-            branch.name,
-            getUntrackedFiles(changesState.workingDirectory)
-          )
-        })
-
-        if (stashCreated) {
-          return getLastDesktopStashEntryForBranch(repository, branch.name)
-        }
-      }
-
-      return transientStashEntry
-    }
-
-    return null
   }
 
   /**
@@ -3779,11 +3718,12 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
   public async _discardChanges(
     repository: Repository,
-    files: ReadonlyArray<WorkingDirectoryFileChange>
+    files: ReadonlyArray<WorkingDirectoryFileChange>,
+    skipRefresh: boolean = false
   ) {
     const gitStore = this.gitStoreCache.get(repository)
     await gitStore.discardChanges(files)
-
+    if (skipRefresh) { return }
     return this._refreshRepository(repository)
   }
 
@@ -5473,10 +5413,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       return
     }
 
-    const transientStashEntry = await getLastDesktopStashEntryForBranch(
-      repository,
-      branchToCheckout.name
-    )
+    const transientStashEntry = await getLastDesktopStashEntryForBranch(repository)
     const strategy: UncommittedChangesStrategy = {
       kind: UncommittedChangesStrategyKind.MoveToNewBranch,
       transientStashEntry,

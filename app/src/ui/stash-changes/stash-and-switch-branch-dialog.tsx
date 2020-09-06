@@ -5,18 +5,24 @@ import { Dispatcher } from '../dispatcher'
 import { VerticalSegmentedControl } from '../lib/vertical-segmented-control'
 import { Row } from '../lib/row'
 import { Branch } from '../../models/branch'
-import { stashOnCurrentBranch, UncommittedChangesStrategyKind } from '../../models/uncommitted-changes-strategy'
+import {
+  discardOnCurrentBranch,
+  stashOnCurrentBranch,
+  UncommittedChangesStrategyKind,
+} from '../../models/uncommitted-changes-strategy'
 import { startTimer } from '../lib/timing'
 
 enum StashAction {
   StashOnCurrentBranch,
   MoveToNewBranch,
+  DiscardOnCurrentBranch,
 }
 
 interface ISwitchBranchProps {
   readonly repository: Repository
   readonly dispatcher: Dispatcher
-  readonly currentBranch: Branch
+  readonly currentBranch: Branch | null
+  readonly isValidBranch: Boolean
 
   /** The branch to checkout after the user selects a stash action */
   readonly branchToCheckout: Branch
@@ -44,7 +50,7 @@ export class StashAndSwitchBranch extends React.Component<
     this.state = {
       isStashingChanges: false,
       selectedStashAction: StashAction.StashOnCurrentBranch,
-      currentBranchName: props.currentBranch.name,
+      currentBranchName: props.currentBranch?.name || "Detached",
     }
   }
 
@@ -73,19 +79,29 @@ export class StashAndSwitchBranch extends React.Component<
 
   private renderStashActions() {
     const { branchToCheckout } = this.props
-    const items = [
-      {
+    const items = []
+
+    if (this.props.isValidBranch) {
+      items.push({
         title: `Leave my changes on ${this.state.currentBranchName}`,
         description:
           'Your in-progress work will be stashed on this branch for you to return to later',
         key: StashAction.StashOnCurrentBranch,
-      },
-      {
-        title: `Bring my changes to ${branchToCheckout.name}`,
-        description: 'Your in-progress work will follow you to the new branch',
-        key: StashAction.MoveToNewBranch,
-      },
-    ]
+      })
+    } else {
+      items.push({
+        title: `Discard my changes.`,
+        description:
+          'Your in-progress work will be discarded.',
+        key: StashAction.DiscardOnCurrentBranch,
+      })
+    }
+
+    items.push({
+      title: `Bring my changes to ${branchToCheckout.name}`,
+      description: 'Your in-progress work will follow you to the new branch',
+      key: StashAction.MoveToNewBranch,
+    })
 
     return (
       <Row>
@@ -115,18 +131,28 @@ export class StashAndSwitchBranch extends React.Component<
 
     const timer = startTimer('stash and checkout', repository)
     try {
-      if (selectedStashAction === StashAction.StashOnCurrentBranch) {
-        await dispatcher.checkoutBranch(
-          repository,
-          branchToCheckout,
-          stashOnCurrentBranch
-        )
-      } else if (selectedStashAction === StashAction.MoveToNewBranch) {
-        // attempt to checkout the branch without creating a stash entry
-        await dispatcher.checkoutBranch(repository, branchToCheckout, {
-          kind: UncommittedChangesStrategyKind.MoveToNewBranch,
-          transientStashEntry: null,
-        })
+      switch (selectedStashAction) {
+        case StashAction.StashOnCurrentBranch:
+          await dispatcher.checkoutBranch(
+            repository,
+            branchToCheckout,
+            stashOnCurrentBranch
+          )
+          break
+        case StashAction.MoveToNewBranch:
+          // attempt to checkout the branch without creating a stash entry
+          await dispatcher.checkoutBranch(repository, branchToCheckout, {
+            kind: UncommittedChangesStrategyKind.MoveToNewBranch,
+            transientStashEntry: null,
+          })
+          break
+        case StashAction.DiscardOnCurrentBranch:
+          await dispatcher.checkoutBranch(
+            repository,
+            branchToCheckout,
+            discardOnCurrentBranch
+          )
+          break
       }
     } finally {
       timer.done()

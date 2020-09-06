@@ -53,6 +53,7 @@ export enum PopupType {
   RebaseFlow,
   ConfirmForcePush,
   StashAndSwitchBranch,
+  CheckoutToTag,
   CreateTutorialRepository,
   ConfirmExitTutorial,
   PushRejectedDueToMissingWorkflowScope,
@@ -204,6 +205,11 @@ export type Popup =
       type: PopupType.StashAndSwitchBranch
       repository: Repository
       branchToCheckout: Branch
+    }
+  | {
+      type: PopupType.CheckoutToTag
+      repository: Repository
+      tagName: string
     }
   | {
       type: PopupType.CreateTutorialRepository

@@ -74,8 +74,6 @@ export async function fetchStashes(repository: Repository): Promise<StashResult>
   const entries = result.stdout.split('\0').filter(s => s !== '')
   for (const entry of entries) {
     const pieces = entry.split(delimiterString)
-    console.log("----")
-    console.log(pieces)
 
     if (pieces.length > 3) {
       const [name, stashSha, uiName, createdAt] = pieces
@@ -172,17 +170,14 @@ export async function getStashes(repository: Repository): Promise<StashResult> {
 /**
  * Returns the last Desktop created stash entry for the given branch
  */
-export async function getLastDesktopStashEntryForBranch(
-  repository: Repository,
-  branchName: string
-) {
-  const stash = await getStashes(repository)
-
+export async function getLastDesktopStashEntryForBranch(repository: Repository) {
+  const stash = await fetchStashes(repository)
+  const firstStash = stash.desktopEntries.length > 0 ? stash.desktopEntries[0] : null
   // Since stash objects are returned in a LIFO manner, the first
   // entry found is guaranteed to be the last entry created
-  return (
-    stash.desktopEntries.find(stash => stash.branchName === branchName) || null
-  )
+  console.log("-0-0-0-", stash)
+  console.log("-0-0-0-", firstStash)
+  return firstStash
 }
 
 /**
@@ -190,7 +185,7 @@ export async function getLastDesktopStashEntryForBranch(
  */
 export async function createDesktopStashEntry(
   repository: Repository,
-  branchName: string,
+  branchName: string | null,
   untrackedFilesToStage: ReadonlyArray<WorkingDirectoryFileChange>
 ): Promise<true> {
   // We must ensure that no untracked files are present before stashing
@@ -202,7 +197,7 @@ export async function createDesktopStashEntry(
   )
   await stageFiles(repository, fullySelectedUntrackedFiles)
 
-  const args = ['stash', 'push', '-m', branchName]
+  const args = ['stash', 'push', '-m', branchName ?? "(no)"]
 
   const result = await git(args, repository.path, 'createStashEntry', {
     successExitCodes: new Set<number>([0, 1]),

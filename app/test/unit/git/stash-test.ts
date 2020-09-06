@@ -120,10 +120,7 @@ describe('git/stash', () => {
     it('returns null when no stash entries exist for branch', async () => {
       await generateTestStashEntry(repository, 'some-other-branch', true)
 
-      const entry = await getLastDesktopStashEntryForBranch(
-        repository,
-        'master'
-      )
+      const entry = await getLastDesktopStashEntryForBranch(repository)
 
       expect(entry).toBeNull()
     })
@@ -137,10 +134,7 @@ describe('git/stash', () => {
       // entries are returned in LIFO order
       const lastEntry = stash.desktopEntries[0]
 
-      const actual = await getLastDesktopStashEntryForBranch(
-        repository,
-        branchName
-      )
+      const actual = await getLastDesktopStashEntryForBranch(repository)
 
       expect(actual).not.toBeNull()
       expect(actual!.stashSha).toBe(lastEntry.stashSha)
