@@ -8,7 +8,7 @@ import {
   getLastDesktopStashEntryForBranch,
   dropDesktopStashEntry,
   popStashEntry,
-  getStashes,
+  getStashes, fetchStashes,
 } from '../../../src/lib/git/stash'
 import { getStatusOrThrow } from '../../helpers/status'
 import { AppFileStatusKind } from '../../../src/models/status'
@@ -33,15 +33,12 @@ describe('git/stash', () => {
 
     it('handles unborn repo by returning empty list', async () => {
       const repo = await setupEmptyRepository()
-
-      const stash = await getStashes(repo)
-
+      const stash = await fetchStashes(repo)
       expect(stash.desktopEntries).toHaveLength(0)
     })
 
     it('returns an empty list when no stash entries have been created', async () => {
-      const stash = await getStashes(repository)
-
+      const stash = await fetchStashes(repository)
       expect(stash.desktopEntries).toHaveLength(0)
     })
 
@@ -50,9 +47,9 @@ describe('git/stash', () => {
       await generateTestStashEntry(repository, 'master', false)
       await generateTestStashEntry(repository, 'master', true)
 
-      const stash = await getStashes(repository)
+      const stash = await fetchStashes(repository)
       const entries = stash.desktopEntries
-      expect(entries).toHaveLength(1)
+      expect(entries).toHaveLength(3)
       expect(entries[0].branchName).toBe('master')
       expect(entries[0].name).toBe('refs/stash@{0}')
     })
@@ -75,7 +72,7 @@ describe('git/stash', () => {
 
       await createDesktopStashEntry(repository, 'master', [])
 
-      const stash = await getStashes(repository)
+      const stash = await fetchStashes(repository)
       const entries = stash.desktopEntries
 
       expect(entries).toHaveLength(1)
@@ -115,14 +112,6 @@ describe('git/stash', () => {
       await FSE.writeFile(readme, '')
       await GitProcess.exec(['add', 'README.md'], repository.path)
       await GitProcess.exec(['commit', '-m', 'initial commit'], repository.path)
-    })
-
-    it('returns null when no stash entries exist for branch', async () => {
-      await generateTestStashEntry(repository, 'some-other-branch', true)
-
-      const entry = await getLastDesktopStashEntryForBranch(repository)
-
-      expect(entry).toBeNull()
     })
 
     it('returns last entry made for branch', async () => {

@@ -15,11 +15,8 @@ import { stageFiles } from './update-index'
 
 /**
  * RegEx for determining if a stash entry is created by Desktop
- *
- * This is done by looking for a magic string with the following
- * format: `!!GitHub_Desktop<branch>`
  */
-const desktopStashEntryMessageRe = /!!GitHub_Desktop<(.+)>$/
+const desktopStashEntryMessageRe = /:(.+)$/
 
 type StashResult = {
   /** The stash entries created by Desktop */
@@ -81,7 +78,7 @@ export async function fetchStashes(repository: Repository): Promise<StashResult>
       desktopStashEntries.push({
         name,
         uiName: uiName.replace("WIP on ", ""),
-        branchName: "unknown",
+        branchName: extractBranchFromMessage(uiName),
         stashSha,
         files,
         createdAt: parseInt(createdAt, 10)
@@ -173,10 +170,6 @@ export async function getStashes(repository: Repository): Promise<StashResult> {
 export async function getLastDesktopStashEntryForBranch(repository: Repository) {
   const stash = await fetchStashes(repository)
   const firstStash = stash.desktopEntries.length > 0 ? stash.desktopEntries[0] : null
-  // Since stash objects are returned in a LIFO manner, the first
-  // entry found is guaranteed to be the last entry created
-  console.log("-0-0-0-", stash)
-  console.log("-0-0-0-", firstStash)
   return firstStash
 }
 
@@ -322,9 +315,12 @@ export async function applyStashEntry(
   }
 }
 
-function extractBranchFromMessage(message: string): string | null {
-  const match = desktopStashEntryMessageRe.exec(message)
-  return match === null || match[1].length === 0 ? null : match[1]
+function extractBranchFromMessage(message: string): string {
+  const match = desktopStashEntryMessageRe.exec(message
+    .replace(/^(WIP\son\s?)/, "")
+    .replace(/^(([oO])n\s?)/, ""))
+  const name = match === null || match[1].length === 0 ? null : match[1]
+  return name?.trim() || "unknown"
 }
 
 /**
