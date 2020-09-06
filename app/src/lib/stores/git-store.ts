@@ -23,8 +23,8 @@ import { ComparisonMode } from '../app-state'
 
 import { IAppShell } from '../app-shell'
 import { ErrorWithMetadata, IErrorMetadata } from '../error-with-metadata'
-import { compare } from '../../lib/compare'
-import { queueWorkHigh } from '../../lib/queue-work'
+import { compare } from '../compare'
+import { queueWorkHigh } from '../queue-work'
 
 import {
   reset,
@@ -64,9 +64,8 @@ import {
   getConfigValue,
   removeRemote,
   createTag,
-  getAllTags,
   deleteTag,
-  MergeResult, searchCommits,
+  MergeResult, searchCommits, fetchAllTags, ITagItem,
 } from '../git'
 import { GitError as DugiteError } from '../../lib/git'
 import { GitError } from 'dugite'
@@ -113,7 +112,7 @@ export class GitStore extends BaseStore {
 
   private _defaultBranch: Branch | null = null
 
-  private _localTags: Map<string, string> | null = null
+  private _localTags: ReadonlyArray<ITagItem> | null = null
 
   private _allBranches: ReadonlyArray<Branch> = []
 
@@ -279,12 +278,10 @@ export class GitStore extends BaseStore {
   public async refreshTags() {
     const previousTags = this._localTags
     const newTags = await this.performFailableOperation(() =>
-      getAllTags(this.repository)
+      fetchAllTags(this.repository)
     )
 
-    if (newTags === undefined) {
-      return
-    }
+    if (newTags === undefined || newTags?.length === 0) { return }
 
     this._localTags = newTags
 
@@ -292,7 +289,7 @@ export class GitStore extends BaseStore {
     // of local tags. This can happen when the user deletes an
     // unpushed tag from outside of Desktop.
     for (const tagToPush of this._tagsToPush) {
-      if (!this._localTags.has(tagToPush)) {
+      if (this._localTags.findIndex(t => t.name === tagToPush) < 0) {
         this.removeTagToPush(tagToPush)
       }
     }
@@ -300,8 +297,9 @@ export class GitStore extends BaseStore {
     if (previousTags !== null) {
       // We don't await for the emition of updates to finish
       // to make this method return earlier.
-      this.emitUpdatesForChangedTags(previousTags, this._localTags)
+      await this.emitUpdatesForChangedTags(previousTags, this._localTags)
     }
+    this.emitUpdate()
   }
 
   /**
@@ -311,29 +309,29 @@ export class GitStore extends BaseStore {
    * This is specially important when tags are created/modified/deleted from outside of Desktop.
    */
   private async emitUpdatesForChangedTags(
-    previousTags: Map<string, string>,
-    newTags: Map<string, string>
+    previousTags: ReadonlyArray<ITagItem>,
+    newTags: ReadonlyArray<ITagItem>
   ) {
-    const commitsToUpdate = new Set<string>()
+    const commitsToUpdate = new Set<ITagItem>()
     let numCreatedTags = 0
 
-    for (const [tagName, previousCommitSha] of previousTags) {
-      const newCommitSha = newTags.get(tagName)
+    for (const tag of previousTags) {
+      const newTag = newTags.find(t => t.hash === tag.hash)
 
-      if (!newCommitSha) {
+      if (!newTag) {
         // the tag has been deleted.
-        commitsToUpdate.add(previousCommitSha)
-      } else if (newCommitSha !== previousCommitSha) {
+        commitsToUpdate.add(tag)
+      } else if (newTag.hash !== tag.hash) {
         // the tag has been moved to a different commit.
-        commitsToUpdate.add(previousCommitSha)
-        commitsToUpdate.add(newCommitSha)
+        commitsToUpdate.add(tag)
+        commitsToUpdate.add(newTag)
       }
     }
 
-    for (const [tagName, newCommitSha] of newTags) {
-      if (!previousTags.has(tagName)) {
+    for (const tag of newTags) {
+      if (previousTags.findIndex(t => t.hash === tag.hash) < 0) {
         // the tag has just been created.
-        commitsToUpdate.add(newCommitSha)
+        commitsToUpdate.add(tag)
         numCreatedTags++
       }
     }
@@ -343,9 +341,12 @@ export class GitStore extends BaseStore {
     }
 
     const commitsToStore = []
-    for (const commitSha of commitsToUpdate) {
-      const commit = await getCommit(this.repository, commitSha)
-
+    for (const tag of commitsToUpdate) {
+      let commit = this.commitLookup.get(tag.hash) || null
+      if (!commit) {
+        commit = await getCommit(this.repository, tag.hash)
+      }
+      tag.remote = commit !== null
       if (commit !== null) {
         commitsToStore.push(commit)
       }
@@ -376,9 +377,7 @@ export class GitStore extends BaseStore {
       return true
     })
 
-    if (result === undefined) {
-      return
-    }
+    if (result === undefined) { return }
 
     await this.refreshTags()
     this.removeTagToPush(name)
@@ -395,7 +394,7 @@ export class GitStore extends BaseStore {
     return this._tagsToPush
   }
 
-  public get localTags(): Map<string, string> | null {
+  public get localTags(): ReadonlyArray<ITagItem> | null {
     return this._localTags
   }
 

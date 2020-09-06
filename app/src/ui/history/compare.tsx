@@ -17,6 +17,7 @@ import { DismissalReason, NewCommitsBanner } from '../notification/new-commits-b
 import { MergeCallToActionWithConflicts } from './merge-call-to-action-with-conflicts'
 import { assertNever } from '../../lib/fatal-error'
 import { enableNDDBBanner } from '../../lib/feature-flag'
+import { ITagItem } from '../../lib/git'
 
 const DivergingBannerAnimationTimeout = 300
 
@@ -34,7 +35,7 @@ interface ICompareSidebarProps {
   readonly onViewCommitOnGitHub: (sha: string) => void
   readonly onCompareListScrolled: (scrollTop: number) => void
   readonly compareListScrollTop?: number
-  readonly localTags: Map<string, string> | null
+  readonly localTags: ReadonlyArray<ITagItem> | null
   readonly tagsToPush: ReadonlyArray<string> | null
 }
 

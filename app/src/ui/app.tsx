@@ -2451,7 +2451,8 @@ export class App extends React.Component<IAppProps, IAppState> {
     const repository = selection.repository
     return <TagsToolBarButton
       repository={repository}
-      dispatcher={this.props.dispatcher}/>
+      dispatcher={this.props.dispatcher}
+      appStore={this.props.appStore}/>
   }
 
   private renderBranchToolbarButton(): JSX.Element | null {

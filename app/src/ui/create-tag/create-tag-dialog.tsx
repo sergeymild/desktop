@@ -8,6 +8,7 @@ import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
 import { startTimer } from '../lib/timing'
 import { Ref } from '../lib/ref'
 import { RefNameTextBox } from '../lib/ref-name-text-box'
+import { ITagItem } from '../../lib/git'
 
 interface ICreateTagProps {
   readonly repository: Repository
@@ -15,7 +16,7 @@ interface ICreateTagProps {
   readonly onDismissed: () => void
   readonly targetCommitSha: string
   readonly initialName?: string
-  readonly localTags: Map<string, string> | null
+  readonly localTags: ReadonlyArray<ITagItem> | null
 }
 
 interface ICreateTagState {
@@ -87,12 +88,11 @@ export class CreateTag extends React.Component<
     }
 
     const alreadyExists =
-      this.props.localTags && this.props.localTags.has(this.state.tagName)
+      this.props.localTags &&
+      this.props.localTags.findIndex(t => t.name === this.state.tagName) >= 0
     if (alreadyExists) {
       return (
-        <>
-          A tag named <Ref>{this.state.tagName}</Ref> already exists
-        </>
+        <>A tag named <Ref>{this.state.tagName}</Ref> already exists</>
       )
     }
 

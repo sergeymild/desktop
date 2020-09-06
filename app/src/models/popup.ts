@@ -14,6 +14,7 @@ import { ICommitContext } from './commit'
 import { Account } from './account'
 import { Progress } from './progress'
 import { ITextDiff, DiffSelection } from './diff'
+import { ITagItem } from '../lib/git'
 
 export enum PopupType {
   RenameBranch = 1,
@@ -244,7 +245,7 @@ export type Popup =
       repository: Repository
       targetCommitSha: string
       initialName?: string
-      localTags: Map<string, string> | null
+      localTags: ReadonlyArray<ITagItem> | null
     }
   | {
       type: PopupType.DeleteTag

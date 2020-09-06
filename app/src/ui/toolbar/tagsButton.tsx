@@ -1,7 +1,7 @@
 import React from 'react'
 import { DropdownState, ToolbarDropdown } from './dropdown'
 import { Octicon, OcticonSymbol } from '../octicons'
-import { deleteTag, fetchAllTags, fetchRemoteTags, getCachedTags, ITagItem } from '../../lib/git'
+import { ITagItem } from '../../lib/git'
 import { Repository } from '../../models/repository'
 import { FilterList, IFilterListGroup, IFilterListItem } from '../lib/filter-list'
 import { IMatches } from '../../lib/fuzzy-find'
@@ -10,22 +10,24 @@ import { IMenuItem } from '../../lib/menu-item'
 import { showContextualMenu } from '../main-process-proxy'
 import moment from 'moment'
 import { Dispatcher } from '../dispatcher'
+import { AppStore } from '../../lib/stores'
 
 const RowHeight = 30;
 
 interface ITagsButtonProps {
   readonly repository: Repository
   readonly dispatcher: Dispatcher
+  readonly appStore: AppStore
 }
 
 interface ITagListProps {
   readonly repository: Repository
   readonly dispatcher: Dispatcher
+  readonly appStore: AppStore
   readonly closeTags: () => void
 }
 
 interface ITagsListState {
-  tags: Array<ITagItem>
   filterText: string
   selectedItem: ITagListItem | null
   readonly groups: ReadonlyArray<IFilterListGroup<ITagListItem>>
@@ -55,7 +57,7 @@ class TagListItem extends React.Component<ITagListItemProps, {}> {
   public shouldComponentUpdate(nextProps: Readonly<ITagListItemProps>, nextState: Readonly<{}>, nextContext: any): boolean {
     const currentTag = this.props.item.tag
     const nextTag = nextProps.item.tag
-    if (currentTag.remote !== nextTag.remote) { return true }
+    if (this.props.matches.title !== nextProps.matches.title) { return true }
     if (currentTag.name !== nextTag.name) { return true }
     if (currentTag.hash !== nextTag.hash) { return true }
     return false
@@ -85,7 +87,6 @@ class TagsList extends React.Component<ITagListProps, ITagsListState> {
     super(props);
 
     this.state = {
-      tags: [],
       filterText: "",
       selectedItem: null,
       groups: []
@@ -93,30 +94,27 @@ class TagsList extends React.Component<ITagListProps, ITagsListState> {
   }
 
   public componentDidMount() {
-    this.fetchTags()
-  }
-
-  private fetchTags = async () => {
-    this.createTagsGroup(getCachedTags())
-    const tags = await fetchAllTags(this.props.repository)
+    const tags = this.props.appStore.tags(this.props.repository)
     this.createTagsGroup(tags)
-    await fetchRemoteTags(this.props.repository)
-    this.createTagsGroup(getCachedTags())
   }
 
   private createTagsGroup = (tags: ReadonlyArray<ITagItem>) => {
+    const tagsToPush = this.props.appStore.tagsToPush(this.props.repository)
     const groups = new Array<IFilterListGroup<ITagListItem>>()
     const group: IFilterListGroup<ITagListItem> = {
       identifier: "Tags",
-      items: tags.map(k => ({id: k.hash, tag: k, text: [k.name, k.hash]}))
+      items: tags.map(k => ({
+        id: k.hash,
+        tag: {...k, remote: !tagsToPush.includes(k.name)},
+        text: [k.name, k.hash]})
+      )
     }
 
 
     groups.push(group)
     this.setState({
       groups,
-      filterText: "",
-      tags: tags as Array<ITagItem>
+      filterText: ""
     })
   }
 
@@ -127,8 +125,7 @@ class TagsList extends React.Component<ITagListProps, ITagsListState> {
   private deleteTag = async (item: ITagListItem) => {
     try {
       this.props.closeTags()
-      await deleteTag(this.props.repository, item.tag.name)
-      this.createTagsGroup(this.state.tags.filter(t => t.hash !== item.tag.hash))
+      await this.props.dispatcher.deleteTag(this.props.repository, item.tag.name)
     } catch (e) {
       console.error(e)
     }
@@ -220,6 +217,7 @@ class TagsToolBarButton extends React.Component<ITagsButtonProps, ITagsToolBarBu
     return <TagsList
       repository={this.props.repository}
       dispatcher={this.props.dispatcher}
+      appStore={this.props.appStore}
       closeTags={() => this.setState({dropdownState: "closed"})}
     />
   }

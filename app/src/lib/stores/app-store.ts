@@ -118,7 +118,7 @@ import {
   GitError,
   isCoAuthoredByTrailer,
   isGitRepository,
-  IStatusResult,
+  IStatusResult, ITagItem,
   MergeResult,
   mergeTree,
   pull as pullRepo,
@@ -754,6 +754,14 @@ export class AppStore extends TypedBaseStore<IAppState> {
       lastFetched: gitStore.lastFetched,
     }))
     this.emitUpdate()
+  }
+
+  public tags(repository: Repository): ReadonlyArray<ITagItem> {
+    return this.repositoryStateCache.get(repository).localTags || []
+  }
+
+  public tagsToPush(repository: Repository): ReadonlyArray<string> {
+    return this.repositoryStateCache.get(repository).tagsToPush || []
   }
 
   private clearBranchProtectionState(repository: Repository) {
@@ -2748,7 +2756,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
   /** This shouldn't be called directly. See `Dispatcher`. */
   public async _deleteTag(repository: Repository, name: string): Promise<void> {
     const gitStore = this.gitStoreCache.get(repository)
-
     await gitStore.deleteTag(name)
   }
 

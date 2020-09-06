@@ -15,7 +15,7 @@ import {
 import { ExternalEditor } from '../../lib/editors'
 import { assertNever, fatalError } from '../../lib/fatal-error'
 import { setGenericPassword, setGenericUsername } from '../../lib/generic-git-auth'
-import { getBranches, getCommitsInRange, isGitRepository, PushOptions, RebaseResult } from '../../lib/git'
+import { getBranches, getCommitsInRange, isGitRepository, ITagItem, PushOptions, RebaseResult } from '../../lib/git'
 import { isGitOnPath } from '../../lib/is-git-on-path'
 import { rejectOAuthRequest, requestAuthenticatedUser, resolveOAuthRequest } from '../../lib/oauth'
 import { IOpenRepositoryFromURLAction, IUnknownAction, URLActionType } from '../../lib/parse-app-url'
@@ -474,7 +474,7 @@ export class Dispatcher {
   public showCreateTagDialog(
     repository: Repository,
     targetCommitSha: string,
-    localTags: Map<string, string> | null,
+    localTags: ReadonlyArray<ITagItem> | null,
     initialName?: string
   ): Promise<void> {
     return this.showPopup({

@@ -33,6 +33,7 @@ import { GitRebaseProgress } from '../models/rebase'
 import { RebaseFlowStep } from '../models/rebase-flow-step'
 import { TutorialStep } from '../models/tutorial-step'
 import { UncommittedChangesStrategyKind } from '../models/uncommitted-changes-strategy'
+import { ITagItem } from './git'
 
 export enum SelectionType {
   Repository,
@@ -411,7 +412,7 @@ export interface IRepositoryState {
    */
   readonly revertProgress: IRevertProgress | null
 
-  readonly localTags: Map<string, string> | null
+  readonly localTags: ReadonlyArray<ITagItem> | null
 }
 
 export interface IBranchesState {
