@@ -51,6 +51,45 @@ export async function checkoutToTag(
   await git(['checkout', `tags/${name}`], repository.path, 'checkoutToTag')
 }
 
+export async function fetchRemoteTags(
+  repository: Repository
+): Promise<Map<string, string>> {
+  try {
+    const args = ['ls-remote', '--tags']
+
+    const tags = await git(args, repository.path, 'fetchRemoteTags', {
+      successExitCodes: new Set([0, 1]), // when there are no tags, git exits with 1.
+    })
+
+    const tagsArray: Array<[string, string]> = tags.stdout
+      .split('\n')
+      .filter(line => line !== '')
+      .map(line => {
+        const [commitSha, rawTagName] = line.split('\t')
+
+        // Normalize tag names by removing the leading ref/tags/ and the trailing ^{}.
+        //
+        // git show-ref returns two entries for annotated tags:
+        // deadbeef refs/tags/annotated-tag
+        // de510b99 refs/tags/annotated-tag^{}
+        //
+        // The first entry sha correspond to the blob object of the annotation, while the second
+        // entry corresponds to the actual commit where the tag was created.
+        // By normalizing the tag name we can make sure that the commit sha gets stored in the returned
+        // Map of commits (since git will always print the entry with the commit sha at the end).
+        const tagName = rawTagName
+          .replace(/^refs\/tags\//, '')
+          .replace(/\^\{\}$/, '')
+
+        return [commitSha, tagName]
+      })
+
+    return new Map(tagsArray)
+  } catch (e) {
+    return new Map<string, string>()
+  }
+}
+
 /**
  * Gets all the local tags. Returns a Map with the tag name and the commit it points to.
  *
@@ -85,16 +124,16 @@ export async function getAllTags(
         .replace(/^refs\/tags\//, '')
         .replace(/\^\{\}$/, '')
 
-      return [tagName, commitSha]
+      return [commitSha, tagName]
     })
 
   return new Map(tagsArray)
 }
 
 export async function fetchAllTags(
-  repository: Repository
+  repository: Repository,
+  remoteTags: Map<string, string>
 ) : Promise<ReadonlyArray<ITagItem>> {
-
   const args = ['for-each-ref', '--sort=creatordate', "--format='%(refname)|%(creatordate)|%(objectname)'", 'refs/tags']
 
   const tags = await git(args, repository.path, 'getAllTags', {
@@ -114,7 +153,7 @@ export async function fetchAllTags(
         .replace(/^refs\/tags\//, '')
         .replace(/\^\{\}$/, '')
 
-      return {name: tagName, hash: commitSha, date, remote: false}
+      return {name: tagName, hash: commitSha, date, remote: remoteTags.get(commitSha) != null}
     })
   return tagsArray.reverse()
 }

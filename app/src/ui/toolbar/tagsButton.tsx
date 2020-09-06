@@ -98,6 +98,11 @@ class TagsList extends React.Component<ITagListProps, ITagsListState> {
     this.createTagsGroup(tags)
   }
 
+  public componentWillReceiveProps(nextProps: Readonly<ITagListProps>, nextContext: any) {
+    const tags = this.props.appStore.tags(this.props.repository)
+    this.createTagsGroup(tags)
+  }
+
   private createTagsGroup = (tags: ReadonlyArray<ITagItem>) => {
     const tagsToPush = this.props.appStore.tagsToPush(this.props.repository)
     const groups = new Array<IFilterListGroup<ITagListItem>>()
@@ -213,12 +218,15 @@ class TagsToolBarButton extends React.Component<ITagsButtonProps, ITagsToolBarBu
       dropdownState: 'closed'
     }
   }
+
+  private closeTags = () => this.setState({dropdownState: "closed"})
+
   private renderBranchFoldout = (): JSX.Element | null => {
     return <TagsList
       repository={this.props.repository}
       dispatcher={this.props.dispatcher}
       appStore={this.props.appStore}
-      closeTags={() => this.setState({dropdownState: "closed"})}
+      closeTags={this.closeTags}
     />
   }
 

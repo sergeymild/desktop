@@ -65,7 +65,7 @@ import {
   removeRemote,
   createTag,
   deleteTag,
-  MergeResult, searchCommits, fetchAllTags, ITagItem,
+  MergeResult, searchCommits, fetchAllTags, ITagItem, fetchRemoteTags,
 } from '../git'
 import { GitError as DugiteError } from '../../lib/git'
 import { GitError } from 'dugite'
@@ -113,6 +113,7 @@ export class GitStore extends BaseStore {
   private _defaultBranch: Branch | null = null
 
   private _localTags: ReadonlyArray<ITagItem> | null = null
+  private _remoteTags: Map<string, string> = new Map<string, string>()
 
   private _allBranches: ReadonlyArray<Branch> = []
 
@@ -276,22 +277,21 @@ export class GitStore extends BaseStore {
   }
 
   public async refreshTags() {
+    if (this._remoteTags.size === 0) {
+      this._remoteTags = await fetchRemoteTags(this.repository)
+    }
     const previousTags = this._localTags
     const newTags = await this.performFailableOperation(() =>
-      fetchAllTags(this.repository)
+      fetchAllTags(this.repository, this._remoteTags)
     )
 
     if (newTags === undefined || newTags?.length === 0) { return }
 
     this._localTags = newTags
-
-    // Remove any unpushed tag that cannot be found in the list
-    // of local tags. This can happen when the user deletes an
-    // unpushed tag from outside of Desktop.
-    for (const tagToPush of this._tagsToPush) {
-      if (this._localTags.findIndex(t => t.name === tagToPush) < 0) {
-        this.removeTagToPush(tagToPush)
-      }
+    this.clearTagsToPush()
+    for (const tag of newTags) {
+      if (tag.remote) { continue }
+      this.addTagToPush(tag.name)
     }
 
     if (previousTags !== null) {
