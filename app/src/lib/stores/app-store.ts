@@ -2748,6 +2748,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     if (!success) { return }
     await this._refreshRepository(repository)
     await checkoutToTag(repository, tagName)
+    await this._refreshRepository(repository)
   }
 
   public async _discardAndCheckout(
@@ -2765,6 +2766,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     )
 
     await checkoutToTag(repository, tagName)
+    await this._refreshRepository(repository)
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */
