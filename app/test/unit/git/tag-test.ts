@@ -5,7 +5,7 @@ import {
   getCommit,
   createTag,
   getCommits,
-  getAllTags,
+  fetchAllTags,
   getRemotes,
   fetchTagsToPush,
   push,
@@ -95,7 +95,7 @@ describe('git/tag', () => {
 
   describe('getAllTags', () => {
     it('returns an empty array when the repository has no tags', async () => {
-      expect(await getAllTags(repository)).toEqual(new Map())
+      expect(await fetchAllTags(repository, new Map<string, string>())).toEqual(new Map())
     })
 
     it('returns all the created tags', async () => {
@@ -103,7 +103,7 @@ describe('git/tag', () => {
       await createTag(repository, 'my-new-tag', commit!.sha)
       await createTag(repository, 'another-tag', commit!.sha)
 
-      expect(await getAllTags(repository)).toEqual(
+      expect(await fetchAllTags(repository, new Map<string, string>())).toEqual(
         new Map([
           ['my-new-tag', commit!.sha],
           ['another-tag', commit!.sha],
