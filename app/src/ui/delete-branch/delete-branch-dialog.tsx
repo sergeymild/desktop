@@ -7,6 +7,7 @@ import { Checkbox, CheckboxValue } from '../lib/checkbox'
 import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { Ref } from '../lib/ref'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { HistoryTabMode } from '../../lib/app-state'
 
 interface IDeleteBranchProps {
   readonly dispatcher: Dispatcher
@@ -14,7 +15,6 @@ interface IDeleteBranchProps {
   readonly branch: Branch
   readonly existsOnRemote: boolean
   readonly onDismissed: () => void
-  readonly onDeleted: (repository: Repository) => void
 }
 
 interface IDeleteBranchState {
@@ -105,7 +105,14 @@ export class DeleteBranch extends React.Component<
       branch,
       this.state.includeRemoteBranch
     )
-    this.props.onDeleted(repository)
+
+    // In the event a user is in the middle of a compare
+    // we need to exit out of the compare state after the
+    // branch has been deleted. Calling executeCompare allows
+    // us to do just that.
+    this.props.dispatcher.executeCompare(repository, {
+      kind: HistoryTabMode.History,
+    })
 
     this.props.onDismissed()
   }

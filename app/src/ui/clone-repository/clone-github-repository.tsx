@@ -59,12 +59,6 @@ interface ICloneGithubRepositoryProps {
   readonly onFilterTextChanged: (filterText: string) => void
 
   /**
-   * Called when the user requests a refresh of the repositories
-   * available for cloning.
-   */
-  readonly onRefreshRepositories: (account: Account) => void
-
-  /**
    * This function will be called when a pointer device is pressed and then
    * released on a selectable row. Note that this follows the conventions
    * of button elements such that pressing Enter or Space on a keyboard
@@ -95,7 +89,6 @@ export class CloneGithubRepository extends React.PureComponent<
             repositories={this.props.repositories}
             filterText={this.props.filterText}
             onFilterTextChanged={this.props.onFilterTextChanged}
-            onRefreshRepositories={this.props.onRefreshRepositories}
             onItemClicked={this.props.onItemClicked}
           />
         </Row>

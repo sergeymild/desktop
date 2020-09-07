@@ -20,6 +20,7 @@ import { RebaseProgressDialog } from './progress-dialog'
 import { ConfirmAbortDialog } from './confirm-abort-dialog'
 import { getResolvedFiles } from '../../lib/status'
 import { WarnForcePushDialog } from './warn-force-push-dialog'
+import { dispatcher } from '../index'
 
 interface IRebaseFlowProps {
   readonly repository: Repository
@@ -56,17 +57,6 @@ interface IRebaseFlowProps {
     targetBranch: string
   ) => void
 
-  /**
-   * Callback to fire to signal to the application that the rebase flow has
-   * either ended in success or has been aborted and the flow can be closed.
-   */
-  readonly onFlowEnded: (repository: Repository) => void
-
-  /**
-   * Callbacks for the conflict selection components to let the user jump out
-   * to their preferred editor.
-   */
-  readonly openFileInExternalEditor: (path: string) => void
   readonly resolvedExternalEditor: string | null
   readonly openRepositoryInShell: (repository: Repository) => void
   readonly onDismissed: () => void
@@ -146,7 +136,7 @@ export class RebaseFlow extends React.Component<IRebaseFlowProps> {
 
   private onFlowEnded = () => {
     this.props.onDismissed()
-    this.props.onFlowEnded(this.props.repository)
+    dispatcher.endRebaseFlow(this.props.repository)
   }
 
   public render() {
@@ -191,7 +181,6 @@ export class RebaseFlow extends React.Component<IRebaseFlowProps> {
         const {
           repository,
           resolvedExternalEditor,
-          openFileInExternalEditor,
           openRepositoryInShell,
           dispatcher,
           workingDirectory,
@@ -208,7 +197,6 @@ export class RebaseFlow extends React.Component<IRebaseFlowProps> {
             workingDirectory={workingDirectory}
             userHasResolvedConflicts={userHasResolvedConflicts}
             resolvedExternalEditor={resolvedExternalEditor}
-            openFileInExternalEditor={openFileInExternalEditor}
             openRepositoryInShell={openRepositoryInShell}
             onAbortRebase={this.onConfirmAbortRebase}
             onDismissed={this.onFlowEnded}

@@ -80,8 +80,6 @@ interface IRepositoryViewProps {
   readonly appMenu: IMenu | undefined
 
   readonly currentTutorialStep: TutorialStep
-
-  readonly onExitTutorial: () => void
 }
 
 interface IRepositoryViewState {
@@ -533,7 +531,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
           repository={this.props.repository}
           resolvedExternalEditor={this.props.resolvedExternalEditor}
           currentTutorialStep={this.props.currentTutorialStep}
-          onExitTutorial={this.props.onExitTutorial}
         />
       )
     }

@@ -8,6 +8,9 @@ import {
   OkCancelButtonGroup,
 } from '../dialog'
 import { shell } from '../../lib/app-shell'
+import { PopupType } from '../../models/popup'
+import { PreferencesTab } from '../../models/preferences'
+import { dispatcher } from '../index'
 
 interface IEditorErrorProps {
   /**
@@ -15,11 +18,6 @@ interface IEditorErrorProps {
    * ways described in the Dialog component's dismissable prop.
    */
   readonly onDismissed: () => void
-
-  /**
-   * Event to trigger if the user navigates to the Preferences dialog
-   */
-  readonly showPreferencesDialog: () => void
 
   /**
    * The text to display to the user relating to this error.
@@ -52,7 +50,10 @@ export class EditorError extends React.Component<IEditorErrorProps, {}> {
   ) => {
     e.preventDefault()
     this.props.onDismissed()
-    this.props.showPreferencesDialog()
+    dispatcher.showPopup({
+      type: PopupType.Preferences,
+      initialSelectedTab: PreferencesTab.Advanced,
+    })
   }
 
   private renderFooter() {

@@ -41,9 +41,6 @@ interface ICloneRepositoryProps {
   /** The currently select tab. */
   readonly selectedTab: CloneRepositoryTab
 
-  /** Called when the user selects a tab. */
-  readonly onTabSelected: (tab: CloneRepositoryTab) => void
-
   /**
    * A map keyed on a user account (GitHub.com or GitHub Enterprise Server)
    * containing an object with repositories that the authenticated
@@ -59,12 +56,6 @@ interface ICloneRepositoryProps {
    * See the ApiRepositoriesStore for more details on loading repositories
    */
   readonly apiRepositories: ReadonlyMap<Account, IAccountRepositories>
-
-  /**
-   * Called when the user requests a refresh of the repositories
-   * available for cloning.
-   */
-  readonly onRefreshRepositories: (account: Account) => void
 }
 
 interface ICloneRepositoryState {
@@ -259,7 +250,7 @@ export class CloneRepository extends React.Component<
   }
 
   private onTabClicked = (tab: CloneRepositoryTab) => {
-    this.props.onTabSelected(tab)
+    this.props.dispatcher.changeCloneRepositoriesTab(tab)
   }
 
   private onPathChanged = (path: string) => {
@@ -305,7 +296,6 @@ export class CloneRepository extends React.Component<
               onChooseDirectory={this.onChooseDirectory}
               repositories={repositories}
               loading={loading}
-              onRefreshRepositories={this.props.onRefreshRepositories}
               filterText={tabState.filterText}
               onFilterTextChanged={this.onFilterTextChanged}
               onItemClicked={this.onItemClicked}

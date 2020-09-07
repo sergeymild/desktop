@@ -6,6 +6,9 @@ import {
   DialogFooter,
   OkCancelButtonGroup,
 } from '../dialog'
+import { PopupType } from '../../models/popup'
+import { PreferencesTab } from '../../models/preferences'
+import { dispatcher } from '../index'
 
 interface IShellErrorProps {
   /**
@@ -13,11 +16,6 @@ interface IShellErrorProps {
    * ways described in the Dialog component's dismissable prop.
    */
   readonly onDismissed: () => void
-
-  /**
-   * Event to trigger if the user navigates to the Preferences dialog
-   */
-  readonly showPreferencesDialog: () => void
 
   /**
    * The text to display to the user relating to this error.
@@ -35,7 +33,10 @@ export class ShellError extends React.Component<IShellErrorProps, {}> {
   ) => {
     e.preventDefault()
     this.props.onDismissed()
-    this.props.showPreferencesDialog()
+    dispatcher.showPopup({
+      type: PopupType.Preferences,
+      initialSelectedTab: PreferencesTab.Advanced,
+    })
   }
 
   public render() {

@@ -27,6 +27,7 @@ import {
 } from '../dialog'
 import { Dispatcher } from '../dispatcher'
 import { ShowConflictsStep } from '../../models/rebase-flow-step'
+import { dispatcher } from '../index'
 
 interface IShowConflictedFilesDialogProps {
   readonly dispatcher: Dispatcher
@@ -42,7 +43,6 @@ interface IShowConflictedFilesDialogProps {
   readonly onAbortRebase: (step: ShowConflictsStep) => void
   readonly showRebaseConflictsBanner: (step: ShowConflictsStep) => void
 
-  readonly openFileInExternalEditor: (path: string) => void
   readonly resolvedExternalEditor: string | null
   readonly openRepositoryInShell: (repository: Repository) => void
 }
@@ -123,6 +123,10 @@ export class ShowConflictedFilesDialog extends React.Component<
   private openThisRepositoryInShell = () =>
     this.props.openRepositoryInShell(this.props.repository)
 
+  private openInExternalEditor = (path: string) => {
+    dispatcher.openInExternalEditor(path)
+  }
+
   private renderUnmergedFiles(
     files: ReadonlyArray<WorkingDirectoryFileChange>
   ) {
@@ -140,7 +144,7 @@ export class ShowConflictedFilesDialog extends React.Component<
                 path: f.path,
                 status: f.status,
                 resolvedExternalEditor: this.props.resolvedExternalEditor,
-                openFileInExternalEditor: this.props.openFileInExternalEditor,
+                openFileInExternalEditor: this.openInExternalEditor,
                 repository: this.props.repository,
                 dispatcher: this.props.dispatcher,
                 manualResolution: manualResolutions.get(f.path),

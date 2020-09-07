@@ -15,6 +15,7 @@ import { HighlightText } from '../lib/highlight-text'
 import { ClickSource } from '../lib/list'
 import { LinkButton } from '../lib/link-button'
 import { Ref } from '../lib/ref'
+import { dispatcher } from '../index'
 
 interface ICloneableRepositoryFilterListProps {
   /** The account to clone from. */
@@ -53,12 +54,6 @@ interface ICloneableRepositoryFilterListProps {
    * value in the filter text box.
    */
   readonly onFilterTextChanged: (filterText: string) => void
-
-  /**
-   * Called when the user requests a refresh of the repositories
-   * available for cloning.
-   */
-  readonly onRefreshRepositories: (account: Account) => void
 
   /**
    * This function will be called when a pointer device is pressed and then
@@ -152,7 +147,7 @@ export class CloneableRepositoryFilterList extends React.PureComponent<
   }
 
   private refreshRepositories = () => {
-    this.props.onRefreshRepositories(this.props.account)
+    dispatcher.refreshApiRepositories(this.props.account)
   }
 
   public render() {

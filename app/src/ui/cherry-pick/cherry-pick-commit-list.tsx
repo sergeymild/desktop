@@ -16,7 +16,6 @@ interface ICherryPickCommitListProps {
   readonly repository: Repository
   readonly gitHubRepository: GitHubRepository | null
   readonly emoji: Map<string, string>
-  readonly onViewCommitOnGitHub: (sha: string) => void
   readonly dispatcher: Dispatcher
   readonly onDismissed: () => void
 }

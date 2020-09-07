@@ -5,16 +5,11 @@ import { Ref } from '../lib/ref'
 import { Repository } from '../../models/repository'
 import { TrashNameLabel } from '../lib/context-menu'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { dispatcher } from '../index'
 
 interface IConfirmRemoveRepositoryProps {
   /** The repository to be removed */
   readonly repository: Repository
-
-  /** The action to execute when the user confirms */
-  readonly onConfirmation: (
-    repo: Repository,
-    deleteRepoFromDisk: boolean
-  ) => Promise<void>
 
   /** The action to execute when the user cancels */
   readonly onDismissed: () => void
@@ -41,8 +36,8 @@ export class ConfirmRemoveRepository extends React.Component<
   private onSubmit = async () => {
     this.setState({ isRemovingRepository: true })
 
-    await this.props.onConfirmation(
-      this.props.repository,
+    await dispatcher.removeRepositories(
+      [this.props.repository],
       this.state.deleteRepoFromDisk
     )
 

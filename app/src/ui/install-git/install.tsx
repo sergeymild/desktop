@@ -3,6 +3,7 @@ import * as React from 'react'
 import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { shell } from '../../lib/app-shell'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { dispatcher } from '../index'
 
 interface IInstallGitProps {
   /**
@@ -16,9 +17,6 @@ interface IInstallGitProps {
    * doing whatever they're doing.
    */
   readonly path: string
-
-  /** Called when the user chooses to open the shell. */
-  readonly onOpenShell: (path: string) => void
 }
 
 /**
@@ -31,7 +29,7 @@ export class InstallGit extends React.Component<IInstallGitProps, {}> {
   }
 
   private onSubmit = () => {
-    this.props.onOpenShell(this.props.path)
+    dispatcher.openShell(this.props.path, true)
     this.props.onDismissed()
   }
 

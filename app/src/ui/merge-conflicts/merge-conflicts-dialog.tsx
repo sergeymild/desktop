@@ -30,9 +30,7 @@ interface IMergeConflictsDialogProps {
   readonly repository: Repository
   readonly workingDirectory: WorkingDirectoryStatus
   readonly onDismissed: () => void
-  readonly openFileInExternalEditor: (path: string) => void
   readonly resolvedExternalEditor: string | null
-  readonly openRepositoryInShell: (repository: Repository) => void
   readonly ourBranch: string
   /* `undefined` when we didn't know the branch at the beginning of this flow */
   readonly theirBranch?: string
@@ -150,8 +148,14 @@ export class MergeConflictsDialog extends React.Component<
     )
   }
 
-  private openThisRepositoryInShell = () =>
-    this.props.openRepositoryInShell(this.props.repository)
+  private openThisRepositoryInShell = () => {
+    const {repository} = this.props
+    this.props.dispatcher.openShell(repository.path)
+  }
+
+  private openFileInExternalEditor = (path: string) => {
+    this.props.dispatcher.openInExternalEditor(path)
+  }
 
   private renderUnmergedFiles(
     files: ReadonlyArray<WorkingDirectoryFileChange>
@@ -164,7 +168,7 @@ export class MergeConflictsDialog extends React.Component<
                 path: f.path,
                 status: f.status,
                 resolvedExternalEditor: this.props.resolvedExternalEditor,
-                openFileInExternalEditor: this.props.openFileInExternalEditor,
+                openFileInExternalEditor: this.openFileInExternalEditor,
                 repository: this.props.repository,
                 dispatcher: this.props.dispatcher,
                 manualResolution: this.props.manualResolutions.get(f.path),

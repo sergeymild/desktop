@@ -3,11 +3,11 @@ import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { Row } from '../lib/row'
 import { Checkbox, CheckboxValue } from '../lib/checkbox'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { SamplesURL } from '../../lib/stats'
+import { dispatcher } from '../index'
 
 interface IUsageStatsChangeProps {
-  readonly onSetStatsOptOut: (optOut: boolean) => void
   readonly onDismissed: () => void
-  readonly onOpenUsageDataUrl: () => void
 }
 
 interface IUsageStatsChangeState {
@@ -99,12 +99,12 @@ export class UsageStatsChange extends React.Component<
   }
 
   private onDismissed = () => {
-    this.props.onSetStatsOptOut(this.state.optOutOfUsageTracking)
+    dispatcher.onSetStatsOptOut(this.state.optOutOfUsageTracking)
     this.props.onDismissed()
   }
 
   private viewMoreInfo = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
-    this.props.onOpenUsageDataUrl()
+    dispatcher.openInBrowser(SamplesURL)
   }
 }

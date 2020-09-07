@@ -6,18 +6,11 @@ import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { RetryAction } from '../../models/retry-actions'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
 import { Ref } from '../lib/ref'
+import { dispatcher } from '../index'
 
 interface IGenericGitAuthenticationProps {
   /** The hostname with which the user tried to authenticate. */
   readonly hostname: string
-
-  /** The function to call when the user saves their credentials. */
-  readonly onSave: (
-    hostname: string,
-    username: string,
-    password: string,
-    retryAction: RetryAction
-  ) => void
 
   /** The function to call when the user dismisses the dialog. */
   readonly onDismiss: () => void
@@ -94,14 +87,15 @@ export class GenericGitAuthentication extends React.Component<
     this.setState({ password: value })
   }
 
-  private save = () => {
+  private save = async () => {
     this.props.onDismiss()
 
-    this.props.onSave(
+    await dispatcher.saveGenericGitCredentials(
       this.props.hostname,
       this.state.username,
       this.state.password,
-      this.props.retryAction
     )
+
+    dispatcher.performRetry(this.props.retryAction)
   }
 }

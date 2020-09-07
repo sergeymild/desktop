@@ -2527,18 +2527,6 @@ export class Dispatcher {
     return this.statsStore.recordForkCreated()
   }
 
-  /**
-   * Create a tutorial repository using the given account. The account
-   * determines which host (i.e. GitHub.com or a GHES instance) that
-   * the tutorial repository should be created on.
-   *
-   * @param account The account (and thereby the GitHub host) under
-   *                which the repository is to be created created
-   */
-  public createTutorialRepository(account: Account) {
-    return this.appStore._createTutorialRepository(account)
-  }
-
   /** Open the issue creation page for a GitHub repository in a browser */
   public async openIssueCreationPage(repository: Repository): Promise<boolean> {
     // Default to creating issue on parent repo
@@ -2550,5 +2538,11 @@ export class Dispatcher {
     } else {
       return false
     }
+  }
+
+  public onSetStatsOptOut = (optOut: boolean) => {
+    this.appStore.setStatsOptOut(optOut, true)
+    this.appStore.markUsageStatsNoteSeen()
+    this.appStore._reportStats()
   }
 }

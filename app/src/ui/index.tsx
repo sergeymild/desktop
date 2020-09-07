@@ -343,6 +343,8 @@ ipcRenderer.on(
   }
 )
 
+export { dispatcher }
+
 ReactDOM.render(
   <App
     dispatcher={dispatcher}

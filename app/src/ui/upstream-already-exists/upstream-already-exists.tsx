@@ -6,18 +6,13 @@ import { Ref } from '../lib/ref'
 import { forceUnwrap } from '../../lib/fatal-error'
 import { UpstreamRemoteName } from '../../lib/stores'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { dispatcher } from '../index'
 
 interface IUpstreamAlreadyExistsProps {
   readonly repository: Repository
   readonly existingRemote: IRemote
 
   readonly onDismissed: () => void
-
-  /** Called when the user chooses to update the existing remote. */
-  readonly onUpdate: (repository: Repository) => void
-
-  /** Called when the user chooses to ignore the warning. */
-  readonly onIgnore: (repository: Repository) => void
 }
 
 /**
@@ -78,13 +73,13 @@ export class UpstreamAlreadyExists extends React.Component<
   }
 
   private onUpdate = () => {
-    this.props.onUpdate(this.props.repository)
+    dispatcher.updateExistingUpstreamRemote(this.props.repository)
     this.props.onDismissed()
   }
 
   private onIgnore = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
-    this.props.onIgnore(this.props.repository)
+    dispatcher.ignoreExistingUpstreamRemote(this.props.repository)
     this.props.onDismissed()
   }
 }

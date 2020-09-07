@@ -16,6 +16,8 @@ import { RelativeTime } from '../relative-time'
 import { assertNever } from '../../lib/fatal-error'
 import { ReleaseNotesUri } from '../lib/releases'
 import { encodePathAsUrl } from '../../lib/path'
+import { PopupType } from '../../models/popup'
+import { dispatcher } from '../index'
 
 const DesktopLogo = encodePathAsUrl(__dirname, 'static/logo-64x64@2x.png')
 
@@ -35,14 +37,6 @@ interface IAboutProps {
    * The currently installed (and running) version of the app.
    */
   readonly applicationVersion: string
-
-  /** A function to call to kick off an update check. */
-  readonly onCheckForUpdates: () => void
-
-  readonly onShowAcknowledgements: () => void
-
-  /** A function to call when the user wants to see Terms and Conditions. */
-  readonly onShowTermsAndConditions: () => void
 }
 
 interface IAboutState {
@@ -86,6 +80,29 @@ export class About extends React.Component<IAboutProps, IAboutState> {
     updateStore.quitAndInstallUpdate()
   }
 
+  private onCheckForUpdates = () => {
+    if (__LINUX__) {
+      return
+    }
+
+    if (
+      __RELEASE_CHANNEL__ === 'development' ||
+      __RELEASE_CHANNEL__ === 'test'
+    ) {
+      return
+    }
+
+    updateStore.checkForUpdates(false)
+  }
+
+  private onShowAcknowledgements = () => {
+    dispatcher.showPopup({ type: PopupType.Acknowledgements })
+  }
+
+  private onShowTerms = () => {
+    dispatcher.showPopup({ type: PopupType.TermsAndConditions })
+  }
+
   private renderUpdateButton() {
     if (
       __RELEASE_CHANNEL__ === 'development' ||
@@ -112,7 +129,7 @@ export class About extends React.Component<IAboutProps, IAboutState> {
 
         return (
           <Row>
-            <Button disabled={disabled} onClick={this.props.onCheckForUpdates}>
+            <Button disabled={disabled} onClick={this.onCheckForUpdates}>
               Check for Updates
             </Button>
           </Row>
@@ -259,12 +276,12 @@ export class About extends React.Component<IAboutProps, IAboutState> {
             {releaseNotesLink})
           </p>
           <p className="no-padding">
-            <LinkButton onClick={this.props.onShowTermsAndConditions}>
+            <LinkButton onClick={this.onShowTerms}>
               Terms and Conditions
             </LinkButton>
           </p>
           <p>
-            <LinkButton onClick={this.props.onShowAcknowledgements}>
+            <LinkButton onClick={this.onShowAcknowledgements}>
               License and Open Source Notices
             </LinkButton>
           </p>

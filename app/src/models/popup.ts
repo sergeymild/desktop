@@ -12,7 +12,6 @@ import { WorkingDirectoryFileChange } from './status'
 import { PreferencesTab } from './preferences'
 import { ICommitContext } from './commit'
 import { Account } from './account'
-import { Progress } from './progress'
 import { ITextDiff, DiffSelection } from './diff'
 import { ITagItem } from '../lib/git'
 
@@ -56,8 +55,6 @@ export enum PopupType {
   StashAndSwitchBranch,
   CheckoutToTag,
   CheckoutToCommit,
-  CreateTutorialRepository,
-  ConfirmExitTutorial,
   PushRejectedDueToMissingWorkflowScope,
   SAMLReauthRequired,
   CreateFork,
@@ -217,14 +214,6 @@ export type Popup =
       type: PopupType.CheckoutToCommit
       repository: Repository
       commitSha: string
-    }
-  | {
-      type: PopupType.CreateTutorialRepository
-      account: Account
-      progress?: Progress
-    }
-  | {
-      type: PopupType.ConfirmExitTutorial
     }
   | {
       type: PopupType.PushRejectedDueToMissingWorkflowScope

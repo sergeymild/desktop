@@ -4,13 +4,11 @@ import { LinkButton } from '../lib/link-button'
 import { getGlobalConfigPath } from '../../lib/git'
 import { shell } from '../../lib/app-shell'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { dispatcher } from '../index'
 
 interface IAttributeMismatchProps {
   /** Called when the dialog should be dismissed. */
   readonly onDismissed: () => void
-
-  /** Called when the user has chosen to replace the update filters. */
-  readonly onUpdateExistingFilters: () => void
 }
 
 interface IAttributeMismatchState {
@@ -88,7 +86,7 @@ export class AttributeMismatch extends React.Component<
   }
 
   private onSumit = () => {
-    this.props.onUpdateExistingFilters()
+    dispatcher.installGlobalLFSFilters(true)
     this.props.onDismissed()
   }
 }

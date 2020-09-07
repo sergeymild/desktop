@@ -4,13 +4,13 @@ import { Branch } from '../../models/branch'
 import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { Repository } from '../../models/repository'
 import { Ref } from '../lib/ref'
-import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { OkCancelButtonGroup } from '../dialog'
+import { dispatcher } from '../index'
 
 interface IPushBranchCommitsProps {
   readonly dispatcher: Dispatcher
   readonly repository: Repository
   readonly branch: Branch
-  readonly onConfirm: (repository: Repository, branch: Branch) => void
   readonly onDismissed: () => void
 
   /**
@@ -154,7 +154,10 @@ export class PushBranchCommits extends React.Component<
     e: React.MouseEvent<HTMLButtonElement>
   ) => {
     e.preventDefault()
-    this.props.onConfirm(this.props.repository, this.props.branch)
+    dispatcher.openCreatePullRequestInBrowser(
+      this.props.repository,
+      this.props.branch
+    )
     this.props.onDismissed()
   }
 
@@ -169,7 +172,7 @@ export class PushBranchCommits extends React.Component<
       this.setState({ isPushingOrPublishing: false })
     }
 
-    this.props.onConfirm(repository, branch)
+    dispatcher.openCreatePullRequestInBrowser(repository, branch)
     this.props.onDismissed()
   }
 }

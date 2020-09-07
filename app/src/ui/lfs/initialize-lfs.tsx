@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { PathText } from '../lib/path-text'
 import { LinkButton } from '../lib/link-button'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { dispatcher } from '../index'
 
 const LFSURL = 'https://git-lfs.github.com/'
 
@@ -22,14 +23,10 @@ interface IInitializeLFSProps {
    * ways described in the Dialog component's dismissable prop.
    */
   readonly onDismissed: () => void
-
-  /**
-   * Called when the user chooses to initialize LFS in the repositories.
-   */
-  readonly onInitialize: (repositories: ReadonlyArray<Repository>) => void
 }
 
 export class InitializeLFS extends React.Component<IInitializeLFSProps, {}> {
+
   public render() {
     return (
       <Dialog
@@ -51,7 +48,7 @@ export class InitializeLFS extends React.Component<IInitializeLFSProps, {}> {
   }
 
   private onInitialize = () => {
-    this.props.onInitialize(this.props.repositories)
+    dispatcher.installLFSHooks(this.props.repositories)
     this.props.onDismissed()
   }
 

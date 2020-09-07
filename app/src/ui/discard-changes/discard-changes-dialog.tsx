@@ -22,7 +22,6 @@ interface IDiscardChangesProps {
   readonly discardingAllChanges: boolean
   readonly showDiscardChangesSetting: boolean
   readonly onDismissed: () => void
-  readonly onConfirmDiscardChangesChanged: (optOut: boolean) => void
 }
 
 interface IDiscardChangesState {
@@ -157,7 +156,7 @@ export class DiscardChanges extends React.Component<
       this.props.files
     )
 
-    this.props.onConfirmDiscardChangesChanged(this.state.confirmDiscardChanges)
+    this.props.dispatcher.setConfirmDiscardChangesSetting(this.state.confirmDiscardChanges)
     this.props.onDismissed()
   }
 
