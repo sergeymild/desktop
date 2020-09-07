@@ -20,9 +20,7 @@ import { Octicon, OcticonSymbol } from './octicons'
 import { ImageDiffType } from '../models/diff'
 import { IMenu } from '../models/app-menu'
 import { IStashEntry } from '../models/stash-entry'
-import { TutorialDone, TutorialPanel, TutorialWelcome } from './tutorial'
 import { enableNDDBBanner } from '../lib/feature-flag'
-import { isValidTutorialStep, TutorialStep } from '../models/tutorial-step'
 import { ExternalEditor } from '../lib/editors'
 import { openFile } from './lib/open-file'
 import { StashesSidebarContentView } from './stashes-view/stashes-sidebar-content-view'
@@ -79,7 +77,6 @@ interface IRepositoryViewProps {
    */
   readonly appMenu: IMenu | undefined
 
-  readonly currentTutorialStep: TutorialStep
 }
 
 interface IRepositoryViewState {
@@ -221,9 +218,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
         onOpenInExternalEditor={this.props.onOpenInExternalEditor}
         onChangesListScrolled={this.onChangesListScrolled}
         changesListScrollTop={scrollTop}
-        shouldNudgeToCommit={
-          this.props.currentTutorialStep === TutorialStep.MakeCommit
-        }
       />
     )
   }
@@ -351,19 +345,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
     )
   }
 
-  private renderTutorialPane(): JSX.Element {
-    if (this.props.currentTutorialStep === TutorialStep.AllDone) {
-      return (
-        <TutorialDone
-          dispatcher={this.props.dispatcher}
-          repository={this.props.repository}
-        />
-      )
-    } else {
-      return <TutorialWelcome/>
-    }
-  }
-
   private renderContentForChanges(): JSX.Element | null {
     const { changesState } = this.props.state
     const { workingDirectory, selection } = changesState
@@ -375,22 +356,18 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
     }
 
     if (workingDirectory.files.length === 0) {
-      if (this.props.currentTutorialStep !== TutorialStep.NotApplicable) {
-        return this.renderTutorialPane()
-      } else {
-        return (
-          <NoChanges
-            key={this.props.repository.id}
-            appMenu={this.props.appMenu}
-            repository={this.props.repository}
-            repositoryState={this.props.state}
-            isExternalEditorAvailable={
-              this.props.externalEditorLabel !== undefined
-            }
-            dispatcher={this.props.dispatcher}
-          />
-        )
-      }
+      return (
+        <NoChanges
+          key={this.props.repository.id}
+          appMenu={this.props.appMenu}
+          repository={this.props.repository}
+          repositoryState={this.props.state}
+          isExternalEditorAvailable={
+            this.props.externalEditorLabel !== undefined
+          }
+          dispatcher={this.props.dispatcher}
+        />
+      )
     } else {
       if (selectedFileIDs.length === 0) {
         return null
@@ -455,7 +432,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
       <UiView id="repository">
         {this.renderSidebar()}
         {this.renderContent()}
-        {this.maybeRenderTutorialPanel()}
       </UiView>
     )
   }
@@ -521,19 +497,5 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
         showBranchList: false,
       })
     }
-  }
-
-  private maybeRenderTutorialPanel(): JSX.Element | null {
-    if (isValidTutorialStep(this.props.currentTutorialStep)) {
-      return (
-        <TutorialPanel
-          dispatcher={this.props.dispatcher}
-          repository={this.props.repository}
-          resolvedExternalEditor={this.props.resolvedExternalEditor}
-          currentTutorialStep={this.props.currentTutorialStep}
-        />
-      )
-    }
-    return null
   }
 }

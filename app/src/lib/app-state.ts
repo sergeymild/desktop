@@ -31,7 +31,6 @@ import { ManualConflictResolution } from '../models/manual-conflict-resolution'
 import { Banner } from '../models/banner'
 import { GitRebaseProgress } from '../models/rebase'
 import { RebaseFlowStep } from '../models/rebase-flow-step'
-import { TutorialStep } from '../models/tutorial-step'
 import { UncommittedChangesStrategyKind } from '../models/uncommitted-changes-strategy'
 import { ITagItem } from './git'
 
@@ -226,9 +225,6 @@ export interface IAppState {
    * See the ApiRepositoriesStore for more details on loading repositories
    */
   readonly apiRepositories: ReadonlyMap<Account, IAccountRepositories>
-
-  /** Which step the user is on in the Onboarding Tutorial */
-  readonly currentOnboardingTutorialStep: TutorialStep
 
   readonly localStashesCount: number
 }

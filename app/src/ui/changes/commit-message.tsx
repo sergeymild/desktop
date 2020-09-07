@@ -32,9 +32,6 @@ interface ICommitMessageProps {
   readonly prepopulateCommitSummary: boolean
   readonly showBranchProtected: boolean
   readonly showNoWriteAccess: boolean
-
-  /** Whether this component should show its onboarding tutorial nudge arrow */
-  readonly shouldNudge: boolean
 }
 
 interface ICommitMessageState {
@@ -254,9 +251,7 @@ export class CommitMessage extends React.Component<
 
     const loading = this.props.isCommitting ? <Loading /> : undefined
 
-    const summaryInputClassName = classNames('summary-field', 'nudge-arrow', {
-      'nudge-arrow-left': this.props.shouldNudge,
-    })
+    const summaryInputClassName = classNames('summary-field', 'nudge-arrow')
 
     const branchName = this.props.branch
     const commitVerb = loading ? 'Committing' : 'Commit'

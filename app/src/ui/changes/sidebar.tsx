@@ -70,12 +70,6 @@ interface IChangesSidebarProps {
   readonly onOpenInExternalEditor: (fullPath: string) => void
   readonly onChangesListScrolled: (scrollTop: number) => void
   readonly changesListScrollTop?: number
-
-  /**
-   * Whether we should show the onboarding tutorial nudge
-   * arrow pointing at the commit summary box
-   */
-  readonly shouldNudgeToCommit: boolean
 }
 
 export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
@@ -415,7 +409,6 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
           onChangesListScrolled={this.props.onChangesListScrolled}
           changesListScrollTop={this.props.changesListScrollTop}
           currentBranchProtected={currentBranchProtected}
-          shouldNudgeToCommit={this.props.shouldNudgeToCommit}
         />
         {this.renderUndoCommit(rebaseConflictState)}
       </div>

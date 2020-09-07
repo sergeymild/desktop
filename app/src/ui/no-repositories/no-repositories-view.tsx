@@ -24,12 +24,6 @@ interface INoRepositoriesProps {
   /** A function to call when the user chooses to add a local repository. */
   readonly onAdd: () => void
 
-  /** Called when the user chooses to resume a tutorial repository */
-  readonly onResumeTutorialRepository: () => void
-
-  /** true if tutorial is in paused state. */
-  readonly tutorialPaused: boolean
-
   /** The logged in account for GitHub.com. */
   readonly dotComAccount: Account | null
 

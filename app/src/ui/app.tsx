@@ -64,7 +64,6 @@ import {
   isCurrentBranchForcePush,
 } from '../lib/rebase'
 import { BannerType } from '../models/banner'
-import { TutorialStep } from '../models/tutorial-step'
 import { getUncommittedChangesStrategy } from '../models/uncommitted-changes-strategy'
 import {TagsToolBarButton} from './toolbar/tagsButton'
 import { AppPopup } from './popups/AppPopup'
@@ -643,28 +642,6 @@ export class App extends React.Component<IAppProps, IAppState> {
       type: PopupType.CloneRepository,
       initialURL,
     })
-  }
-
-  private onResumeTutorialRepository = () => {
-    const tutorialRepository = this.getSelectedTutorialRepository()
-    if (!tutorialRepository) {
-      return
-    }
-
-    this.props.dispatcher.resumeTutorial(tutorialRepository)
-  }
-
-  private getSelectedTutorialRepository() {
-    const { selectedState } = this.state
-    const selectedRepository =
-      selectedState && selectedState.type === SelectionType.Repository
-        ? selectedState.repository
-        : null
-
-    const isTutorialRepository =
-      selectedRepository && selectedRepository.isTutorialRepository
-
-    return isTutorialRepository ? selectedRepository : null
   }
 
   private showAbout() {
@@ -1460,9 +1437,6 @@ export class App extends React.Component<IAppProps, IAppState> {
         pullWithRebase={pullWithRebase}
         rebaseInProgress={rebaseInProgress}
         isForcePush={isForcePush}
-        shouldNudge={
-          this.state.currentOnboardingTutorialStep === TutorialStep.PushBranch
-        }
       />
     )
   }
@@ -1560,9 +1534,6 @@ export class App extends React.Component<IAppProps, IAppState> {
         pullRequests={branchesState.openPullRequests}
         currentPullRequest={branchesState.currentPullRequest}
         isLoadingPullRequests={branchesState.isLoadingPullRequests}
-        shouldNudge={
-          this.state.currentOnboardingTutorialStep === TutorialStep.CreateBranch
-        }
         selectedUncommittedChangesStrategy={getUncommittedChangesStrategy(
           this.state.uncommittedChangesStrategyKind
         )}
@@ -1649,8 +1620,6 @@ export class App extends React.Component<IAppProps, IAppState> {
           onCreate={this.showCreateRepository}
           onClone={this.showCloneRepo}
           onAdd={this.showAddLocalRepo}
-          onResumeTutorialRepository={this.onResumeTutorialRepository}
-          tutorialPaused={this.isTutorialPaused()}
           apiRepositories={state.apiRepositories}
           onRefreshRepositories={this.onRefreshRepositories}
         />
@@ -1694,7 +1663,6 @@ export class App extends React.Component<IAppProps, IAppState> {
           resolvedExternalEditor={state.resolvedExternalEditor}
           onOpenInExternalEditor={this.openFileInExternalEditor}
           appMenu={state.appMenuState[0]}
-          currentTutorialStep={state.currentOnboardingTutorialStep}
           isShowingModal={this.isShowingModal}
           isShowingFoldout={this.state.currentFoldout !== null}
           stashesCount={this.state.localStashesCount}
@@ -1782,11 +1750,7 @@ export class App extends React.Component<IAppProps, IAppState> {
   }
 
   private inNoRepositoriesViewState() {
-    return this.state.repositories.length === 0 || this.isTutorialPaused()
-  }
-
-  private isTutorialPaused() {
-    return this.state.currentOnboardingTutorialStep === TutorialStep.Paused
+    return this.state.repositories.length === 0
   }
 }
 

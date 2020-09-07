@@ -188,12 +188,10 @@ import { MenuLabelsEvent } from '../../models/menu-labels'
 import { findRemoteBranchName } from './helpers/find-branch-name'
 import { updateRemoteUrl } from './updates/update-remote-url'
 import { findBranchesForFastForward } from './helpers/find-branches-for-fast-forward'
-import { isValidTutorialStep, orderedTutorialSteps, TutorialStep } from '../../models/tutorial-step'
-import { OnboardingTutorialAssessor } from './helpers/tutorial-assessor'
 import { getUntrackedFiles } from '../status'
 import { isBranchPushable } from '../helpers/push-control'
 import { findAssociatedPullRequest, isPullRequestAssociatedWithBranch } from '../helpers/pull-request-matching'
-import { parseRemote } from '../../lib/remote-parsing'
+import { parseRemote } from '../remote-parsing'
 import { sendNonFatalException } from '../helpers/non-fatal-exception'
 import { findUpstreamRemote, UpstreamRemoteName } from './helpers/find-upstream-remote'
 import { WorkflowPreferences } from '../../models/workflow-preferences'
@@ -336,10 +334,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private selectedTheme = ApplicationTheme.Light
   private automaticallySwitchTheme = false
 
-  /** Which step the user needs to complete next in the onboarding tutorial */
-  private currentOnboardingTutorialStep = TutorialStep.NotApplicable
-  private readonly tutorialAssessor: OnboardingTutorialAssessor
-
   public constructor(
     private readonly gitHubUserStore: GitHubUserStore,
     private readonly cloningRepositoriesStore: CloningRepositoriesStore,
@@ -371,9 +365,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     this.wireupIpcEventHandlers(window)
     this.wireupStoreEventHandlers()
     getAppMenu()
-    this.tutorialAssessor = new OnboardingTutorialAssessor(
-      this.getResolvedExternalEditor
-    )
   }
 
   private async _loadLocalStashesCount() {
@@ -383,85 +374,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
       this.localStashesCount = await getStashesCount(repository as Repository)
       this.emitUpdate()
     }
-  }
-
-  /** Figure out what step of the tutorial the user needs to do next */
-  private async updateCurrentTutorialStep(
-    repository: Repository
-  ): Promise<void> {
-    const currentStep = await this.tutorialAssessor.getCurrentStep(
-      repository.isTutorialRepository,
-      this.repositoryStateCache.get(repository)
-    )
-    // only emit an update if its changed
-    if (currentStep !== this.currentOnboardingTutorialStep) {
-      this.currentOnboardingTutorialStep = currentStep
-      log.info(`Current tutorial step is now ${currentStep}`)
-      this.recordTutorialStepCompleted(currentStep)
-      this.emitUpdate()
-    }
-  }
-
-  private recordTutorialStepCompleted(step: TutorialStep): void {
-    if (!isValidTutorialStep(step)) {
-      return
-    }
-
-    this.statsStore.recordHighestTutorialStepCompleted(
-      orderedTutorialSteps.indexOf(step)
-    )
-
-    switch (step) {
-      case TutorialStep.PickEditor:
-        // don't need to record anything for the first step
-        break
-      case TutorialStep.CreateBranch:
-        this.statsStore.recordTutorialEditorInstalled()
-        break
-      case TutorialStep.EditFile:
-        this.statsStore.recordTutorialBranchCreated()
-        break
-      case TutorialStep.MakeCommit:
-        this.statsStore.recordTutorialFileEdited()
-        break
-      case TutorialStep.PushBranch:
-        this.statsStore.recordTutorialCommitCreated()
-        break
-      case TutorialStep.OpenPullRequest:
-        this.statsStore.recordTutorialBranchPushed()
-        break
-      case TutorialStep.AllDone:
-        this.statsStore.recordTutorialPrCreated()
-        this.statsStore.recordTutorialCompleted()
-        break
-      default:
-        assertNever(step, 'Unaccounted for step type')
-    }
-  }
-
-  public async _resumeTutorial(repository: Repository) {
-    this.tutorialAssessor.resumeTutorial()
-    await this.updateCurrentTutorialStep(repository)
-  }
-
-  public async _pauseTutorial(repository: Repository) {
-    this.tutorialAssessor.pauseTutorial()
-    await this.updateCurrentTutorialStep(repository)
-  }
-
-  /** Call via `Dispatcher` when the user opts to skip the pick editor step of the onboarding tutorial */
-  public async _skipPickEditorTutorialStep(repository: Repository) {
-    this.tutorialAssessor.skipPickEditor()
-    await this.updateCurrentTutorialStep(repository)
-  }
-
-  /**
-   * Call  via `Dispatcher` when the user has either created a pull request or opts to
-   * skip the create pull request step of the onboarding tutorial
-   */
-  public async _markPullRequestTutorialStepAsComplete(repository: Repository) {
-    this.tutorialAssessor.markPullRequestTutorialStepAsComplete()
-    await this.updateCurrentTutorialStep(repository)
   }
 
   private wireupIpcEventHandlers(window: Electron.BrowserWindow) {
@@ -668,7 +580,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
       automaticallySwitchTheme: this.automaticallySwitchTheme,
       apiRepositories: this.apiRepositoriesStore.getState(),
       optOutOfUsageTracking: this.statsStore.getOptOut(),
-      currentOnboardingTutorialStep: this.currentOnboardingTutorialStep,
       localStashesCount: this.localStashesCount,
     }
   }
@@ -1375,18 +1286,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     repository: Repository | CloningRepository | null
   ): Promise<Repository | null> {
     const previouslySelectedRepository = this.selectedRepository
-
-    // do this quick check to see if we have a tutorial respository
-    // cause if its not we can quickly hide the tutorial pane
-    // in the first `emitUpdate` below
-    const previouslyInTutorial =
-      this.currentOnboardingTutorialStep !== TutorialStep.NotApplicable
-    if (
-      previouslyInTutorial &&
-      (!(repository instanceof Repository) || !repository.isTutorialRepository)
-    ) {
-      this.currentOnboardingTutorialStep = TutorialStep.NotApplicable
-    }
 
     this.selectedRepository = repository
 
@@ -2484,8 +2383,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     this.updateMenuItemLabels(latestState)
 
     this._initializeCompare(repository)
-
-    this.updateCurrentTutorialStep(repository)
   }
 
   /**
@@ -3051,7 +2948,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
       skeletonGitHubRepository,
       repository.missing,
       {},
-      false
     )
 
     const account = getAccountForEndpoint(
@@ -4589,10 +4485,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     if (this.appIsFocused) {
       if (this.selectedRepository instanceof Repository) {
         this.startPullRequestUpdater(this.selectedRepository)
-        // if we're in the tutorial and we don't have an editor yet, check for one!
-        if (this.currentOnboardingTutorialStep === TutorialStep.PickEditor) {
-          await this._resolveCurrentEditor()
-        }
       }
     } else {
       this.stopPullRequestUpdater()
@@ -4675,40 +4567,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
       repository,
       workflowPreferences
     )
-  }
-
-  /**
-   * Add a tutorial repository.
-   *
-   * This method differs from the `_addRepositories` method in that it
-   * requires that the repository has been created on the remote and
-   * set up to track it. Given that tutorial repositories are created
-   * from the no-repositories blank slate it shouldn't be possible for
-   * another repository with the same path to exist in the repositories
-   * table but in case that hanges in the future this method will set
-   * the tutorial flag on the existing repository at the given path.
-   */
-  public async _addTutorialRepository(
-    path: string,
-    endpoint: string,
-    apiRepository: IAPIRepository
-  ) {
-    const validatedPath = await validatedRepositoryPath(path)
-    if (validatedPath) {
-      log.info(
-        `[AppStore] adding tutorial repository at ${validatedPath} to store`
-      )
-
-      await this.repositoriesStore.addTutorialRepository(
-        validatedPath,
-        endpoint,
-        apiRepository
-      )
-      this.tutorialAssessor.onNewTutorialRepository()
-    } else {
-      const error = new Error(`${path} isn't a git repository.`)
-      this.emitError(error)
-    }
   }
 
   public async _addRepositories(
@@ -5119,10 +4977,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     const baseURL = `${gitHubRepository.htmlURL}/pull/new/${urlEncodedBranchName}`
 
     await this._openInBrowser(baseURL)
-
-    if (this.currentOnboardingTutorialStep === TutorialStep.OpenPullRequest) {
-      this._markPullRequestTutorialStepAsComplete(repository)
-    }
   }
 
   public async _updateExistingUpstreamRemote(
@@ -5344,15 +5198,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     const resolvedExternalEditor = match != null ? match.editor : null
     if (this.resolvedExternalEditor !== resolvedExternalEditor) {
       this.resolvedExternalEditor = resolvedExternalEditor
-
-      // Make sure we let the tutorial assesor know that we have a new editor
-      // in case it's stuck waiting for one to be selected.
-      if (this.currentOnboardingTutorialStep === TutorialStep.PickEditor) {
-        if (this.selectedRepository instanceof Repository) {
-          this.updateCurrentTutorialStep(this.selectedRepository)
-        }
-      }
-
       this.emitUpdate()
     }
   }

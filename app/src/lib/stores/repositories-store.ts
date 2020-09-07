@@ -135,7 +135,6 @@ export class RepositoriesStore extends TypedBaseStore<
             gitHubRepository,
             repo.missing,
             repo.workflowPreferences,
-            repo.isTutorialRepository
           )
           inflatedRepos.push(inflatedRepo)
         }
@@ -143,53 +142,6 @@ export class RepositoriesStore extends TypedBaseStore<
         return inflatedRepos
       }
     )
-  }
-
-  /**
-   * Add a tutorial repository.
-   *
-   * This method differs from the `addRepository` method in that it
-   * requires that the repository has been created on the remote and
-   * set up to track it. Given that tutorial repositories are created
-   * from the no-repositories blank slate it shouldn't be possible for
-   * another repository with the same path to exist but in case that
-   * changes in the future this method will set the tutorial flag on
-   * the existing repository at the given path.
-   */
-  public async addTutorialRepository(
-    path: string,
-    endpoint: string,
-    apiRepository: IAPIRepository
-  ) {
-    await this.db.transaction(
-      'rw',
-      this.db.repositories,
-      this.db.gitHubRepositories,
-      this.db.owners,
-      async () => {
-        const gitHubRepository = await this.upsertGitHubRepository(
-          endpoint,
-          apiRepository
-        )
-
-        const existingRepo = await this.db.repositories.get({ path })
-        const existingRepoId =
-          existingRepo && existingRepo.id !== null ? existingRepo.id : undefined
-
-        return await this.db.repositories.put(
-          {
-            path,
-            gitHubRepositoryID: gitHubRepository.dbID,
-            missing: false,
-            lastStashCheckDate: null,
-            isTutorialRepository: true,
-          },
-          existingRepoId
-        )
-      }
-    )
-
-    this.emitUpdatedRepositories()
   }
 
   /**
@@ -265,7 +217,6 @@ export class RepositoriesStore extends TypedBaseStore<
       repository.gitHubRepository,
       missing,
       repository.workflowPreferences,
-      repository.isTutorialRepository
     )
   }
 
@@ -317,7 +268,6 @@ export class RepositoriesStore extends TypedBaseStore<
       repository.gitHubRepository,
       false,
       repository.workflowPreferences,
-      repository.isTutorialRepository
     )
   }
 
@@ -509,7 +459,6 @@ export class RepositoriesStore extends TypedBaseStore<
       updatedGitHubRepo,
       repository.missing,
       repository.workflowPreferences,
-      repository.isTutorialRepository
     )
   }
 

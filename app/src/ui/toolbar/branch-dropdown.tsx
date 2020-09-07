@@ -44,9 +44,6 @@ interface IBranchDropdownProps {
   /** Are we currently loading pull requests? */
   readonly isLoadingPullRequests: boolean
 
-  /** Whether this component should show its onboarding tutorial nudge arrow */
-  readonly shouldNudge: boolean
-
   readonly selectedUncommittedChangesStrategy: UncommittedChangesStrategy
 }
 
@@ -156,9 +153,7 @@ export class BranchDropdown extends React.Component<IBranchDropdownProps> {
 
     const isOpen = this.props.isOpen
     const currentState: DropdownState = isOpen && canOpen ? 'open' : 'closed'
-    const buttonClassName = classNames('nudge-arrow', {
-      'nudge-arrow-up': this.props.shouldNudge,
-    })
+    const buttonClassName = classNames('nudge-arrow')
 
     return (
       <ToolbarDropdown

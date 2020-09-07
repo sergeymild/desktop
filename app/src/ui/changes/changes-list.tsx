@@ -157,12 +157,6 @@ interface IChangesListProps {
    * @param fullPath The full path to the file on disk
    */
   readonly onOpenInExternalEditor: (fullPath: string) => void
-
-  /**
-   * Whether we should show the onboarding tutorial nudge
-   * arrow pointing at the commit summary box
-   */
-  readonly shouldNudgeToCommit: boolean
 }
 
 interface IChangesState {
@@ -618,7 +612,7 @@ export class ChangesList extends React.Component<
     // However, for onboarding tutorial repositories, we don't want to do this.
     // See https://github.com/desktop/desktop/issues/8354
     const prepopulateCommitSummary =
-      filesSelected.length === 1 && !repository.isTutorialRepository
+      filesSelected.length === 1
 
     // if this is not a github repo, we don't want to
     // restrict what the user can do at all
@@ -646,7 +640,6 @@ export class ChangesList extends React.Component<
         key={repository.id}
         showBranchProtected={fileCount > 0 && currentBranchProtected}
         showNoWriteAccess={fileCount > 0 && !hasWritePermissionForRepository}
-        shouldNudge={this.props.shouldNudgeToCommit}
       />
     )
   }

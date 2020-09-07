@@ -22,7 +22,7 @@ import { IOpenRepositoryFromURLAction, IUnknownAction, URLActionType } from '../
 import { matchExistingRepository, urlsMatch } from '../../lib/repository-matching'
 import { Shell } from '../../lib/shells'
 import { ILaunchStats, StatsStore } from '../../lib/stats'
-import { AppStore } from '../../lib/stores/app-store'
+import { AppStore } from '../../lib/stores'
 import { validatedRepositoryPath } from '../../lib/stores/helpers/validated-repository-path'
 import { RepositoryStateCache } from '../../lib/stores/repository-state-cache'
 import { getTipSha } from '../../lib/tip'
@@ -105,35 +105,6 @@ export class Dispatcher {
     paths: ReadonlyArray<string>
   ): Promise<ReadonlyArray<Repository>> {
     return this.appStore._addRepositories(paths)
-  }
-
-  /**
-   * Add a tutorial repository.
-   *
-   * This method differs from the `addRepositories` method in that it
-   * requires that the repository has been created on the remote and
-   * set up to track it. Given that tutorial repositories are created
-   * from the no-repositories blank slate it shouldn't be possible for
-   * another repository with the same path to exist but in case that
-   * changes in the future this method will set the tutorial flag on
-   * the existing repository at the given path.
-   */
-  public addTutorialRepository(
-    path: string,
-    endpoint: string,
-    apiRepository: IAPIRepository
-  ) {
-    return this.appStore._addTutorialRepository(path, endpoint, apiRepository)
-  }
-
-  /** Resume an already started onboarding tutorial */
-  public resumeTutorial(repository: Repository) {
-    return this.appStore._resumeTutorial(repository)
-  }
-
-  /** Suspend the onboarding tutorial and go to the no repositories blank slate view */
-  public pauseTutorial(repository: Repository) {
-    return this.appStore._pauseTutorial(repository)
   }
 
   /** Remove the repositories represented by the given IDs from local storage. */
@@ -2503,19 +2474,6 @@ export class Dispatcher {
       repository,
       branchToCheckout
     )
-  }
-
-  /** Call when the user opts to skip the pick editor step of the onboarding tutorial */
-  public skipPickEditorTutorialStep(repository: Repository) {
-    return this.appStore._skipPickEditorTutorialStep(repository)
-  }
-
-  /**
-   * Call when the user has either created a pull request or opts to
-   * skip the create pull request step of the onboarding tutorial
-   */
-  public markPullRequestTutorialStepAsComplete(repository: Repository) {
-    return this.appStore._markPullRequestTutorialStepAsComplete(repository)
   }
 
   /**
