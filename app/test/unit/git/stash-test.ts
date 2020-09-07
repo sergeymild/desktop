@@ -228,7 +228,7 @@ describe('git/stash', () => {
         expect(files).toHaveLength(0)
 
         const entryToApply = desktopEntries[0]
-        await popStashEntry(repository, entryToApply.stashSha)
+        await popStashEntry(repository, entryToApply.name)
 
         status = await getStatusOrThrow(repository)
         files = status.workingDirectory.files
@@ -255,7 +255,7 @@ describe('git/stash', () => {
         expect(files).toHaveLength(0)
 
         const entryToApply = desktopEntries[0]
-        await popStashEntry(repository, entryToApply.stashSha)
+        await popStashEntry(repository, entryToApply.name)
 
         status = await getStatusOrThrow(repository)
         files = status.workingDirectory.files

@@ -97,7 +97,8 @@ import {
   abortRebase,
   addRemote,
   appendIgnoreRule,
-  checkoutBranch, checkoutToCommit,
+  checkoutBranch,
+  checkoutToCommit,
   checkoutToTag,
   continueRebase,
   createBranch,
@@ -664,13 +665,20 @@ export class AppStore extends TypedBaseStore<IAppState> {
     this.emitUpdate()
   }
 
-  public getCurrentTag(repository: Repository): ITagItem | null {
+  public getCurrentTagName(repository: Repository): string | null {
     const state = this.repositoryStateCache.get(repository)
     const tip = state.branchesState.tip
+    let branchSha: string | undefined
     if (tip.kind === TipState.Valid) {
-      const branchSha = tip.branch.tip.sha
-      return this.tags(repository)
-        .find(t => t.hash === branchSha) || null
+      branchSha = tip.branch.tip.sha
+    } else if (tip.kind === TipState.Detached) {
+      branchSha = tip.currentSha
+    }
+
+    if (branchSha != undefined) {
+      const gitStore = this.gitStoreCache.get(repository)
+      const tags = gitStore.commitLookup.get(branchSha)?.tags
+      return tags != undefined && tags?.length > 0 ? tags[0] : null
     }
 
     return null

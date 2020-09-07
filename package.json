@@ -3,6 +3,33 @@
     "type": "git",
     "url": "https://github.com/desktop/desktop.git"
   },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testMatch": [
+      "**/*-test.ts"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ],
+    "collectCoverageFrom": [
+      "**/*.{js,jsx,ts,tsx}",
+      "!**/node_modules/**",
+      "!**/vendor/**",
+      "!**/*.d.*",
+      "!**/index.ts"
+    ],
+    "globals": {
+      "ts-jest": {
+        "useBabelrc": true
+      }
+    }
+  },
   "description": "GitHub Desktop build dependencies",
   "scripts": {
     "cli": "ts-node --require ./app/test/globals.ts --require ./app/src/cli/dev-commands-global.ts app/src/cli/main.ts",

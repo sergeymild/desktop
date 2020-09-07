@@ -46,7 +46,7 @@ interface ITagListItemProps {
 
 interface ITagsToolBarButtonState {
   dropdownState: DropdownState
-  currentTag: ITagItem | null
+  currentTag: string | null
 }
 
 class TagListItem extends React.Component<ITagListItemProps, {}> {
@@ -55,14 +55,7 @@ class TagListItem extends React.Component<ITagListItemProps, {}> {
     this.props.onContextMenu(this.props.item)
   }
 
-  public shouldComponentUpdate(nextProps: Readonly<ITagListItemProps>, nextState: Readonly<{}>, nextContext: any): boolean {
-    const currentTag = this.props.item.tag
-    const nextTag = nextProps.item.tag
-    if (this.props.matches.title !== nextProps.matches.title) { return true }
-    if (currentTag.name !== nextTag.name) { return true }
-    if (currentTag.hash !== nextTag.hash) { return true }
-    return false
-  }
+  //
 
   public render() {
     const {remote} = this.props.item.tag
@@ -237,19 +230,34 @@ class TagsToolBarButton extends React.Component<ITagsButtonProps, ITagsToolBarBu
     this.setState({dropdownState: state})
   }
 
+  public shouldComponentUpdate(
+    nextProps: Readonly<ITagsButtonProps>,
+    nextState: Readonly<ITagsToolBarButtonState>,
+    nextContext: any
+  ): boolean {
+    if (this.state.dropdownState !== nextState.dropdownState) {
+      return true
+    }
+
+    if (this.state.currentTag !== nextState.currentTag) {
+      return true
+    }
+    return false
+  }
+
   public componentDidMount() {
-    const tag = this.props.appStore.getCurrentTag(this.props.repository)
+    const tag = this.props.appStore.getCurrentTagName(this.props.repository)
     this.setState({currentTag: tag})
   }
 
   public componentWillReceiveProps(nextProps: Readonly<ITagsButtonProps>, nextContext: any) {
-    const tag = this.props.appStore.getCurrentTag(this.props.repository)
+    const tag = this.props.appStore.getCurrentTagName(this.props.repository)
     this.setState({currentTag: tag})
   }
 
   public render() {
     return <ToolbarDropdown
-      title={this.state.currentTag?.name || undefined}
+      title={this.state.currentTag || "No tag"}
       description={"Tags"}
       dropdownState={this.state.dropdownState}
       icon={OcticonSymbol.tag}
