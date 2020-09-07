@@ -6,6 +6,24 @@ import { unstageAll } from './reset'
 import { ManualConflictResolution } from '../../models/manual-conflict-resolution'
 import { stageManualConflictResolution } from './stage'
 
+export async function checkoutToCommit(
+  repository: Repository,
+  commitSha: string
+): Promise<boolean> {
+  try {
+    await git(
+      ['checkout', commitSha],
+      repository.path,
+      'checkoutToCommit',
+      {}
+    )
+    return true
+  } catch (e) {
+    logCommitError(e)
+    return false
+  }
+}
+
 /**
  * @param repository repository to execute merge in
  * @param message commit message

@@ -122,7 +122,7 @@ import memoizeOne from 'memoize-one'
 import {TagsToolBarButton} from './toolbar/tagsButton'
 import { CherryPick } from './cherry-pick'
 import { CherryPickCommitList } from './cherry-pick/cherry-pick-commit-list'
-import { CheckoutToTag } from './stash-changes/checkout-to-tag'
+import { CheckoutToCommit } from './popups/checkout-to-commit'
 
 const MinuteInMilliseconds = 1000 * 60
 const HourInMilliseconds = MinuteInMilliseconds * 60
@@ -2002,11 +2002,18 @@ export class App extends React.Component<IAppProps, IAppState> {
           />
         )
       case PopupType.CheckoutToTag:
-        return <CheckoutToTag
+        return <CheckoutToCommit
         dispatcher={this.props.dispatcher}
         repository={popup.repository}
-        tagName={popup.tagName}
+        commit={`tags/${popup.tagName}`}
         onDismissed={onPopupDismissedFn}
+        />
+      case PopupType.CheckoutToCommit:
+        return <CheckoutToCommit
+          dispatcher={this.props.dispatcher}
+          repository={popup.repository}
+          commit={popup.commitSha}
+          onDismissed={onPopupDismissedFn}
         />
       default:
         return assertNever(popup, `Unknown popup type: ${popup}`)

@@ -500,6 +500,13 @@ export class Dispatcher {
     })
   }
 
+  public checkoutToCommit(
+    repository: Repository,
+    commitSha: string
+  ) {
+    this.appStore._checkoutToCommit(repository, commitSha)
+  }
+
   public checkoutToTag(
     repository: Repository,
     tagName: string

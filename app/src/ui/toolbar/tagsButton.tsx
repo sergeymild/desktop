@@ -46,6 +46,7 @@ interface ITagListItemProps {
 
 interface ITagsToolBarButtonState {
   dropdownState: DropdownState
+  currentTag: ITagItem | null
 }
 
 class TagListItem extends React.Component<ITagListItemProps, {}> {
@@ -215,7 +216,8 @@ class TagsToolBarButton extends React.Component<ITagsButtonProps, ITagsToolBarBu
     super(props);
 
     this.state = {
-      dropdownState: 'closed'
+      dropdownState: 'closed',
+      currentTag: null
     }
   }
 
@@ -235,9 +237,20 @@ class TagsToolBarButton extends React.Component<ITagsButtonProps, ITagsToolBarBu
     this.setState({dropdownState: state})
   }
 
+  public componentDidMount() {
+    const tag = this.props.appStore.getCurrentTag(this.props.repository)
+    this.setState({currentTag: tag})
+  }
+
+  public componentWillReceiveProps(nextProps: Readonly<ITagsButtonProps>, nextContext: any) {
+    const tag = this.props.appStore.getCurrentTag(this.props.repository)
+    this.setState({currentTag: tag})
+  }
+
   public render() {
     return <ToolbarDropdown
-      title={"Tags"}
+      title={this.state.currentTag?.name || undefined}
+      description={"Tags"}
       dropdownState={this.state.dropdownState}
       icon={OcticonSymbol.tag}
       onDropdownStateChanged={this.onDropDownStateChanged}

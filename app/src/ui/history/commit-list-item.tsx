@@ -15,12 +15,16 @@ import {
   enableGitTagsDisplay,
   enableGitTagsCreation,
 } from '../../lib/feature-flag'
+import { Dispatcher } from '../dispatcher'
+import { Repository } from '../../models/repository'
 
 interface ICommitProps {
   readonly gitHubRepository: GitHubRepository | null
   readonly commit: Commit
   readonly emoji: Map<string, string>
   readonly isLocal: boolean
+  readonly dispatcher?: Dispatcher
+  readonly repository?: Repository
   readonly onRevertCommit?: (commit: Commit) => void
   readonly onViewCommitOnGitHub?: (sha: string) => void
   readonly onCreateTag?: (targetCommitSha: string) => void
@@ -130,6 +134,13 @@ export class CommitListItem extends React.PureComponent<
     clipboard.writeText(this.props.commit.sha)
   }
 
+  private checkoutToCommit = () => {
+    const dispatcher = this.props.dispatcher
+    const repository = this.props.repository
+    if (!dispatcher && !repository) { return }
+    dispatcher!.checkoutToCommit(repository!, this.props.commit.sha)
+  }
+
   private onViewOnGitHub = () => {
     if (this.props.onViewCommitOnGitHub) {
       this.props.onViewCommitOnGitHub(this.props.commit.sha)
@@ -185,6 +196,13 @@ export class CommitListItem extends React.PureComponent<
         )
       }
     }
+
+    items.push(
+      {
+        label: 'Checkout to this commit',
+        action: this.checkoutToCommit,
+      }
+    )
 
     items.push(
       { type: 'separator' },

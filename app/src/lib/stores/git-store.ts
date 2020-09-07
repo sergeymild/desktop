@@ -299,6 +299,7 @@ export class GitStore extends BaseStore {
       // to make this method return earlier.
       await this.emitUpdatesForChangedTags(previousTags, this._localTags)
     }
+
     this.emitUpdate()
   }
 

@@ -55,6 +55,7 @@ export enum PopupType {
   ConfirmForcePush,
   StashAndSwitchBranch,
   CheckoutToTag,
+  CheckoutToCommit,
   CreateTutorialRepository,
   ConfirmExitTutorial,
   PushRejectedDueToMissingWorkflowScope,
@@ -211,6 +212,11 @@ export type Popup =
       type: PopupType.CheckoutToTag
       repository: Repository
       tagName: string
+    }
+  | {
+      type: PopupType.CheckoutToCommit
+      repository: Repository
+      commitSha: string
     }
   | {
       type: PopupType.CreateTutorialRepository

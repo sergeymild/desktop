@@ -46,9 +46,9 @@ export async function deleteTag(
 
 export async function checkoutToTag(
   repository: Repository,
-  name: string
+  checkoutTo: string
 ): Promise<void> {
-  await git(['checkout', `tags/${name}`], repository.path, 'checkoutToTag')
+  await git(['checkout', checkoutTo], repository.path, 'checkoutToTag')
 }
 
 export async function fetchRemoteTags(

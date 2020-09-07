@@ -8,7 +8,7 @@ import { VerticalSegmentedControl } from '../lib/vertical-segmented-control'
 interface IProps {
   readonly repository: Repository
   readonly dispatcher: Dispatcher
-  readonly tagName: string
+  readonly commit: string
   readonly onDismissed: () => void
 }
 
@@ -21,7 +21,7 @@ enum CheckoutAction {
   Discard,
 }
 
-export class CheckoutToTag extends React.Component<IProps, IState> {
+export class CheckoutToCommit extends React.Component<IProps, IState> {
 
   public constructor(props: IProps) {
     super(props);
@@ -40,12 +40,12 @@ export class CheckoutToTag extends React.Component<IProps, IState> {
       case CheckoutAction.Discard:
         return this.props.dispatcher.discardAndCheckout(
           this.props.repository,
-          this.props.tagName
+          this.props.commit
         )
       case CheckoutAction.Stash:
         return this.props.dispatcher.stashAndCheckout(
           this.props.repository,
-          this.props.tagName
+          this.props.commit
         )
     }
   }

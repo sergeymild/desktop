@@ -98,7 +98,7 @@ import {
   abortRebase,
   addRemote,
   appendIgnoreRule,
-  checkoutBranch,
+  checkoutBranch, checkoutToCommit,
   checkoutToTag,
   continueRebase,
   createBranch,
@@ -118,7 +118,8 @@ import {
   GitError,
   isCoAuthoredByTrailer,
   isGitRepository,
-  IStatusResult, ITagItem,
+  IStatusResult,
+  ITagItem,
   MergeResult,
   mergeTree,
   pull as pullRepo,
@@ -754,6 +755,18 @@ export class AppStore extends TypedBaseStore<IAppState> {
       lastFetched: gitStore.lastFetched,
     }))
     this.emitUpdate()
+  }
+
+  public getCurrentTag(repository: Repository): ITagItem | null {
+    const state = this.repositoryStateCache.get(repository)
+    const tip = state.branchesState.tip
+    if (tip.kind === TipState.Valid) {
+      const branchSha = tip.branch.tip.sha
+      return this.tags(repository)
+        .find(t => t.hash === branchSha) || null
+    }
+
+    return null
   }
 
   public tags(repository: Repository): ReadonlyArray<ITagItem> {
@@ -2782,6 +2795,27 @@ export class AppStore extends TypedBaseStore<IAppState> {
     )
   }
 
+  public async _checkoutToCommit(
+    repository: Repository,
+    commitSha: string
+  ) {
+    const { changesState } = this.repositoryStateCache.get(
+      repository
+    )
+
+    const hasChanges = changesState.workingDirectory.files.length > 0
+    if (!hasChanges) {
+      await checkoutToCommit(repository, commitSha)
+      return await this._refreshRepository(repository)
+    }
+
+    this._showPopup({
+      type: PopupType.CheckoutToCommit,
+      repository,
+      commitSha
+    })
+  }
+
   public async _checkoutToTag(
     repository: Repository,
     tagName: string,
@@ -2820,7 +2854,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     if (!success) { return }
     await this._refreshRepository(repository)
-    await this._checkoutToTag(repository, tagName)
+    await checkoutToTag(repository, tagName)
   }
 
   public async _discardAndCheckout(
@@ -2837,7 +2871,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       changesState.workingDirectory.files
     )
 
-    await this._checkoutToTag(repository, tagName)
+    await checkoutToTag(repository, tagName)
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */

@@ -5,10 +5,14 @@ import { Commit } from '../../models/commit'
 import { CommitListItem } from './commit-list-item'
 import { List } from '../lib/list'
 import { arrayEquals } from '../../lib/equality'
+import { Dispatcher } from '../dispatcher'
+import { Repository } from '../../models/repository'
 
 const RowHeight = 50
 
 interface ICommitListProps {
+  readonly dispatcher: Dispatcher
+  readonly repository: Repository
   /** The GitHub repository associated with this commit (if found) */
   readonly gitHubRepository: GitHubRepository | null
 
@@ -108,6 +112,8 @@ export class CommitList extends React.Component<ICommitListProps, {}> {
         key={commit.sha}
         gitHubRepository={this.props.gitHubRepository}
         isLocal={isLocal}
+        dispatcher={this.props.dispatcher}
+        repository={this.props.repository}
         showUnpushedIndicator={showUnpushedIndicator}
         unpushedIndicatorTitle={this.getUnpushedIndicatorTitle(
           isLocal,
