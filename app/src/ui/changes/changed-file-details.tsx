@@ -5,17 +5,14 @@ import { IDiff, DiffType } from '../../models/diff'
 import { Octicon, OcticonSymbol, iconForStatus } from '../octicons'
 import { mapStatus } from '../../lib/status'
 
-interface IChangedFileDetailsProps {
+interface IProps {
   readonly path: string
   readonly status: AppFileStatus
   readonly diff: IDiff | null
 }
 
 /** Displays information about a file */
-export class ChangedFileDetails extends React.Component<
-  IChangedFileDetailsProps,
-  {}
-> {
+export class ChangedFileDetails extends React.Component<IProps, {}> {
   public render() {
     const status = this.props.status
     const fileStatus = mapStatus(status)
@@ -27,7 +24,7 @@ export class ChangedFileDetails extends React.Component<
 
         <Octicon
           symbol={iconForStatus(status)}
-          className={'status status-' + fileStatus.toLowerCase()}
+          className={`status status-${fileStatus.toLowerCase()}`}
           title={fileStatus}
         />
       </div>

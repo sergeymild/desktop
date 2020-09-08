@@ -12,7 +12,7 @@ import { Dispatcher } from '../dispatcher'
 import { SeamlessDiffSwitcher } from '../diff/seamless-diff-switcher'
 import { PopupType } from '../../models/popup'
 
-interface IChangesProps {
+interface IProps {
   readonly repository: Repository
   readonly file: WorkingDirectoryFileChange
   readonly diff: IDiff | null
@@ -42,7 +42,7 @@ interface IChangesProps {
   readonly askForConfirmationOnDiscardChanges: boolean
 }
 
-export class Changes extends React.Component<IChangesProps, {}> {
+export class Changes extends React.Component<IProps, {}> {
   private onDiffLineIncludeChanged = (diffSelection: DiffSelection) => {
     const file = this.props.file
     this.props.dispatcher.changeFileLineSelection(

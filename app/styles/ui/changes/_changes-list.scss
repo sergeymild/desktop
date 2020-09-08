@@ -70,6 +70,34 @@
     }
   }
 
+  .changes-list-menu {
+    background: var(--box-alt-background-color);
+    border-bottom: 1px solid var(--box-border-color);
+    height: 29px;
+    flex: 0 0 auto;
+
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    span {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      border-right: 1px solid var(--box-border-color);
+      background: var(--background-color);
+      &:hover {
+        background: var(--tab-bar-hover-background-color)
+      }
+
+      &.disabled {
+        background: var(--tab-bar-hover-background-color);
+        opacity: 0.5;
+      }
+    }
+  }
+
   .header {
     background: var(--box-alt-background-color);
     border-bottom: 1px solid var(--box-border-color);

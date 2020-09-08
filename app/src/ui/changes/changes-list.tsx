@@ -12,7 +12,7 @@ import { ICommitMessage } from '../../models/commit-message'
 import { Repository } from '../../models/repository'
 import { IAuthor } from '../../models/author'
 import { ClickSource, List } from '../lib/list'
-import { Checkbox, CheckboxValue } from '../lib/checkbox'
+import { CheckboxValue } from '../lib/checkbox'
 import {
   CopyFilePathLabel,
   DefaultEditorLabel,
@@ -31,6 +31,8 @@ import { ConflictState, RebaseConflictState } from '../../lib/app-state'
 import { ContinueRebase } from './continue-rebase'
 import { hasWritePermission } from '../../models/github-repository'
 import { hasConflictedFiles } from '../../lib/status'
+import { ChangesListMenu } from './changes-list-menu'
+import { ChangesListHeader } from './changes-list-header'
 
 const RowHeight = 29
 
@@ -38,9 +40,9 @@ const RowHeight = 29
 const GitIgnoreFileName = '.gitignore'
 
 /** Compute the 'Include All' checkbox value from the repository state */
-function getIncludeAllValue(
+export function getIncludeAllValue(
   workingDirectory: WorkingDirectoryStatus,
-  rebaseConflictState: RebaseConflictState | null
+  rebaseConflictState: RebaseConflictState | null,
 ) {
   if (rebaseConflictState !== null) {
     if (workingDirectory.files.length === 0) {
@@ -51,7 +53,7 @@ function getIncludeAllValue(
     // untracked files will be skipped by the rebase, so we need to ensure that
     // the "Include All" checkbox matches this state
     const onlyUntrackedFilesFound = workingDirectory.files.every(
-      f => f.status.kind === AppFileStatusKind.Untracked
+      f => f.status.kind === AppFileStatusKind.Untracked,
     )
 
     if (onlyUntrackedFilesFound) {
@@ -59,7 +61,7 @@ function getIncludeAllValue(
     }
 
     const onlyTrackedFilesFound = workingDirectory.files.every(
-      f => f.status.kind !== AppFileStatusKind.Untracked
+      f => f.status.kind !== AppFileStatusKind.Untracked,
     )
 
     // show "Mixed" if we have a mixture of tracked and untracked changes
@@ -95,7 +97,7 @@ interface IChangesListProps {
   readonly focusCommitMessage: boolean
   readonly onDiscardChangesFromFiles: (
     files: ReadonlyArray<WorkingDirectoryFileChange>,
-    isDiscardingAllChanges: boolean
+    isDiscardingAllChanges: boolean,
   ) => void
 
   /** Callback that fires on page scroll to pass the new scrollTop location */
@@ -164,7 +166,7 @@ interface IChangesState {
 }
 
 function getSelectedRowsFromProps(
-  props: IChangesListProps
+  props: IChangesListProps,
 ): ReadonlyArray<number> {
   const selectedFileIDs = props.selectedFileIDs
   const selectedRows = []
@@ -179,10 +181,8 @@ function getSelectedRowsFromProps(
   return selectedRows
 }
 
-export class ChangesList extends React.Component<
-  IChangesListProps,
-  IChangesState
-> {
+export class ChangesList extends React.Component<IChangesListProps,
+  IChangesState> {
   public constructor(props: IChangesListProps) {
     super(props)
     this.state = {
@@ -197,7 +197,7 @@ export class ChangesList extends React.Component<
       !arrayEquals(nextProps.selectedFileIDs, this.props.selectedFileIDs) ||
       !arrayEquals(
         nextProps.workingDirectory.files,
-        this.props.workingDirectory.files
+        this.props.workingDirectory.files,
       )
     ) {
       this.setState({ selectedRows: getSelectedRowsFromProps(nextProps) })
@@ -251,7 +251,7 @@ export class ChangesList extends React.Component<
   private onDiscardAllChanges = () => {
     this.props.onDiscardChangesFromFiles(
       this.props.workingDirectory.files,
-      true
+      true,
     )
   }
 
@@ -283,7 +283,7 @@ export class ChangesList extends React.Component<
 
         this.props.onDiscardChangesFromFiles(
           modifiedFiles,
-          discardingAllChanges
+          discardingAllChanges,
         )
       }
     }
@@ -297,8 +297,8 @@ export class ChangesList extends React.Component<
     const label =
       files.length === 1
         ? __DARWIN__
-          ? `Discard Changes`
-          : `Discard changes`
+        ? `Discard Changes`
+        : `Discard changes`
         : __DARWIN__
         ? `Discard ${files.length} Selected Changes`
         : `Discard ${files.length} selected changes`
@@ -306,8 +306,7 @@ export class ChangesList extends React.Component<
     return this.props.askForConfirmationOnDiscardChanges ? `${label}…` : label
   }
 
-  private onContextMenu = (event: React.MouseEvent<any>) => {
-    event.preventDefault()
+  private onContextMenu = () => {
 
     // need to preserve the working directory state while dealing with conflicts
     if (this.props.rebaseConflictState !== null || this.props.isCommitting) {
@@ -341,7 +340,7 @@ export class ChangesList extends React.Component<
   }
 
   private getDiscardChangesMenuItem = (
-    paths: ReadonlyArray<string>
+    paths: ReadonlyArray<string>,
   ): IMenuItem => {
     return {
       label: this.getDiscardChangesMenuItemLabel(paths),
@@ -350,7 +349,7 @@ export class ChangesList extends React.Component<
   }
 
   private getCopyPathMenuItem = (
-    file: WorkingDirectoryFileChange
+    file: WorkingDirectoryFileChange,
   ): IMenuItem => {
     return {
       label: CopyFilePathLabel,
@@ -362,7 +361,7 @@ export class ChangesList extends React.Component<
   }
 
   private getRevealInFileManagerMenuItem = (
-    file: WorkingDirectoryFileChange
+    file: WorkingDirectoryFileChange,
   ): IMenuItem => {
     return {
       label: RevealInFileManagerLabel,
@@ -373,7 +372,7 @@ export class ChangesList extends React.Component<
 
   private getOpenInExternalEditorMenuItem = (
     file: WorkingDirectoryFileChange,
-    enabled: boolean
+    enabled: boolean,
   ): IMenuItem => {
     const { externalEditorLabel, repository } = this.props
 
@@ -392,7 +391,7 @@ export class ChangesList extends React.Component<
   }
 
   private getDefaultContextMenu(
-    file: WorkingDirectoryFileChange
+    file: WorkingDirectoryFileChange,
   ): ReadonlyArray<IMenuItem> {
     const { id, path, status } = file
 
@@ -449,7 +448,7 @@ export class ChangesList extends React.Component<
           // Filter out any .gitignores that happens to be selected, ignoring
           // those doesn't make sense.
           this.props.onIgnore(
-            paths.filter(path => Path.basename(path) !== GitIgnoreFileName)
+            paths.filter(path => Path.basename(path) !== GitIgnoreFileName),
           )
         },
         // Enable this action as long as there's something selected which isn't
@@ -480,14 +479,14 @@ export class ChangesList extends React.Component<
         label: OpenWithDefaultProgramLabel,
         action: () => this.props.onOpenItem(path),
         enabled,
-      }
+      },
     )
 
     return items
   }
 
   private getRebaseContextMenu(
-    file: WorkingDirectoryFileChange
+    file: WorkingDirectoryFileChange,
   ): ReadonlyArray<IMenuItem> {
     const { path, status } = file
 
@@ -512,7 +511,7 @@ export class ChangesList extends React.Component<
         label: OpenWithDefaultProgramLabel,
         action: () => this.props.onOpenItem(path),
         enabled,
-      }
+      },
     )
 
     return items
@@ -520,7 +519,7 @@ export class ChangesList extends React.Component<
 
   private onItemContextMenu = (
     file: WorkingDirectoryFileChange,
-    event: React.MouseEvent<HTMLDivElement>
+    event: React.MouseEvent<HTMLDivElement>,
   ) => {
     if (this.props.isCommitting) {
       return
@@ -538,7 +537,7 @@ export class ChangesList extends React.Component<
 
   private getPlaceholderMessage(
     files: ReadonlyArray<WorkingDirectoryFileChange>,
-    prepopulateCommitSummary: boolean
+    prepopulateCommitSummary: boolean,
   ) {
     if (!prepopulateCommitSummary) {
       return 'Summary (required)'
@@ -578,7 +577,7 @@ export class ChangesList extends React.Component<
 
     if (rebaseConflictState !== null) {
       const hasUntrackedChanges = workingDirectory.files.some(
-        f => f.status.kind === AppFileStatusKind.Untracked
+        f => f.status.kind === AppFileStatusKind.Untracked,
       )
 
       return (
@@ -597,14 +596,14 @@ export class ChangesList extends React.Component<
 
     const includeAllValue = getIncludeAllValue(
       workingDirectory,
-      rebaseConflictState
+      rebaseConflictState,
     )
 
     const anyFilesSelected =
       fileCount > 0 && includeAllValue !== CheckboxValue.Off
 
     const filesSelected = workingDirectory.files.filter(
-      f => f.selection.getSelectionType() !== DiffSelectionType.None
+      f => f.selection.getSelectionType() !== DiffSelectionType.None,
     )
 
     // When a single file is selected, we use a default commit summary
@@ -634,7 +633,7 @@ export class ChangesList extends React.Component<
         isCommitting={isCommitting}
         placeholder={this.getPlaceholderMessage(
           filesSelected,
-          prepopulateCommitSummary
+          prepopulateCommitSummary,
         )}
         prepopulateCommitSummary={prepopulateCommitSummary}
         key={repository.id}
@@ -646,7 +645,7 @@ export class ChangesList extends React.Component<
 
   private onRowKeyDown = (
     _row: number,
-    event: React.KeyboardEvent<HTMLDivElement>
+    event: React.KeyboardEvent<HTMLDivElement>,
   ) => {
     // The commit is already in-flight but this check prevents the
     // user from changing selection.
@@ -661,40 +660,21 @@ export class ChangesList extends React.Component<
   }
 
   public render() {
-    const fileCount = this.props.workingDirectory.files.length
-    const filesPlural = fileCount === 1 ? 'file' : 'files'
-    const filesDescription = `${fileCount} changed ${filesPlural}`
-
-    const selectedChangeCount = this.props.workingDirectory.files.filter(
-      file => file.selection.getSelectionType() !== DiffSelectionType.None
-    ).length
-    const selectedFilesPlural = selectedChangeCount === 1 ? 'file' : 'files'
-    const selectedChangesDescription = `${selectedChangeCount} changed ${selectedFilesPlural} selected`
-
-    const includeAllValue = getIncludeAllValue(
-      this.props.workingDirectory,
-      this.props.rebaseConflictState
-    )
-
-    const disableAllCheckbox =
-      fileCount === 0 ||
-      this.props.isCommitting ||
-      this.props.rebaseConflictState !== null
 
     return (
       <div className="changes-list-container file-list">
-        <div
-          className="header"
+        <ChangesListMenu
+          stashChanges={this.onStashChanges}
+          discardChanges={this.onDiscardAllChanges}
+          filesCount={this.props.workingDirectory.files.length}
+        />
+        <ChangesListHeader
           onContextMenu={this.onContextMenu}
-          title={selectedChangesDescription}
-        >
-          <Checkbox
-            label={filesDescription}
-            value={includeAllValue}
-            onChange={this.onIncludeAllChanged}
-            disabled={disableAllCheckbox}
-          />
-        </div>
+          workingDirectory={this.props.workingDirectory}
+          isCommitting={this.props.isCommitting}
+          onIncludeAllChanged={this.onIncludeAllChanged}
+          rebaseConflictState={this.props.rebaseConflictState}
+        />
         <List
           id="changes-list"
           rowCount={this.props.workingDirectory.files.length}
