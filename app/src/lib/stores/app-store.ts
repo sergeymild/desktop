@@ -692,10 +692,10 @@ export class AppStore extends TypedBaseStore<IAppState> {
       branchSha = tip.currentSha
     }
 
-    if (branchSha != undefined) {
+    if (branchSha !== undefined) {
       const gitStore = this.gitStoreCache.get(repository)
       const tags = gitStore.commitLookup.get(branchSha)?.tags
-      return tags != undefined && tags?.length > 0 ? tags[0] : null
+      return tags !== undefined && tags?.length > 0 ? tags[0] : null
     }
 
     return null
