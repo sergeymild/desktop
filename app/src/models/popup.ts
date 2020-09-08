@@ -26,6 +26,7 @@ export enum PopupType {
   CreateRepository,
   CloneRepository,
   CreateBranch,
+  CreateBranchFromCommit,
   SignIn,
   About,
   InstallGit,
@@ -110,6 +111,11 @@ export type Popup =
       currentBranchProtected: boolean
 
       initialName?: string
+    }
+  | {
+      type: PopupType.CreateBranchFromCommit
+      repository: Repository
+      commitSha: string
     }
   | { type: PopupType.SignIn }
   | { type: PopupType.About }

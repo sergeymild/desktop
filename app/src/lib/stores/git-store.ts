@@ -356,9 +356,13 @@ export class GitStore extends BaseStore {
     this.storeCommits(commitsToStore)
   }
 
-  public async createTag(name: string, targetCommitSha: string) {
+  public async createTag(
+    name: string,
+    message: string | null,
+    targetCommitSha: string
+  ) {
     const result = await this.performFailableOperation(async () => {
-      await createTag(this.repository, name, targetCommitSha)
+      await createTag(this.repository, name, message, targetCommitSha)
       return true
     })
 

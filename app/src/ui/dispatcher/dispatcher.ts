@@ -427,9 +427,15 @@ export class Dispatcher {
   public createTag(
     repository: Repository,
     name: string,
+    message: string | null,
     targetCommitSha: string
   ): Promise<void> {
-    return this.appStore._createTag(repository, name, targetCommitSha)
+    return this.appStore._createTag(
+      repository,
+      name,
+      message,
+      targetCommitSha
+    )
   }
 
   /**

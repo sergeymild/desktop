@@ -65,7 +65,7 @@ import {
 } from '../lib/rebase'
 import { BannerType } from '../models/banner'
 import { getUncommittedChangesStrategy } from '../models/uncommitted-changes-strategy'
-import {TagsToolBarButton} from './toolbar/tagsButton'
+import {TagsToolBarButton} from './toolbar/tags-toolbar-button'
 import { AppPopup } from './popups/AppPopup'
 
 const MinuteInMilliseconds = 1000 * 60

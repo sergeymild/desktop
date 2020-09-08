@@ -1,11 +1,12 @@
 import * as React from 'react'
+import { useCallback } from 'react'
 import { Popup, PopupType } from '../../models/popup'
 import { RenameBranch } from '../rename-branch'
 import { DeleteBranch } from '../delete-branch'
 import { DiscardChanges } from '../discard-changes'
 import { DiscardSelection } from '../discard-changes/discard-selection-dialog'
 import { Preferences } from '../preferences'
-import { TipState } from '../../models/tip'
+import { IDetachedHead, TipState } from '../../models/tip'
 import { Merge } from '../merge-branch'
 import { CherryPick } from '../cherry-pick'
 import { CherryPickCommitList } from '../cherry-pick/cherry-pick-commit-list'
@@ -68,7 +69,6 @@ import { ApplicationTheme } from '../lib/application-theme'
 import { SignInState } from '../../lib/stores'
 import { CloneRepositoryTab } from '../../models/clone-repository-tab'
 import { IAccountRepositories } from '../../lib/stores/api-repositories-store'
-import { useCallback } from 'react'
 
 interface IProps {
   readonly popup: Popup | null
@@ -394,6 +394,54 @@ export const AppPopup: React.FC<IProps> = (
           dispatcher={dispatcher}
           selectedTab={selectedCloneRepositoryTab}
           apiRepositories={apiRepositories}
+        />
+      )
+    case PopupType.CreateBranchFromCommit:
+      const state = repositoryStateManager.get(popup.repository)
+      const branchesState = state.branchesState
+      const currentBranchProtected = state.changesState.currentBranchProtected
+      const repository = popup.repository
+
+      if (branchesState.tip.kind === TipState.Unknown) {
+        onPopupDismissedFn()
+        return null
+      }
+
+      let upstreamGhRepo: GitHubRepository | null = null
+      let upstreamDefaultBranch: Branch | null = null
+
+      if (
+        enableForkyCreateBranchUI() &&
+        isRepositoryWithGitHubRepository(repository)
+      ) {
+        upstreamGhRepo = getNonForkGitHubRepository(repository)
+        upstreamDefaultBranch = findDefaultUpstreamBranch(
+          repository,
+          branchesState.allBranches,
+        )
+      }
+
+      const detachedTip: IDetachedHead = {
+        kind: TipState.Detached,
+        currentSha: popup.commitSha
+      }
+
+      return (
+        <CreateBranch
+          key="create-branch"
+          tip={detachedTip}
+          defaultBranch={branchesState.defaultBranch}
+          upstreamDefaultBranch={upstreamDefaultBranch}
+          allBranches={branchesState.allBranches}
+          repository={repository}
+          upstreamGitHubRepository={upstreamGhRepo}
+          onDismissed={onPopupDismissedFn}
+          dispatcher={dispatcher}
+          initialName={''}
+          currentBranchProtected={currentBranchProtected}
+          selectedUncommittedChangesStrategy={getUncommittedChangesStrategy(
+            uncommittedChangesStrategyKind,
+          )}
         />
       )
     case PopupType.CreateBranch: {

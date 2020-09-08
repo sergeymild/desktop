@@ -6,6 +6,7 @@ import { envForRemoteOperation } from './environment'
 
 interface ITagItem {
   name: string,
+  subject: string | null,
   hash: string,
   date: string,
   remote: Boolean
@@ -18,14 +19,16 @@ export {ITagItem}
  *
  * @param repository        - The repository in which to create the new tag.
  * @param name              - The name of the new tag.
+ * @param message           - The message of the new tag.
  * @param targetCommitSha   - The SHA of the commit where the new tag will live on.
  */
 export async function createTag(
   repository: Repository,
   name: string,
+  message: string | null,
   targetCommitSha: string
 ): Promise<void> {
-  const args = ['tag', '-a', '-m', '', name, targetCommitSha]
+  const args = ['tag', '-a', '-m', message || "", name, targetCommitSha]
 
   await git(args, repository.path, 'createTag')
 }
@@ -67,16 +70,6 @@ export async function fetchRemoteTags(
       .map(line => {
         const [commitSha, rawTagName] = line.split('\t')
 
-        // Normalize tag names by removing the leading ref/tags/ and the trailing ^{}.
-        //
-        // git show-ref returns two entries for annotated tags:
-        // deadbeef refs/tags/annotated-tag
-        // de510b99 refs/tags/annotated-tag^{}
-        //
-        // The first entry sha correspond to the blob object of the annotation, while the second
-        // entry corresponds to the actual commit where the tag was created.
-        // By normalizing the tag name we can make sure that the commit sha gets stored in the returned
-        // Map of commits (since git will always print the entry with the commit sha at the end).
         const tagName = rawTagName
           .replace(/^refs\/tags\//, '')
           .replace(/\^\{\}$/, '')
@@ -94,7 +87,7 @@ export async function fetchAllTags(
   repository: Repository,
   remoteTags: Map<string, string>
 ) : Promise<ReadonlyArray<ITagItem>> {
-  const args = ['for-each-ref', '--sort=creatordate', "--format='%(refname)|%(creatordate)|%(objectname)'", 'refs/tags']
+  const args = ['for-each-ref', '--sort=creatordate', "--format='%(refname)|%(creatordate)|%(objectname)|%(subject)'", 'refs/tags']
 
   const tags = await git(args, repository.path, 'fetchAllTags', {
     successExitCodes: new Set([0, 1]), // when there are no tags, git exits with 1.
@@ -104,16 +97,22 @@ export async function fetchAllTags(
     .split('\n')
     .filter(line => line !== '')
     .map(line => {
-      const [rawTagName, date, commitSha] = line
+      const [rawTagName, date, hash, subject] = line
         .replace("'", "")
         .replace("'", "")
         .split('|')
 
-      const tagName = rawTagName
+      const name = rawTagName
         .replace(/^refs\/tags\//, '')
         .replace(/\^\{\}$/, '')
 
-      return {name: tagName, hash: commitSha, date, remote: remoteTags.get(tagName) != null}
+      return {
+        name,
+        subject: subject.length === 0 ? "no comment" : subject,
+        hash,
+        date,
+        remote: remoteTags.get(name) != null
+      }
     })
   return tagsArray.reverse()
 }

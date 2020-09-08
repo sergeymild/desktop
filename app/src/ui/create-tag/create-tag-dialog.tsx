@@ -21,6 +21,7 @@ interface ICreateTagProps {
 
 interface ICreateTagState {
   readonly tagName: string
+  readonly tagMessage: string | null
 
   /**
    * Note: once tag creation has been initiated this value stays at true
@@ -43,6 +44,7 @@ export class CreateTag extends React.Component<
 
     this.state = {
       tagName: props.initialName || '',
+      tagMessage: null,
       isCreatingTag: false,
     }
   }
@@ -54,7 +56,7 @@ export class CreateTag extends React.Component<
     return (
       <Dialog
         id="create-tag"
-        title={__DARWIN__ ? 'Create a Tag' : 'Create a tag'}
+        title="Create a tag"
         onSubmit={this.createTag}
         onDismissed={this.props.onDismissed}
         loading={this.state.isCreatingTag}
@@ -68,11 +70,15 @@ export class CreateTag extends React.Component<
             initialValue={this.props.initialName}
             onValueChange={this.updateTagName}
           />
+          <RefNameTextBox
+            label="Message"
+            onValueChange={this.updateTagMessage}
+          />
         </DialogContent>
 
         <DialogFooter>
           <OkCancelButtonGroup
-            okButtonText={__DARWIN__ ? 'Create Tag' : 'Create tag'}
+            okButtonText="Create tag"
             okButtonDisabled={disabled}
           />
         </DialogFooter>
@@ -84,6 +90,12 @@ export class CreateTag extends React.Component<
     if (this.state.tagName.length > MaxTagNameLength) {
       return (
         <>The tag name cannot be longer than {MaxTagNameLength} characters</>
+      )
+    }
+
+    if (this.state.tagMessage && this.state.tagMessage.length > MaxTagNameLength) {
+      return (
+        <>The tag message cannot be longer than {MaxTagNameLength} characters</>
       )
     }
 
@@ -100,9 +112,11 @@ export class CreateTag extends React.Component<
   }
 
   private updateTagName = (tagName: string) => {
-    this.setState({
-      tagName,
-    })
+    this.setState({ tagName })
+  }
+
+  private updateTagMessage = (tagMessage: string) => {
+    this.setState({ tagMessage })
   }
 
   private createTag = async () => {
@@ -116,6 +130,7 @@ export class CreateTag extends React.Component<
       await this.props.dispatcher.createTag(
         repository,
         name,
+        this.state.tagMessage,
         this.props.targetCommitSha
       )
       timer.done()

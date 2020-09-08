@@ -6,28 +6,16 @@ import { Branch, StartPoint } from '../../models/branch'
 import { Row } from '../lib/row'
 import { Ref } from '../lib/ref'
 import { LinkButton } from '../lib/link-button'
-import { Dialog, DialogError, DialogContent, DialogFooter } from '../dialog'
-import {
-  VerticalSegmentedControl,
-  ISegmentedItem,
-} from '../lib/vertical-segmented-control'
-import {
-  TipState,
-  IUnbornRepository,
-  IDetachedHead,
-  IValidBranch,
-} from '../../models/tip'
+import { Dialog, DialogContent, DialogError, DialogFooter, OkCancelButtonGroup } from '../dialog'
+import { ISegmentedItem, VerticalSegmentedControl } from '../lib/vertical-segmented-control'
+import { IDetachedHead, IUnbornRepository, IValidBranch, TipState } from '../../models/tip'
 import { assertNever } from '../../lib/fatal-error'
 import { renderBranchNameExistsOnRemoteWarning } from '../lib/branch-name-warnings'
 import { getStartPoint } from '../../lib/create-branch'
-import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
-import { startTimer } from '../lib/timing'
-import {
-  UncommittedChangesStrategy,
-  UncommittedChangesStrategyKind,
-} from '../../models/uncommitted-changes-strategy'
+import { UncommittedChangesStrategy, UncommittedChangesStrategyKind } from '../../models/uncommitted-changes-strategy'
 import { GitHubRepository } from '../../models/github-repository'
 import { RefNameTextBox } from '../lib/ref-name-text-box'
+import { startTimer } from '../lib/timing'
 
 interface ICreateBranchProps {
   readonly repository: Repository
@@ -48,20 +36,6 @@ interface ICreateBranchState {
   readonly branchName: string
   readonly startPoint: StartPoint
 
-  /**
-   * Whether or not the dialog is currently creating a branch. This affects
-   * the dialog loading state as well as the rendering of the branch selector.
-   *
-   * When the dialog is creating a branch we take the tip and defaultBranch
-   * as they were in props at the time of creation and stick them in state
-   * so that we can maintain the layout of the branch selection parts even
-   * as the Tip changes during creation.
-   *
-   * Note: once branch creation has been initiated this value stays at true
-   * and will never revert to being false. If the branch creation operation
-   * fails this dialog will still be dismissed and an error dialog will be
-   * shown in its place.
-   */
   readonly isCreatingBranch: boolean
 
   /**
@@ -179,7 +153,7 @@ export class CreateBranch extends React.Component<
     return (
       <Dialog
         id="create-branch"
-        title={__DARWIN__ ? 'Create a Branch' : 'Create a branch'}
+        title="Create a branch"
         onSubmit={this.createBranch}
         onDismissed={this.props.onDismissed}
         loading={this.state.isCreatingBranch}
@@ -204,7 +178,7 @@ export class CreateBranch extends React.Component<
 
         <DialogFooter>
           <OkCancelButtonGroup
-            okButtonText={__DARWIN__ ? 'Create Branch' : 'Create branch'}
+            okButtonText="Create branch"
             okButtonDisabled={disabled}
           />
         </DialogFooter>
@@ -255,6 +229,11 @@ export class CreateBranch extends React.Component<
 
       startPoint = defaultBranch.name
     }
+
+    if (this.props.tip.kind === TipState.Detached) {
+      startPoint = this.props.tip.currentSha
+    }
+
     if (this.state.startPoint === StartPoint.UpstreamDefaultBranch) {
       // This really shouldn't happen, we take all kinds of precautions
       // to make sure the startPoint state is valid given the current props.
@@ -269,26 +248,26 @@ export class CreateBranch extends React.Component<
       noTrack = true
     }
 
-    if (name.length > 0) {
-      // never prompt to stash changes if someone is switching away from a protected branch
-      const strategy: UncommittedChangesStrategy = currentBranchProtected
-        ? {
-            kind: UncommittedChangesStrategyKind.MoveToNewBranch,
-            transientStashEntry: null,
-          }
-        : this.props.selectedUncommittedChangesStrategy
+    if (name.length === 0) { return }
 
-      this.setState({ isCreatingBranch: true })
-      const timer = startTimer('create branch', repository)
-      await this.props.dispatcher.createBranch(
-        repository,
-        name,
-        startPoint,
-        strategy,
-        noTrack
-      )
-      timer.done()
-    }
+    // never prompt to stash changes if someone is switching away from a protected branch
+    const strategy: UncommittedChangesStrategy = currentBranchProtected
+      ? {
+        kind: UncommittedChangesStrategyKind.MoveToNewBranch,
+        transientStashEntry: null,
+      }
+      : this.props.selectedUncommittedChangesStrategy
+
+    this.setState({ isCreatingBranch: true })
+    const timer = startTimer('create branch', repository)
+    await this.props.dispatcher.createBranch(
+      repository,
+      name,
+      startPoint,
+      strategy,
+      noTrack
+    )
+    timer.done()
   }
 
   /**

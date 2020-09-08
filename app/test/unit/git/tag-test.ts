@@ -45,7 +45,7 @@ describe('git/tag', () => {
 
   describe('createTag', () => {
     it('creates a tag with the given name', async () => {
-      await createTag(repository, 'my-new-tag', 'HEAD')
+      await createTag(repository, 'my-new-tag', "", 'HEAD')
 
       const commit = await getCommit(repository, 'HEAD')
       expect(commit).not.toBeNull()
@@ -53,8 +53,8 @@ describe('git/tag', () => {
     })
 
     it('creates multiple tags', async () => {
-      await createTag(repository, 'my-new-tag', 'HEAD')
-      await createTag(repository, 'another-tag', 'HEAD')
+      await createTag(repository, 'my-new-tag', "", 'HEAD')
+      await createTag(repository, 'another-tag', "", 'HEAD')
 
       const commit = await getCommit(repository, 'HEAD')
       expect(commit).not.toBeNull()
@@ -65,7 +65,7 @@ describe('git/tag', () => {
       const commits = await getCommits(repository, 'HEAD', 2)
       const commitSha = commits[1].sha
 
-      await createTag(repository, 'my-new-tag', commitSha)
+      await createTag(repository, 'my-new-tag', "", commitSha)
 
       const commit = await getCommit(repository, commitSha)
 
@@ -74,9 +74,9 @@ describe('git/tag', () => {
     })
 
     it('fails when creating a tag with a name that already exists', async () => {
-      await createTag(repository, 'my-new-tag', 'HEAD')
+      await createTag(repository, 'my-new-tag', "", 'HEAD')
 
-      expect(createTag(repository, 'my-new-tag', 'HEAD')).rejects.toThrow(
+      expect(createTag(repository, 'my-new-tag', "", 'HEAD')).rejects.toThrow(
         /already exists/i
       )
     })
@@ -84,7 +84,7 @@ describe('git/tag', () => {
 
   describe('deleteTag', () => {
     it('deletes a tag with the given name', async () => {
-      await createTag(repository, 'my-new-tag', 'HEAD')
+      await createTag(repository, 'my-new-tag', "", 'HEAD')
       await deleteTag(repository, 'my-new-tag')
 
       const commit = await getCommit(repository, 'HEAD')
@@ -100,8 +100,8 @@ describe('git/tag', () => {
 
     it('returns all the created tags', async () => {
       const commit = await getCommit(repository, 'HEAD')
-      await createTag(repository, 'my-new-tag', commit!.sha)
-      await createTag(repository, 'another-tag', commit!.sha)
+      await createTag(repository, 'my-new-tag', "", commit!.sha)
+      await createTag(repository, 'another-tag', "", commit!.sha)
 
       expect(await fetchAllTags(repository, new Map<string, string>())).toEqual(
         new Map([
@@ -132,7 +132,7 @@ describe('git/tag', () => {
     })
 
     it("returns local tags that haven't been pushed", async () => {
-      await createTag(repository, 'my-new-tag', 'HEAD')
+      await createTag(repository, 'my-new-tag', "", 'HEAD')
 
       expect(
         await fetchTagsToPush(repository, account, originRemote, 'master')
@@ -140,7 +140,7 @@ describe('git/tag', () => {
     })
 
     it('returns an empty array after pushing the tag', async () => {
-      await createTag(repository, 'my-new-tag', 'HEAD')
+      await createTag(repository, 'my-new-tag', "", 'HEAD')
 
       await push(repository, account, originRemote, 'master', null, [
         'my-new-tag',
@@ -161,7 +161,7 @@ describe('git/tag', () => {
 
       await checkoutBranch(repository, account, branch!)
       const commitSha = await createCommit(repository, 'a commit', files)
-      await createTag(repository, 'my-new-tag', commitSha!)
+      await createTag(repository, 'my-new-tag', "", commitSha!)
 
       expect(
         await fetchTagsToPush(repository, account, originRemote, 'master')
@@ -179,7 +179,7 @@ describe('git/tag', () => {
       const files = status.workingDirectory.files
       await createCommit(remoteRepository, 'a commit', files)
 
-      await createTag(repository, 'my-new-tag', 'HEAD')
+      await createTag(repository, 'my-new-tag', "", 'HEAD')
 
       expect(
         await fetchTagsToPush(repository, account, originRemote, 'master')

@@ -2658,11 +2658,12 @@ export class AppStore extends TypedBaseStore<IAppState> {
   public async _createTag(
     repository: Repository,
     name: string,
+    message: string | null,
     targetCommitSha: string
   ): Promise<void> {
     const gitStore = this.gitStoreCache.get(repository)
 
-    await gitStore.createTag(name, targetCommitSha)
+    await gitStore.createTag(name, message, targetCommitSha)
 
     this._closePopup()
   }

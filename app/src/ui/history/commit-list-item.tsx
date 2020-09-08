@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Commit } from '../../models/commit'
 import { GitHubRepository } from '../../models/github-repository'
-import { IAvatarUser, getAvatarUsersForCommit } from '../../models/avatar'
+import { getAvatarUsersForCommit, IAvatarUser } from '../../models/avatar'
 import { RichText } from '../lib/rich-text'
 import { RelativeTime } from '../relative-time'
 import { getDotComAPIEndpoint } from '../../lib/api'
@@ -11,12 +11,11 @@ import { CommitAttribution } from '../lib/commit-attribution'
 import { AvatarStack } from '../lib/avatar-stack'
 import { IMenuItem } from '../../lib/menu-item'
 import { Octicon, OcticonSymbol } from '../octicons'
-import {
-  enableGitTagsDisplay,
-  enableGitTagsCreation,
-} from '../../lib/feature-flag'
+import { enableGitTagsCreation, enableGitTagsDisplay } from '../../lib/feature-flag'
 import { Dispatcher } from '../dispatcher'
 import { Repository } from '../../models/repository'
+import { dispatcher } from '../index'
+import { PopupType } from '../../models/popup'
 
 interface ICommitProps {
   readonly gitHubRepository: GitHubRepository | null
@@ -166,36 +165,7 @@ export class CommitListItem extends React.PureComponent<
       viewOnGitHubLabel = 'View on GitHub Enterprise'
     }
 
-    const items: IMenuItem[] = [
-      {
-        label: __DARWIN__ ? 'Revert this Commit' : 'Revert this commit',
-        action: () => {
-          if (this.props.onRevertCommit) {
-            this.props.onRevertCommit(this.props.commit)
-          }
-        },
-        enabled: this.props.onRevertCommit !== undefined,
-      },
-    ]
-
-    if (enableGitTagsCreation()) {
-      items.push({
-        label: 'Create Tag…',
-        action: this.onCreateTag,
-        enabled: this.props.onCreateTag !== undefined,
-      })
-
-      const deleteTagsMenuItem = this.getDeleteTagsMenuItem()
-
-      if (deleteTagsMenuItem !== null) {
-        items.push(
-          {
-            type: 'separator',
-          },
-          deleteTagsMenuItem
-        )
-      }
-    }
+    const items: IMenuItem[] = []
 
     items.push(
       {
@@ -204,10 +174,52 @@ export class CommitListItem extends React.PureComponent<
       }
     )
 
+    items.push({type: 'separator'})
+
+    const repository = this.props.repository
+    if (repository !== undefined) {
+      items.push({
+        label: "Create branch here",
+        action: () => {
+          dispatcher.showPopup({
+            type: PopupType.CreateBranchFromCommit,
+            commitSha: this.props.commit.sha,
+            repository: repository
+          })
+        }
+      })
+    }
+    items.push({
+      label: 'Revert commit',
+      action: () => {
+        if (this.props.onRevertCommit) {
+          this.props.onRevertCommit(this.props.commit)
+        }
+      },
+      enabled: this.props.onRevertCommit !== undefined,
+    })
+    items.push({type: 'separator'})
+
+    if (enableGitTagsCreation()) {
+
+      items.push({
+        label: 'Create tag here',
+        action: this.onCreateTag,
+        enabled: this.props.onCreateTag !== undefined,
+      })
+
+      const deleteTagsMenuItem = this.getDeleteTagsMenuItem()
+      if (deleteTagsMenuItem !== null) {
+        items.push({ type: 'separator' })
+        items.push(deleteTagsMenuItem)
+      }
+
+    }
+
     items.push(
       { type: 'separator' },
       {
-        label: 'Copy SHA',
+        label: 'Copy commit id to clipboard',
         action: this.onCopySHA,
       },
       {
