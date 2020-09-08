@@ -1,10 +1,7 @@
 import * as React from 'react'
 
 import { PullRequest } from '../../models/pull-request'
-import {
-  Repository,
-  isRepositoryWithGitHubRepository,
-} from '../../models/repository'
+import { isRepositoryWithGitHubRepository, Repository } from '../../models/repository'
 import { Branch } from '../../models/branch'
 import { BranchesTab } from '../../models/branches-tab'
 import { PopupType } from '../../models/popup'
@@ -25,10 +22,10 @@ import { IBranchListItem } from './group-branches'
 import { renderDefaultBranch } from './branch-renderer'
 import { IMatches } from '../../lib/fuzzy-find'
 import { startTimer } from '../lib/timing'
-import {
-  UncommittedChangesStrategyKind,
-  UncommittedChangesStrategy,
-} from '../../models/uncommitted-changes-strategy'
+import { UncommittedChangesStrategy, UncommittedChangesStrategyKind } from '../../models/uncommitted-changes-strategy'
+import { IMenuItem } from '../../lib/menu-item'
+import { showContextualMenu } from '../main-process-proxy'
+import { dispatcher } from '../index'
 
 interface IBranchesContainerProps {
   readonly dispatcher: Dispatcher
@@ -153,8 +150,34 @@ export class BranchesContainer extends React.Component<
     )
   }
 
+  private onRename = (branch: Branch) => {
+    dispatcher.closeCurrentFoldout()
+    dispatcher.showPopup({
+      type: PopupType.RenameBranch,
+      repository: this.props.repository,
+      branch: branch
+    })
+  }
+
+  private onContextMenu = (branch: Branch) => {
+    const items: IMenuItem[] = [
+      {
+        label: "Rename",
+        action: () => this.onRename(branch),
+        enabled: true,
+      }
+    ]
+
+    showContextualMenu(items)
+  }
+
   private renderBranch = (item: IBranchListItem, matches: IMatches) => {
-    return renderDefaultBranch(item, matches, this.props.currentBranch)
+    return renderDefaultBranch(
+      item,
+      matches,
+      this.props.currentBranch,
+      this.onContextMenu
+    )
   }
 
   private renderSelectedTab() {
