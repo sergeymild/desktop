@@ -265,8 +265,8 @@ export class GitStore extends BaseStore {
     return commits.map(c => c.sha)
   }
 
-  public async refreshTags(account: IGitAccount | null) {
-    if (this._remoteTags.size === 0) {
+  public async refreshTags(account: IGitAccount | null, forceFetchRemote: boolean = false) {
+    if (this._remoteTags.size === 0 || forceFetchRemote) {
       this._remoteTags = await fetchRemoteTags(this.repository, account, this.currentRemote)
     }
     const previousTags = this._localTags
@@ -360,7 +360,6 @@ export class GitStore extends BaseStore {
     }
 
     await this.refreshTags(account)
-    this.addTagToPush(name)
 
     this.statsStore.recordTagCreatedInDesktop()
   }

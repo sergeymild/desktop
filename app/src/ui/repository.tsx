@@ -365,7 +365,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
           isExternalEditorAvailable={
             this.props.externalEditorLabel !== undefined
           }
-          dispatcher={this.props.dispatcher}
         />
       )
     } else {

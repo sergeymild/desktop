@@ -3345,7 +3345,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
             // manually refresh branch protections after the push, to ensure
             // any new branch will immediately report as protected
             await this.refreshBranchProtectionState(repository)
-
+            await gitStore.refreshTags(account, true)
             await this._refreshRepository(repository)
 
             this.updatePushPullFetchProgress(repository, {

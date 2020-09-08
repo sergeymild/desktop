@@ -289,7 +289,7 @@ function forcePushButton(
  * A button which pushes, pulls, or updates depending on the state of the
  * repository.
  */
-export class PushPullButton extends React.Component<IPushPullButtonProps, {}> {
+export class PushPullButton extends React.PureComponent<IPushPullButtonProps, {}> {
   private push = () => {
     this.props.dispatcher.push(this.props.repository)
   }
@@ -310,6 +310,7 @@ export class PushPullButton extends React.Component<IPushPullButtonProps, {}> {
   }
 
   public render() {
+    console.log("pull-push render")
     const {
       progress,
       networkActionInProgress,

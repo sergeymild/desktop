@@ -67,6 +67,7 @@ import { BannerType } from '../models/banner'
 import { getUncommittedChangesStrategy } from '../models/uncommitted-changes-strategy'
 import {TagsToolBarButton} from './toolbar/tags-toolbar-button'
 import { AppPopup } from './popups/AppPopup'
+import memoizeOne from 'memoize-one'
 
 const MinuteInMilliseconds = 1000 * 60
 const HourInMilliseconds = MinuteInMilliseconds * 60
@@ -1324,6 +1325,14 @@ export class App extends React.Component<IAppProps, IAppState> {
     }
   }
 
+  private foldoutStyle = memoizeOne((sidebarWidth: number): React.CSSProperties => ({
+    position: 'absolute',
+    marginLeft: 0,
+    width: sidebarWidth,
+    minWidth: sidebarWidth,
+    height: '100%',
+    top: 0,
+  }))
 
   private renderRepositoryToolbarButton() {
     const selection = this.state.selectedState
@@ -1351,14 +1360,7 @@ export class App extends React.Component<IAppProps, IAppState> {
 
     const tooltip = repository && !isOpen ? repository.path : undefined
 
-    const foldoutStyle: React.CSSProperties = {
-      position: 'absolute',
-      marginLeft: 0,
-      width: this.state.sidebarWidth,
-      minWidth: this.state.sidebarWidth,
-      height: '100%',
-      top: 0,
-    }
+
 
     return (
       <ToolbarDropdown
@@ -1366,7 +1368,7 @@ export class App extends React.Component<IAppProps, IAppState> {
         title={title}
         description={__DARWIN__ ? 'Current Repository' : 'Current repository'}
         tooltip={tooltip}
-        foldoutStyle={foldoutStyle}
+        foldoutStyle={this.foldoutStyle(this.state.sidebarWidth)}
         onDropdownStateChanged={this.onRepositoryDropdownStateChanged}
         dropdownContentRenderer={this.renderRepositoryList}
         dropdownState={currentState}

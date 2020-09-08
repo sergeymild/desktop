@@ -13,9 +13,9 @@ import { Ref } from '../lib/ref'
 import { Branch, IAheadBehind } from '../../models/branch'
 import { IRemote } from '../../models/remote'
 import { isCurrentBranchForcePush } from '../../lib/rebase'
-import { Dispatcher } from '../dispatcher'
 import { SuggestedActionGroup } from '../suggested-actions'
 import { PopupType } from '../../models/popup'
+import { dispatcher } from '../index'
 
 function formatMenuItemLabel(text: string) {
   if (__WIN32__ || __LINUX__) {
@@ -38,8 +38,6 @@ function formatParentMenuLabel(menuItem: IMenuItemInfo) {
 const PaperStackImage = encodePathAsUrl(__dirname, 'static/paper-stack.svg')
 
 interface INoChangesProps {
-  readonly dispatcher: Dispatcher
-
   /**
    * The currently selected repository
    */
@@ -162,7 +160,7 @@ function buildMenuItemInfoMap(
 }
 
 /** The component to display when there are no local changes. */
-export class NoChanges extends React.Component<
+export class NoChanges extends React.PureComponent<
   INoChangesProps,
   INoChangesState
 > {
@@ -218,7 +216,7 @@ export class NoChanges extends React.Component<
   }
 
   private onMergeIntoClick = () => {
-    this.props.dispatcher.showPopup({
+    dispatcher.showPopup({
       type: PopupType.MergeBranch,
       repository: this.props.repository,
     })
@@ -241,7 +239,7 @@ export class NoChanges extends React.Component<
   }
 
   private onCherryPickInto = () => {
-    this.props.dispatcher.showPopup({
+    dispatcher.showPopup({
       type: PopupType.CherryPick,
       repository: this.props.repository,
     })
@@ -352,7 +350,7 @@ export class NoChanges extends React.Component<
   }
 
   private onPublishRepositoryClicked = () =>
-    this.props.dispatcher.recordSuggestedStepPublishRepository()
+    dispatcher.recordSuggestedStepPublishRepository()
 
   private renderPublishBranchAction(tip: IValidBranch) {
     // This is a bit confusing, there's no dedicated
@@ -401,7 +399,7 @@ export class NoChanges extends React.Component<
   }
 
   private onPublishBranchClicked = () =>
-    this.props.dispatcher.recordSuggestedStepPublishBranch()
+    dispatcher.recordSuggestedStepPublishBranch()
 
   private renderPullBranchAction(
     tip: IValidBranch,
@@ -557,7 +555,7 @@ export class NoChanges extends React.Component<
   }
 
   private onCreatePullRequestClicked = () =>
-    this.props.dispatcher.recordSuggestedStepCreatePullRequest()
+    dispatcher.recordSuggestedStepCreatePullRequest()
 
   private renderActions() {
     return (
@@ -591,6 +589,7 @@ export class NoChanges extends React.Component<
   }
 
   public render() {
+    console.log("no-changes render")
     return (
       <div id="no-changes">
         <div className="content">
