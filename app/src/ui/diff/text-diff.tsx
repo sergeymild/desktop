@@ -670,6 +670,7 @@ export class TextDiff extends React.Component<ITextDiffProps, {}> {
     const selectionRanges = doc.listSelections()
     const lineContent: Array<string> = []
 
+    let textToClipboard: string = ""
     for (let i = 0; i < lines.length; i++) {
       const range = selectionRanges[i]
       const content = lines[i]
@@ -683,7 +684,15 @@ export class TextDiff extends React.Component<ITextDiffProps, {}> {
       }
 
       const textWithoutMarkers = lineContent.join('\n')
-      clipboard.writeText(textWithoutMarkers)
+      textToClipboard += textWithoutMarkers
+    }
+
+    if (textToClipboard.trim().length > 0) {
+      clipboard.writeText(textToClipboard)
+    } else {
+      const cursor = doc.getCursor(); // gets the line number in the cursor position
+      const line = doc.getLine(cursor.line).replace("+", "").replace("-", ""); // get the line contents
+      if (line.length > 0) clipboard.writeText(line)
     }
   }
 
