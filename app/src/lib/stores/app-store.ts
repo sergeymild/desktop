@@ -114,7 +114,7 @@ import {
   getMergeBase,
   getRebaseSnapshot,
   getRemotes,
-  getWorkingDirectoryDiff,
+  getWorkingDirectoryDiff, IRepositoryTags,
   isCoAuthoredByTrailer,
   isGitRepository,
   IStatusResult,
@@ -674,12 +674,21 @@ export class AppStore extends TypedBaseStore<IAppState> {
       commitLookup: gitStore.commitLookup,
       localCommitSHAs: gitStore.localCommitSHAs,
       localTags: gitStore.localTags,
+      repositoryTags: {
+        localTags: gitStore.localTags || [],
+        tagsToPush: gitStore.tagsToPush || []
+      },
       aheadBehind: gitStore.aheadBehind,
       tagsToPush: gitStore.tagsToPush,
       remote: gitStore.currentRemote,
       lastFetched: gitStore.lastFetched,
     }))
     this.emitUpdate()
+  }
+
+  public repositoryTags(repository: Repository): IRepositoryTags | null {
+    const state = this.repositoryStateCache.get(repository)
+    return state.repositoryTags
   }
 
   public getCurrentTagName(repository: Repository): string | null {
@@ -2400,7 +2409,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
       refreshSectionPromise,
     ])
 
-    await gitStore.refreshTags()
+    await this.withAuthenticatingUser(repository, async (repository, account) => {
+      await gitStore.refreshTags(account)
+    })
 
     this.updateCurrentPullRequest(repository)
 
@@ -2676,15 +2687,19 @@ export class AppStore extends TypedBaseStore<IAppState> {
   ): Promise<void> {
     const gitStore = this.gitStoreCache.get(repository)
 
-    await gitStore.createTag(name, message, targetCommitSha)
+    await this.withAuthenticatingUser(repository, async (_, account) => {
+      await gitStore.createTag(account, name, message, targetCommitSha)
+    })
 
     this._closePopup()
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */
-  public async _deleteTag(repository: Repository, name: string): Promise<void> {
+  public async _deleteTag(repository: Repository, name: string, remote: boolean): Promise<void> {
     const gitStore = this.gitStoreCache.get(repository)
-    await gitStore.deleteTag(name)
+    await this.withAuthenticatingUser(repository, async (_, account) => {
+      await gitStore.deleteTag(account, name, remote)
+    })
   }
 
   private updateCheckoutProgress(

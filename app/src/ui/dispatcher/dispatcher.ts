@@ -441,8 +441,12 @@ export class Dispatcher {
   /**
    * Deletes the passed tag.
    */
-  public deleteTag(repository: Repository, name: string): Promise<void> {
-    return this.appStore._deleteTag(repository, name)
+  public deleteTag(
+    repository: Repository,
+    name: string,
+    remote: boolean
+  ): Promise<void> {
+    return this.appStore._deleteTag(repository, name, remote)
   }
 
   /**

@@ -4,7 +4,7 @@ import { Dispatcher } from '../dispatcher'
 import { Repository } from '../../models/repository'
 import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { Ref } from '../lib/ref'
-import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { OkCancelButtonGroup } from '../dialog'
 
 interface IDeleteTagProps {
   readonly dispatcher: Dispatcher
@@ -58,7 +58,7 @@ export class DeleteTag extends React.Component<
 
     this.setState({ isDeleting: true })
 
-    await dispatcher.deleteTag(repository, tagName)
+    await dispatcher.deleteTag(repository, tagName, false)
     this.props.onDismissed()
   }
 }

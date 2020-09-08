@@ -85,7 +85,7 @@ describe('git/tag', () => {
   describe('deleteTag', () => {
     it('deletes a tag with the given name', async () => {
       await createTag(repository, 'my-new-tag', "", 'HEAD')
-      await deleteTag(repository, 'my-new-tag')
+      await deleteTag(repository, 'my-new-tag', null, null, false)
 
       const commit = await getCommit(repository, 'HEAD')
       expect(commit).not.toBeNull()

@@ -43,7 +43,9 @@ export async function removeStashEntry(
   await git(args, repository.path, 'removeStashEntry')
 }
 
-export async function fetchStashes(repository: Repository): Promise<StashResult> {
+export async function fetchStashes(
+  repository: Repository,
+): Promise<StashResult> {
   const delimiter = '1F'
   const delimiterString = String.fromCharCode(parseInt(delimiter, 16))
   const format = ['%gD', '%H', '%gs', '%ct'].join(`%x${delimiter}`)

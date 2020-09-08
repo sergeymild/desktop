@@ -1481,10 +1481,16 @@ export class App extends React.Component<IAppProps, IAppState> {
     if (selection == null || selection.type !== SelectionType.Repository) {
       return null
     }
+
+    const isOpen: boolean =
+      (this.state.currentFoldout && this.state.currentFoldout.type === FoldoutType.Tags) || false
+
+
     const repository = selection.repository
     return <TagsToolBarButton
+      isOpen={isOpen}
+      tagList={this.props.appStore.repositoryTags(repository)}
       repository={repository}
-      dispatcher={this.props.dispatcher}
       appStore={this.props.appStore}/>
   }
 

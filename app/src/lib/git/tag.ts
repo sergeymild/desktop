@@ -4,6 +4,11 @@ import { IGitAccount } from '../../models/git-account'
 import { IRemote } from '../../models/remote'
 import { envForRemoteOperation } from './environment'
 
+export interface IRepositoryTags {
+  readonly localTags: ReadonlyArray<ITagItem>
+  readonly tagsToPush: ReadonlyArray<string>
+}
+
 interface ITagItem {
   name: string,
   subject: string | null,
@@ -33,18 +38,24 @@ export async function createTag(
   await git(args, repository.path, 'createTag')
 }
 
-/**
- * Delete a tag.
- *
- * @param repository        - The repository in which to create the new tag.
- * @param name              - The name of the tag to delete.
- */
 export async function deleteTag(
   repository: Repository,
-  name: string
+  name: string,
+  account: IGitAccount | null,
+  remote: IRemote | null,
+  isRemote: boolean
 ): Promise<void> {
-  const args = ['tag', '-d', name]
-  await git(args, repository.path, 'deleteTag')
+  let args = ['tag', '-d', name]
+  await git(args, repository.path, 'deleteLocalTag')
+
+  let env: Object | undefined
+  if (remote !== null && isRemote) {
+    env = await envForRemoteOperation(account, remote.url)
+    args = ['push', '--delete', remote.name, name]
+  }
+  await git(args, repository.path, 'deleteLocalTag', {
+    env
+  })
 }
 
 export async function checkoutToTag(
@@ -55,12 +66,19 @@ export async function checkoutToTag(
 }
 
 export async function fetchRemoteTags(
-  repository: Repository
+  repository: Repository,
+  account: IGitAccount | null,
+  remote: IRemote | null
 ): Promise<Map<string, string>> {
   try {
     const args = ['ls-remote', '--tags']
 
+    let env: Object | undefined
+    if (remote !== null) {
+      env = await envForRemoteOperation(account, remote.url)
+    }
     const tags = await git(args, repository.path, 'fetchRemoteTags', {
+      env: env,
       successExitCodes: new Set([0, 1]), // when there are no tags, git exits with 1.
     })
 

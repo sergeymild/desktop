@@ -32,7 +32,7 @@ import { Banner } from '../models/banner'
 import { GitRebaseProgress } from '../models/rebase'
 import { RebaseFlowStep } from '../models/rebase-flow-step'
 import { UncommittedChangesStrategyKind } from '../models/uncommitted-changes-strategy'
-import { ITagItem } from './git'
+import { IRepositoryTags, ITagItem } from './git'
 
 export enum SelectionType {
   Repository,
@@ -234,6 +234,7 @@ export enum FoldoutType {
   Branch,
   AppMenu,
   AddMenu,
+  Tags,
 }
 
 export type AppMenuFoldout = {
@@ -260,11 +261,16 @@ export type BranchFoldout = {
   type: FoldoutType.Branch
 }
 
+export type TagsFoldout = {
+  type: FoldoutType.Tags
+}
+
 export type Foldout =
   | { type: FoldoutType.Repository }
   | { type: FoldoutType.AddMenu }
   | BranchFoldout
   | AppMenuFoldout
+  | TagsFoldout
 
 export enum RepositorySectionTab {
   Changes,
@@ -409,6 +415,7 @@ export interface IRepositoryState {
   readonly revertProgress: IRevertProgress | null
 
   readonly localTags: ReadonlyArray<ITagItem> | null
+  readonly repositoryTags: IRepositoryTags | null
 }
 
 export interface IBranchesState {

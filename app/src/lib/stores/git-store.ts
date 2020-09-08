@@ -1,23 +1,12 @@
 import * as Path from 'path'
 import { Repository } from '../../models/repository'
-import {
-  WorkingDirectoryFileChange,
-  AppFileStatusKind,
-} from '../../models/status'
-import {
-  Branch,
-  BranchType,
-  IAheadBehind,
-  ICompareResult,
-} from '../../models/branch'
+import { AppFileStatusKind, WorkingDirectoryFileChange } from '../../models/status'
+import { Branch, BranchType, IAheadBehind, ICompareResult } from '../../models/branch'
 import { Tip, TipState } from '../../models/tip'
 import { Commit } from '../../models/commit'
-import { IRemote, ForkedRemotePrefix } from '../../models/remote'
+import { ForkedRemotePrefix, IRemote } from '../../models/remote'
 import { IFetchProgress, IRevertProgress } from '../../models/progress'
-import {
-  ICommitMessage,
-  DefaultCommitMessage,
-} from '../../models/commit-message'
+import { DefaultCommitMessage, ICommitMessage } from '../../models/commit-message'
 import { ComparisonMode } from '../app-state'
 
 import { IAppShell } from '../app-shell'
@@ -26,55 +15,55 @@ import { compare } from '../compare'
 import { queueWorkHigh } from '../queue-work'
 
 import {
-  reset,
-  GitResetMode,
-  getRemotes,
-  fetch as fetchRepo,
-  fetchRefspec,
-  getRecentBranches,
-  getBranches,
-  deleteRef,
-  getCommits,
-  merge,
-  setRemoteURL,
-  getStatus,
-  IStatusResult,
-  getCommit,
-  IndexStatus,
-  getIndexChanges,
-  checkoutIndex,
-  discardChangesFromSelection,
-  checkoutPaths,
-  resetPaths,
-  revertCommit,
-  unstageAllFiles,
   addRemote,
-  listSubmodules,
-  resetSubmodulePaths,
-  parseTrailers,
-  mergeTrailers,
-  getTrailerSeparatorCharacters,
-  parseSingleUnfoldedTrailer,
-  isCoAuthoredByTrailer,
+  checkoutIndex,
+  checkoutPaths,
+  createTag,
+  deleteRef,
+  deleteTag,
+  discardChangesFromSelection,
+  fetch as fetchRepo,
+  fetchAllTags,
+  fetchRefspec, fetchRemoteTags,
   getAheadBehind,
+  getBranches,
+  getCommit,
+  getCommits,
+  getConfigValue,
+  getIndexChanges,
+  getRecentBranches,
+  getRemotes,
+  getStatus,
+  getSymbolicRef,
+  getTrailerSeparatorCharacters,
+  GitResetMode,
+  IndexStatus,
+  isCoAuthoredByTrailer,
+  IStatusResult,
+  ITagItem,
+  listSubmodules,
+  merge,
+  MergeResult,
+  mergeTrailers,
+  parseSingleUnfoldedTrailer,
+  parseTrailers,
+  removeRemote,
+  reset,
+  resetPaths,
+  resetSubmodulePaths,
+  revertCommit,
   revRange,
   revSymmetricDifference,
-  getSymbolicRef,
-  getConfigValue,
-  removeRemote,
-  createTag,
-  deleteTag,
-  MergeResult, searchCommits, fetchAllTags, ITagItem, fetchRemoteTags,
+  searchCommits,
+  setRemoteURL,
+  unstageAllFiles,
 } from '../git'
 import { GitError as DugiteError } from '../../lib/git'
 import { GitError } from 'dugite'
 import { RetryAction, RetryActionType } from '../../models/retry-actions'
 import { UpstreamAlreadyExistsError } from './upstream-already-exists-error'
 import { forceUnwrap } from '../fatal-error'
-import {
-  findUpstreamRemote,
-  UpstreamRemoteName,
-} from './helpers/find-upstream-remote'
+import { findUpstreamRemote, UpstreamRemoteName } from './helpers/find-upstream-remote'
 import { findDefaultRemote } from './helpers/find-default-remote'
 import { IAuthor } from '../../models/author'
 import { formatCommitMessage } from '../format-commit-message'
@@ -276,9 +265,9 @@ export class GitStore extends BaseStore {
     return commits.map(c => c.sha)
   }
 
-  public async refreshTags() {
+  public async refreshTags(account: IGitAccount | null) {
     if (this._remoteTags.size === 0) {
-      this._remoteTags = await fetchRemoteTags(this.repository)
+      this._remoteTags = await fetchRemoteTags(this.repository, account, this.currentRemote)
     }
     const previousTags = this._localTags
     const newTags = await this.performFailableOperation(() =>
@@ -299,7 +288,6 @@ export class GitStore extends BaseStore {
       // to make this method return earlier.
       await this.emitUpdatesForChangedTags(previousTags, this._localTags)
     }
-
     this.emitUpdate()
   }
 
@@ -357,6 +345,7 @@ export class GitStore extends BaseStore {
   }
 
   public async createTag(
+    account: IGitAccount | null,
     name: string,
     message: string | null,
     targetCommitSha: string
@@ -370,21 +359,21 @@ export class GitStore extends BaseStore {
       return
     }
 
-    await this.refreshTags()
+    await this.refreshTags(account)
     this.addTagToPush(name)
 
     this.statsStore.recordTagCreatedInDesktop()
   }
 
-  public async deleteTag(name: string) {
+  public async deleteTag(account: IGitAccount | null, name: string, remote: boolean) {
     const result = await this.performFailableOperation(async () => {
-      await deleteTag(this.repository, name)
+      await deleteTag(this.repository, name, account, this.currentRemote, remote)
       return true
     })
 
     if (result === undefined) { return }
-
-    await this.refreshTags()
+    if (remote) { this._remoteTags.delete(name) }
+    await this.refreshTags(account)
     this.removeTagToPush(name)
 
     this.statsStore.recordTagDeleted()

@@ -1,21 +1,18 @@
 import React from 'react'
-import { ITagItem } from '../../lib/git'
+import { IRepositoryTags } from '../../lib/git'
 import { FilterList, IFilterListGroup } from '../lib/filter-list'
 import { IMenuItem } from '../../lib/menu-item'
 import { showContextualMenu } from '../main-process-proxy'
 import { IMatches } from '../../lib/fuzzy-find'
 import { ITagListItem, TagListItem } from './tags-list-item'
 import { Repository } from '../../models/repository'
-import { Dispatcher } from '../dispatcher'
-import { AppStore } from '../../lib/stores'
+import { dispatcher } from '../index'
 
 const RowHeight = 52;
 
 interface IProps {
   readonly repository: Repository
-  readonly dispatcher: Dispatcher
-  readonly appStore: AppStore
-  readonly closeTags: () => void
+  readonly tagList: IRepositoryTags
 }
 
 interface IState {
@@ -25,6 +22,31 @@ interface IState {
 }
 
 export class TagsList extends React.Component<IProps, IState> {
+
+  public static getDerivedStateFromProps(
+    props: IProps,
+  ): Partial<IState> | null {
+    return {
+      filterText: "",
+      selectedItem: null,
+      groups: TagsList.createTagsGroup(props.tagList)
+    }
+  }
+
+  private static createTagsGroup = (tagList: IRepositoryTags): ReadonlyArray<IFilterListGroup<ITagListItem>> => {
+    const tagsToPush = tagList.tagsToPush
+    const groups = new Array<IFilterListGroup<ITagListItem>>()
+    const group: IFilterListGroup<ITagListItem> = {
+      identifier: "Tags",
+      items: tagList.localTags.map(k => ({
+        id: k.hash,
+        tag: {...k, remote: !tagsToPush.includes(k.name)},
+        text: [k.name, k.hash]})
+      )
+    }
+    groups.push(group)
+    return groups
+  }
 
   public constructor(props: IProps) {
     super(props);
@@ -36,52 +58,31 @@ export class TagsList extends React.Component<IProps, IState> {
     }
   }
 
-  public componentDidMount() {
-    const tags = this.props.appStore.tags(this.props.repository)
-    this.createTagsGroup(tags)
-  }
-
-  public componentWillReceiveProps(nextProps: Readonly<IProps>, nextContext: any) {
-    const tags = this.props.appStore.tags(this.props.repository)
-    this.createTagsGroup(tags)
-  }
-
-  private createTagsGroup = (tags: ReadonlyArray<ITagItem>) => {
-    const tagsToPush = this.props.appStore.tagsToPush(this.props.repository)
-    const groups = new Array<IFilterListGroup<ITagListItem>>()
-    const group: IFilterListGroup<ITagListItem> = {
-      identifier: "Tags",
-      items: tags.map(k => ({
-        id: k.hash,
-        tag: {...k, remote: !tagsToPush.includes(k.name)},
-        text: [k.name, k.hash]})
-      )
-    }
-
-
-    groups.push(group)
-    this.setState({
-      groups,
-      filterText: ""
-    })
-  }
-
   private onFilterTextChanged = (text: string): void => {
     this.setState({...this.state, filterText: text})
   }
 
-  private deleteTag = async (item: ITagListItem) => {
+  private deleteTagLocally = async (item: ITagListItem) => {
     try {
-      this.props.closeTags()
-      await this.props.dispatcher.deleteTag(this.props.repository, item.tag.name)
+      await dispatcher.closeCurrentFoldout()
+      await dispatcher.deleteTag(this.props.repository, item.tag.name, false)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  private deleteTagFromOrigin = async (item: ITagListItem) => {
+    try {
+      await dispatcher.closeCurrentFoldout()
+      await dispatcher.deleteTag(this.props.repository, item.tag.name, true)
     } catch (e) {
       console.error(e)
     }
   }
 
   private checkoutToTag = async (item: ITagListItem) => {
-    this.props.closeTags()
-    this.props.dispatcher.checkoutToTag(this.props.repository, item.tag.name)
+    dispatcher.closeCurrentFoldout()
+    dispatcher.checkoutToTag(this.props.repository, item.tag.name)
   }
 
   private tagSelectionChange = (item: ITagListItem | null) => {
@@ -90,8 +91,8 @@ export class TagsList extends React.Component<IProps, IState> {
 
   private handleTagClick = (item: ITagListItem | null) => {
     if (item != null) {
-      this.props.closeTags()
-      this.props.dispatcher.checkoutToTag(this.props.repository, item.tag.name)
+      dispatcher.closeCurrentFoldout()
+      dispatcher.checkoutToTag(this.props.repository, item.tag.name)
     }
   }
 
@@ -104,9 +105,12 @@ export class TagsList extends React.Component<IProps, IState> {
         enabled: true,
       },
       {
-        label: "Delete tag",
-        action: () => this.deleteTag(item),
-        enabled: true,
+        label: `Delete locally`,
+        action: () => this.deleteTagLocally(item),
+      },
+      {
+        label: `Delete from origin`,
+        action: () => this.deleteTagFromOrigin(item),
       },
     ]
 

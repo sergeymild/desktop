@@ -3,60 +3,45 @@ import { DropdownState, ToolbarDropdown } from './dropdown'
 import { OcticonSymbol } from '../octicons'
 import { Repository } from '../../models/repository'
 
-import { Dispatcher } from '../dispatcher'
 import { AppStore } from '../../lib/stores'
 import { TagsList } from '../tags/tags-list'
+import { FoldoutType } from '../../lib/app-state'
+import { dispatcher } from '../index'
+import { IRepositoryTags } from '../../lib/git'
 
 interface IProps {
   readonly repository: Repository
-  readonly dispatcher: Dispatcher
   readonly appStore: AppStore
+  readonly isOpen: boolean
+  readonly tagList: IRepositoryTags | null
 }
 
 interface IState {
-  dropdownState: DropdownState
   currentTag: string | null
 }
 
-class TagsToolBarButton extends React.Component<IProps, IState> {
+class TagsToolBarButton extends React.PureComponent<IProps, IState> {
   public constructor(props: IProps) {
     super(props);
-
     this.state = {
-      dropdownState: 'closed',
       currentTag: null
     }
   }
 
-  private closeTags = () => this.setState({dropdownState: "closed"})
-
   private renderBranchFoldout = (): JSX.Element | null => {
+    if (this.props.tagList === null) { return null }
     return <TagsList
       repository={this.props.repository}
-      dispatcher={this.props.dispatcher}
-      appStore={this.props.appStore}
-      closeTags={this.closeTags}
+      tagList={this.props.tagList}
     />
   }
 
   private onDropDownStateChanged = (state: DropdownState): void => {
-    // Don't allow opening the drop down when checkout is in progress
-    this.setState({dropdownState: state})
-  }
-
-  public shouldComponentUpdate(
-    nextProps: Readonly<IProps>,
-    nextState: Readonly<IState>,
-    nextContext: any
-  ): boolean {
-    if (this.state.dropdownState !== nextState.dropdownState) {
-      return true
+    if (state === 'open') {
+      dispatcher.showFoldout({ type: FoldoutType.Tags })
+    } else {
+      dispatcher.closeFoldout(FoldoutType.Tags)
     }
-
-    if (this.state.currentTag !== nextState.currentTag) {
-      return true
-    }
-    return false
   }
 
   public componentDidMount() {
@@ -64,16 +49,14 @@ class TagsToolBarButton extends React.Component<IProps, IState> {
     this.setState({currentTag: tag})
   }
 
-  public componentWillReceiveProps(nextProps: Readonly<IProps>, nextContext: any) {
-    const tag = this.props.appStore.getCurrentTagName(this.props.repository)
-    this.setState({currentTag: tag})
-  }
-
   public render() {
+    console.log("toolbar render")
+    const currentState: DropdownState = this.props.isOpen ? 'open' : 'closed'
+
     return <ToolbarDropdown
       title={this.state.currentTag || "No tag"}
       description={"Tags"}
-      dropdownState={this.state.dropdownState}
+      dropdownState={currentState}
       icon={OcticonSymbol.tag}
       onDropdownStateChanged={this.onDropDownStateChanged}
       dropdownContentRenderer={this.renderBranchFoldout}/>
