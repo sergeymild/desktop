@@ -24,7 +24,7 @@ export const TagListItem: React.FC<IProps> = (
   }) => {
 
   const icon = item.tag.remote
-    ? OcticonSymbol.server
+    ? OcticonSymbol.clock
     : OcticonSymbol.tag
 
   const handleContextMenu = (event: React.MouseEvent<any>) => {

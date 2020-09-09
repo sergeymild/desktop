@@ -4,6 +4,10 @@
   min-height: 0;
 }
 
+.warning {
+  color: var(--color-conflicted);
+}
+
 /** A React component holding the currently selected repository's changes */
 .changes-list-container {
   flex-grow: 1;
@@ -94,6 +98,10 @@
       &.disabled {
         background: var(--tab-bar-hover-background-color);
         opacity: 0.5;
+      }
+
+      svg {
+        margin-right: var(--spacing);
       }
     }
   }
