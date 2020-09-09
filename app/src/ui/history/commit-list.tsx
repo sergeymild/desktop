@@ -104,8 +104,7 @@ export class CommitList extends React.Component<ICommitListProps, {}> {
     )
 
     const showUnpushedIndicator =
-      (isLocal || unpushedTags.length > 0) &&
-      this.props.isLocalRepository === false
+      (isLocal || unpushedTags.length > 0) && !this.props.isLocalRepository
 
     return (
       <CommitListItem

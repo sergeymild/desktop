@@ -54,14 +54,7 @@ import {
   setPersistedTheme,
 } from '../../ui/lib/application-theme'
 import { getAppMenu, updatePreferredAppMenuItemLabels } from '../../ui/main-process-proxy'
-import {
-  API,
-  getAccountForEndpoint,
-  getDotComAPIEndpoint,
-  getEndpointForRepository,
-  IAPIOrganization,
-  IAPIRepository,
-} from '../api'
+import { API, getAccountForEndpoint, getEndpointForRepository, IAPIOrganization, IAPIRepository } from '../api'
 import { shell } from '../app-shell'
 import {
   ChangesSelectionKind,
@@ -96,6 +89,7 @@ import {
   abortMerge,
   abortRebase,
   addRemote,
+  amendCommit,
   appendIgnoreRule,
   checkoutBranch,
   checkoutToCommit,
@@ -114,8 +108,8 @@ import {
   getMergeBase,
   getRebaseSnapshot,
   getRemotes,
-  getWorkingDirectoryDiff, IRepositoryTags,
-  isCoAuthoredByTrailer,
+  getWorkingDirectoryDiff,
+  IRepositoryTags,
   isGitRepository,
   IStatusResult,
   ITagItem,
@@ -197,7 +191,6 @@ import { sendNonFatalException } from '../helpers/non-fatal-exception'
 import { findUpstreamRemote, UpstreamRemoteName } from './helpers/find-upstream-remote'
 import { WorkflowPreferences } from '../../models/workflow-preferences'
 import { RepositoryIndicatorUpdater } from './helpers/repository-indicator-updater'
-import { getAttributableEmailsFor } from '../email'
 import { CherryPickResult } from '../git/cherry-pick'
 
 const LastSelectedRepositoryIDKey = 'last-selected-repository-id'
@@ -2173,82 +2166,15 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     const result = await this.isCommitting(repository, () => {
       return gitStore.performFailableOperation(async () => {
+        if (context.amend) {
+          return amendCommit(repository, selectedFiles)
+        }
         const message = await formatCommitMessage(repository, context)
         return createCommit(repository, message, selectedFiles)
       })
     })
 
     if (result) {
-      this.statsStore.recordCommit()
-
-      const includedPartialSelections = files.some(
-        file => file.selection.getSelectionType() === DiffSelectionType.Partial
-      )
-      if (includedPartialSelections) {
-        this.statsStore.recordPartialCommit()
-      }
-
-      const { trailers } = context
-      if (trailers !== undefined && trailers.some(isCoAuthoredByTrailer)) {
-        this.statsStore.recordCoAuthoredCommit()
-      }
-
-      const account = getAccountForRepository(this.accounts, repository)
-      if (repository.gitHubRepository !== null) {
-        if (account !== null) {
-          if (account.endpoint === getDotComAPIEndpoint()) {
-            this.statsStore.recordCommitToDotcom()
-          } else {
-            this.statsStore.recordCommitToEnterprise()
-          }
-
-          const { commitAuthor } = state
-          if (commitAuthor !== null) {
-            const commitEmail = commitAuthor.email.toLowerCase()
-            const attributableEmails = getAttributableEmailsFor(account)
-            const commitEmailMatchesAccount = attributableEmails.some(
-              email => email.toLowerCase() === commitEmail
-            )
-            if (!commitEmailMatchesAccount) {
-              this.statsStore.recordUnattributedCommit()
-            }
-          }
-        }
-
-        const branchProtectionsFound = await this.repositoriesStore.hasBranchProtectionsConfigured(
-          repository.gitHubRepository
-        )
-
-        if (branchProtectionsFound) {
-          this.statsStore.recordCommitToRepositoryWithBranchProtections()
-        }
-
-        const branchName = findRemoteBranchName(
-          gitStore.tip,
-          gitStore.currentRemote,
-          repository.gitHubRepository
-        )
-
-        if (branchName !== null) {
-          const { changesState } = this.repositoryStateCache.get(repository)
-          if (changesState.currentBranchProtected) {
-            this.statsStore.recordCommitToProtectedBranch()
-          }
-        }
-
-        if (
-          repository.gitHubRepository !== null &&
-          !hasWritePermission(repository.gitHubRepository)
-        ) {
-          this.statsStore.recordCommitToRepositoryWithoutWriteAccess()
-          if (repository.gitHubRepository.dbID !== null) {
-            this.statsStore.recordRepositoryCommitedInWithoutWriteAccess(
-              repository.gitHubRepository.dbID
-            )
-          }
-        }
-      }
-
       await this._refreshRepository(repository)
       await this.refreshChangesSection(repository, {
         includingStatus: true,

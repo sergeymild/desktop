@@ -9,15 +9,16 @@ import { Button } from '../lib/button'
 import { Loading } from '../lib/loading'
 import { showContextualMenu } from '../main-process-proxy'
 import { IMenuItem } from '../../lib/menu-item'
-import { ICommitContext } from '../../models/commit'
+import { Commit, ICommitContext } from '../../models/commit'
 import { startTimer } from '../lib/timing'
 import { PermissionsCommitWarning } from './permissions-commit-warning'
 import { LinkButton } from '../lib/link-button'
 import { FoldoutType } from '../../lib/app-state'
 import { getAvatarUserFromAuthor, IAvatarUser } from '../../models/avatar'
 import { Avatar } from '../lib/avatar'
+import { Checkbox, CheckboxValue } from '../lib/checkbox'
 
-interface ICommitMessageProps {
+interface IProps {
   readonly onCreateCommit: (context: ICommitContext) => Promise<boolean>
   readonly branch: string | null
   readonly commitAuthor: CommitIdentity | null
@@ -32,20 +33,21 @@ interface ICommitMessageProps {
   readonly prepopulateCommitSummary: boolean
   readonly showBranchProtected: boolean
   readonly showNoWriteAccess: boolean
+  readonly mostRecentLocalCommit: Commit | null
+  readonly lastCommit: Commit | null
 }
 
-interface ICommitMessageState {
+interface IState {
   readonly summary: string
   readonly description: string | null
+  readonly amend: CheckboxValue
+  readonly isInputEnabled: boolean
 }
 
-export class CommitMessage extends React.Component<
-  ICommitMessageProps,
-  ICommitMessageState
-> {
+export class CommitMessage extends React.Component<IProps, IState> {
   private summaryTextInput: HTMLInputElement | null = null
 
-  public constructor(props: ICommitMessageProps) {
+  public constructor(props: IProps) {
     super(props)
 
     const { commitMessage } = this.props
@@ -53,6 +55,8 @@ export class CommitMessage extends React.Component<
     this.state = {
       summary: commitMessage ? commitMessage.summary : '',
       description: commitMessage ? commitMessage.description : null,
+      amend: CheckboxValue.Off,
+      isInputEnabled: true,
     }
   }
 
@@ -74,7 +78,7 @@ export class CommitMessage extends React.Component<
    * (and the React docs) believe it to be the right answer for this situation, see:
    * https://reactjs.org/docs/react-component.html#unsafe_componentwillreceiveprops
    */
-  public componentWillReceiveProps(nextProps: ICommitMessageProps) {
+  public componentWillReceiveProps(nextProps: IProps) {
     const { commitMessage } = nextProps
     if (!commitMessage || commitMessage === this.props.commitMessage) {
       return
@@ -88,7 +92,7 @@ export class CommitMessage extends React.Component<
     }
   }
 
-  public componentDidUpdate(prevProps: ICommitMessageProps) {
+  public componentDidUpdate(prevProps: IProps) {
     if (this.props.focusCommitMessage) {
       this.focusSummary()
     }
@@ -128,6 +132,7 @@ export class CommitMessage extends React.Component<
     const commitContext = {
       summary: summaryOrPlaceholder,
       description,
+      amend: this.state.amend === CheckboxValue.On
     }
 
     const timer = startTimer('create commit', this.props.repository)
@@ -241,7 +246,24 @@ export class CommitMessage extends React.Component<
         ? getAvatarUserFromAuthor(commitAuthor, gitHubRepository)
         : undefined
 
-    return <Avatar user={avatarUser} title={avatarTitle} />
+    return <Avatar user={avatarUser} title={avatarTitle}/>
+  }
+
+  private onAmendChange = (event: React.FormEvent<HTMLInputElement>) => {
+    const amend = this.state.amend === CheckboxValue.Off
+      ? CheckboxValue.On
+      : CheckboxValue.Off
+    let summary: string
+    if (amend === CheckboxValue.On) {
+      summary = this.props.lastCommit?.summary || ''
+    } else {
+      summary = this.state.summary
+    }
+    this.setState({
+      summary: summary,
+      isInputEnabled: amend === CheckboxValue.Off,
+      amend,
+    })
   }
 
   public render() {
@@ -249,7 +271,7 @@ export class CommitMessage extends React.Component<
     const buttonEnabled =
       this.canCommit() && !this.props.isCommitting && !isSummaryWhiteSpace
 
-    const loading = this.props.isCommitting ? <Loading /> : undefined
+    const loading = this.props.isCommitting ? <Loading/> : undefined
 
     const summaryInputClassName = classNames('summary-field', 'nudge-arrow')
 
@@ -286,9 +308,14 @@ export class CommitMessage extends React.Component<
             onElementRef={this.onSummaryInputRef}
             autocompletionProviders={this.props.autocompletionProviders}
             onContextMenu={this.onAutocompletingInputContextMenu}
-            disabled={this.props.isCommitting}
+            disabled={this.props.isCommitting || !this.state.isInputEnabled}
           />
         </div>
+        {this.props.lastCommit && <Checkbox
+          value={this.state.amend}
+          label="Amend"
+          onChange={this.onAmendChange}
+        />}
 
         {this.renderPermissionsCommitWarning()}
 

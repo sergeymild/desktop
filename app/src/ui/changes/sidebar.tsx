@@ -34,6 +34,7 @@ import { PopupType } from '../../models/popup'
 import { filesNotTrackedByLFS } from '../../lib/git/lfs'
 import { getLargeFilePaths } from '../../lib/large-files'
 import { isConflictedFile, hasUnresolvedConflicts } from '../../lib/status'
+import { dispatcher } from '../index'
 
 /**
  * The timeout for the animation of the enter/leave animation for Undo.
@@ -51,6 +52,7 @@ interface IChangesSidebarProps {
   readonly branch: string | null
   readonly emoji: Map<string, string>
   readonly mostRecentLocalCommit: Commit | null
+  readonly lastCommit: Commit | null
   readonly issuesStore: IssuesStore
   readonly availableWidth: number
   readonly isCommitting: boolean
@@ -186,7 +188,7 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
       return false
     }
 
-    return this.props.dispatcher.commitIncludedChanges(
+    return dispatcher.commitIncludedChanges(
       this.props.repository,
       context
     )
@@ -388,6 +390,8 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
           onIncludeChanged={this.onIncludeChanged}
           onSelectAll={this.onSelectAll}
           onDiscardChanges={this.onDiscardChanges}
+          mostRecentLocalCommit={this.props.mostRecentLocalCommit}
+          lastCommit={this.props.lastCommit}
           askForConfirmationOnDiscardChanges={
             this.props.askForConfirmationOnDiscardChanges
           }

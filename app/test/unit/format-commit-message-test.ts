@@ -6,31 +6,31 @@ describe('formatCommitMessage', () => {
     const repo = await setupEmptyRepository()
 
     expect(
-      await formatCommitMessage(repo, { summary: 'test', description: null })
+      await formatCommitMessage(repo, { summary: 'test', description: null, amend: false })
     ).toBe('test\n')
     expect(
-      await formatCommitMessage(repo, { summary: 'test', description: 'test' })
+      await formatCommitMessage(repo, { summary: 'test', description: 'test', amend: false })
     ).toBe('test\n\ntest\n')
   })
 
   it('omits description when null', async () => {
     const repo = await setupEmptyRepository()
     expect(
-      await formatCommitMessage(repo, { summary: 'test', description: null })
+      await formatCommitMessage(repo, { summary: 'test', description: null, amend: false })
     ).toBe('test\n')
   })
 
   it('omits description when empty string', async () => {
     const repo = await setupEmptyRepository()
     expect(
-      await formatCommitMessage(repo, { summary: 'test', description: '' })
+      await formatCommitMessage(repo, { summary: 'test', description: '', amend: false })
     ).toBe('test\n')
   })
 
   it('adds two newlines between summary and description', async () => {
     const repo = await setupEmptyRepository()
     expect(
-      await formatCommitMessage(repo, { summary: 'foo', description: 'bar' })
+      await formatCommitMessage(repo, { summary: 'foo', description: 'bar', amend: false })
     ).toBe('foo\n\nbar\n')
   })
 
@@ -44,6 +44,7 @@ describe('formatCommitMessage', () => {
       await formatCommitMessage(repo, {
         summary: 'foo',
         description: null,
+        amend: false,
         trailers,
       })
     ).toBe(
@@ -63,6 +64,7 @@ describe('formatCommitMessage', () => {
       await formatCommitMessage(repo, {
         summary: 'foo',
         description: 'bar',
+        amend: false,
         trailers,
       })
     ).toBe(
@@ -83,6 +85,7 @@ describe('formatCommitMessage', () => {
       await formatCommitMessage(repo, {
         summary: 'foo',
         description: 'Co-Authored-By: Markus Olsson <niik@github.com>',
+        amend: false,
         trailers,
       })
     ).toBe(
@@ -104,6 +107,7 @@ describe('formatCommitMessage', () => {
         summary: 'foo',
         // note the lack of space after :
         description: 'Co-Authored-By:Markus Olsson <niik@github.com>',
+        amend: false,
         trailers,
       })
     ).toBe(

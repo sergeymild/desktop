@@ -185,7 +185,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
       (mostRecentLocalCommitSHA
         ? this.props.state.commitLookup.get(mostRecentLocalCommitSHA)
         : null) || null
-
     // -1 Because of right hand side border
     const availableWidth = this.props.sidebarWidth - 1
 
@@ -194,6 +193,13 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
         ? this.state.changesListScrollTop
         : undefined
     this.previousSection = RepositorySectionTab.Changes
+    const {commitSHAs} = this.props.state.compareState
+    let lastCommit: Commit | null = null
+    if (commitSHAs.length > 0) {
+      const {commitLookup} = this.props.state
+      const lastCommitSha = commitSHAs[0]
+      lastCommit = commitLookup.get(lastCommitSha) || null
+    }
 
     return (
       <ChangesSidebar
@@ -204,6 +210,7 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
         commitAuthor={this.props.state.commitAuthor}
         emoji={this.props.emoji}
         mostRecentLocalCommit={mostRecentLocalCommit}
+        lastCommit={lastCommit}
         issuesStore={this.props.issuesStore}
         availableWidth={availableWidth}
         gitHubUserStore={this.props.gitHubUserStore}

@@ -57,6 +57,29 @@ export async function createCommit(
   }
 }
 
+export async function amendCommit(
+  repository: Repository,
+  files: ReadonlyArray<WorkingDirectoryFileChange>
+): Promise<string | undefined> {
+  // Clear the staging area, our diffs reflect the difference between the
+  // working directory and the last commit (if any) so our commits should
+  // do the same thing.
+  await unstageAll(repository)
+  await stageFiles(repository, files)
+
+  try {
+    const result = await git(
+      ['commit', '--amend', '--no-edit'],
+      repository.path,
+      'createCommit'
+    )
+    return parseCommitSHA(result)
+  } catch (e) {
+    logCommitError(e)
+    return undefined
+  }
+}
+
 /**
  * Creates a commit to finish an in-progress merge
  * assumes that all conflicts have already been resolved

@@ -9,6 +9,10 @@ export interface ICommitContext {
    */
   readonly summary: string
   /**
+   * should update last commit
+   */
+  readonly amend: boolean
+  /**
    * Additional details for the commit message (optional)
    */
   readonly description: string | null

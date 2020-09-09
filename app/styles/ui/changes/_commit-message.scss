@@ -11,13 +11,17 @@
   background-color: var(--box-alt-background-color);
   padding: var(--spacing);
 
+  .checkbox-component {
+    margin-top: var(--spacing);
+  }
+
   .summary {
     display: flex;
     flex-direction: row;
+    align-items: center;
 
     .summary-field {
       flex: 1;
-      margin-bottom: var(--spacing);
 
       input {
         width: 100%;

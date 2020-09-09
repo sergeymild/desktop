@@ -280,7 +280,7 @@ export abstract class AutocompletingTextInput<
       onBlur: this.onBlur,
       onContextMenu: this.onContextMenu,
       disabled: this.props.disabled,
-      'aria-required': this.props.isRequired ? true : false,
+      'aria-required': this.props.isRequired,
     }
 
     return React.createElement<React.HTMLAttributes<ElementType>, ElementType>(

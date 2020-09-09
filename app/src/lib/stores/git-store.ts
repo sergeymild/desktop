@@ -743,6 +743,7 @@ export class GitStore extends BaseStore {
     const message = await formatCommitMessage(repository, {
       summary: commit.summary,
       description: commit.body,
+      amend: false
     })
 
     // Next we extract any co-authored-by trailers we

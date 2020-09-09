@@ -26,7 +26,7 @@ import { IAutocompletionProvider } from '../autocompletion'
 import { showContextualMenu } from '../main-process-proxy'
 import { arrayEquals } from '../../lib/equality'
 import { clipboard } from 'electron'
-import { ICommitContext } from '../../models/commit'
+import { Commit, ICommitContext } from '../../models/commit'
 import { ConflictState, RebaseConflictState } from '../../lib/app-state'
 import { ContinueRebase } from './continue-rebase'
 import { hasWritePermission } from '../../models/github-repository'
@@ -159,6 +159,8 @@ interface IChangesListProps {
    * @param fullPath The full path to the file on disk
    */
   readonly onOpenInExternalEditor: (fullPath: string) => void
+  readonly mostRecentLocalCommit: Commit | null
+  readonly lastCommit: Commit | null
 }
 
 interface IChangesState {
@@ -631,6 +633,8 @@ export class ChangesList extends React.Component<IChangesListProps,
         focusCommitMessage={this.props.focusCommitMessage}
         autocompletionProviders={this.props.autocompletionProviders}
         isCommitting={isCommitting}
+        mostRecentLocalCommit={this.props.mostRecentLocalCommit}
+        lastCommit={this.props.lastCommit}
         placeholder={this.getPlaceholderMessage(
           filesSelected,
           prepopulateCommitSummary,
