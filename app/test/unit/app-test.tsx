@@ -18,14 +18,11 @@ import {
 import { InMemoryDispatcher } from '../helpers/in-memory-dispatcher'
 import {
   TestGitHubUserDatabase,
-  TestStatsDatabase,
   TestIssuesDatabase,
   TestRepositoriesDatabase,
   TestPullRequestDatabase,
 } from '../helpers/databases'
-import { StatsStore } from '../../src/lib/stats'
 import { InMemoryStore, AsyncInMemoryStore } from '../helpers/stores'
-import { TestActivityMonitor } from '../helpers/test-activity-monitor'
 import { RepositoryStateCache } from '../../src/lib/stores/repository-state-cache'
 import { ApiRepositoriesStore } from '../../src/lib/stores/api-repositories-store'
 import { CommitStatusStore } from '../../src/lib/stores/commit-status-store'
@@ -33,7 +30,6 @@ import { CommitStatusStore } from '../../src/lib/stores/commit-status-store'
 describe('App', () => {
   let appStore: AppStore
   let dispatcher: Dispatcher
-  let statsStore: StatsStore
   let repositoryStateManager: RepositoryStateCache
   let githubUserStore: GitHubUserStore
   let issuesStore: IssuesStore
@@ -44,10 +40,6 @@ describe('App', () => {
 
     const issuesDb = new TestIssuesDatabase()
     await issuesDb.reset()
-
-    const statsDb = new TestStatsDatabase()
-    await statsDb.reset()
-    statsStore = new StatsStore(statsDb, new TestActivityMonitor())
 
     const repositoriesDb = new TestRepositoriesDatabase()
     await repositoriesDb.reset()
@@ -75,7 +67,6 @@ describe('App', () => {
       githubUserStore,
       new CloningRepositoriesStore(),
       issuesStore,
-      statsStore,
       new SignInStore(),
       accountsStore,
       repositoriesStore,
@@ -87,7 +78,6 @@ describe('App', () => {
     dispatcher = new InMemoryDispatcher(
       appStore,
       repositoryStateManager,
-      statsStore,
       commitStatusStore
     )
   })

@@ -11,7 +11,6 @@ import { SignInDotCom } from './sign-in-dot-com'
 import { SignInEnterprise } from './sign-in-enterprise'
 import { ConfigureGit } from './configure-git'
 import { UiView } from '../ui-view'
-import { UsageOptOut } from './usage-opt-out'
 import { Disposable } from 'event-kit'
 
 /** The steps along the Welcome flow. */
@@ -21,12 +20,10 @@ export enum WelcomeStep {
   SignInToDotCom = 'SignInToDotCom',
   SignInToEnterprise = 'SignInToEnterprise',
   ConfigureGit = 'ConfigureGit',
-  UsageOptOut = 'UsageOptOut',
 }
 
 interface IWelcomeProps {
   readonly dispatcher: Dispatcher
-  readonly optOut: boolean
   readonly accounts: ReadonlyArray<Account>
   readonly signInState: SignInState | null
 }
@@ -83,7 +80,6 @@ export class Welcome extends React.Component<IWelcomeProps, IWelcomeState> {
   }
 
   public componentDidMount() {
-    this.props.dispatcher.recordWelcomeWizardInitiated()
     this.dotComSupportsBasicAuthSubscription = this.props.dispatcher.onDotComSupportsBasicAuthUpdated(
       this.onDotComSupportsBasicAuthUpdated
     )
@@ -213,16 +209,6 @@ export class Welcome extends React.Component<IWelcomeProps, IWelcomeState> {
           />
         )
 
-      case WelcomeStep.UsageOptOut:
-        return (
-          <UsageOptOut
-            dispatcher={this.props.dispatcher}
-            advance={this.advanceToStep}
-            optOut={this.props.optOut}
-            done={this.done}
-          />
-        )
-
       default:
         return assertNever(step, `Unknown welcome step: ${step}`)
     }
@@ -237,16 +223,6 @@ export class Welcome extends React.Component<IWelcomeProps, IWelcomeState> {
     }
 
     this.setState({ currentStep: step })
-  }
-
-  private done = () => {
-    // Add a delay so that the exit animations (defined in css)
-    // have time to run to completion.
-    this.setState({ exiting: true }, () => {
-      setTimeout(() => {
-        this.props.dispatcher.endWelcomeFlow()
-      }, 250)
-    })
   }
 
   public render() {

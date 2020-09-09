@@ -19,7 +19,7 @@ import { Row } from '../lib/row'
 import { Checkbox, CheckboxValue } from '../lib/checkbox'
 import { writeDefaultReadme } from './write-default-readme'
 import { Select } from '../lib/select'
-import { writeGitDescription } from '../../lib/git/description'
+import { writeGitDescription } from '../../lib/git'
 import { getGitIgnoreNames, writeGitIgnore } from './gitignores'
 import { ILicense, getLicenses, writeLicense } from './licenses'
 import { writeGitAttributes } from './git-attributes'
@@ -30,7 +30,7 @@ import { LinkButton } from '../lib/link-button'
 import { PopupType } from '../../models/popup'
 import { Ref } from '../lib/ref'
 import { enableReadmeOverwriteWarning } from '../../lib/feature-flag'
-import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { OkCancelButtonGroup } from '../dialog'
 import {
   getDefaultBranch,
   DefaultBranchInGit,
@@ -367,7 +367,6 @@ export class CreateRepository extends React.Component<
     this.updateDefaultDirectory()
 
     this.props.dispatcher.selectRepository(repository)
-    this.props.dispatcher.recordCreateRepository()
     this.props.onDismissed()
   }
 

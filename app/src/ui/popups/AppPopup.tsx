@@ -46,7 +46,6 @@ import { CommitConflictsWarning, MergeConflictsDialog } from '../merge-conflicts
 import { OversizedFiles } from '../changes/oversized-files-warning'
 import { isConflictedFile } from '../../lib/status'
 import { AbortMergeWarning } from '../abort-merge'
-import { UsageStatsChange } from '../usage-stats-change'
 import { PushNeedsPullWarning } from '../push-needs-pull'
 import { ConfirmForcePush, RebaseFlow } from '../rebase'
 import { StashAndSwitchBranch } from '../stash-changes/stash-and-switch-branch-dialog'
@@ -86,8 +85,6 @@ interface IProps {
   readonly uncommittedChangesStrategyKind: UncommittedChangesStrategyKind
   /** The external editor to use when opening repositories */
   readonly selectedExternalEditor: ExternalEditor | null
-  /** The current setting for whether the user has disable usage reports */
-  readonly optOutOfUsageTracking: boolean
   /** The user's preferred shell. */
   readonly selectedShell: Shell,
   /** The currently selected appearance (aka theme) */
@@ -155,7 +152,6 @@ export const AppPopup: React.FC<IProps> = (
     enterpriseAccount,
     uncommittedChangesStrategyKind,
     selectedExternalEditor,
-    optOutOfUsageTracking,
     selectedShell,
     selectedTheme,
     automaticallySwitchTheme,
@@ -250,7 +246,6 @@ export const AppPopup: React.FC<IProps> = (
           confirmForcePush={askForConfirmationOnForcePush}
           uncommittedChangesStrategyKind={uncommittedChangesStrategyKind}
           selectedExternalEditor={selectedExternalEditor}
-          optOutOfUsageTracking={optOutOfUsageTracking}
           enterpriseAccount={enterpriseAccount}
           onDismissed={onPopupDismissedFn}
           selectedShell={selectedShell}
@@ -708,13 +703,6 @@ export const AppPopup: React.FC<IProps> = (
         />
       )
     }
-    case PopupType.UsageReportingChanges:
-      return (
-        <UsageStatsChange
-          key="usage-stats-change"
-          onDismissed={onPopupDismissedFn}
-        />
-      )
     case PopupType.CommitConflictsWarning:
       return (
         <CommitConflictsWarning

@@ -206,7 +206,6 @@ export class AddExistingRepository extends React.Component<
     if (repositories && repositories.length) {
       const repository = repositories[0]
       this.props.dispatcher.selectRepository(repository)
-      this.props.dispatcher.recordAddExistingRepository()
     }
   }
 

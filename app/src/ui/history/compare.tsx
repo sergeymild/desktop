@@ -39,33 +39,13 @@ interface ICompareSidebarProps {
   readonly tagsToPush: ReadonlyArray<string> | null
 }
 
-interface ICompareSidebarState {
-
-  /**
-   * Flag that tracks whether the user interacted with one of the notification's
-   * "call to action" buttons
-   */
-  readonly hasConsumedNotification: boolean
-}
-
 /** If we're within this many rows from the bottom, load the next history batch. */
 const CloseToBottomThreshold = 10
 
-export class CompareSidebar extends React.Component<
-  ICompareSidebarProps,
-  ICompareSidebarState
-> {
+export class CompareSidebar extends React.Component<ICompareSidebarProps, {}> {
   private textbox: TextBox | null = null
   private readonly loadChangedFilesScheduler = new ThrottledScheduler(200)
   private loadingMoreCommitsPromise: Promise<void> | null = null
-
-  public constructor(props: ICompareSidebarProps) {
-    super(props)
-
-    this.state = {
-      hasConsumedNotification: false,
-    }
-  }
 
   public componentDidMount() {
     this.props.dispatcher.setDivergingBranchNudgeVisibility(
@@ -229,7 +209,6 @@ export class CompareSidebar extends React.Component<
         currentBranch={this.props.currentBranch}
         comparisonBranch={formState.comparisonBranch}
         commitsBehind={formState.aheadBehind.behind}
-        onMerged={this.onMerge}
       />
     )
   }
@@ -343,24 +322,15 @@ export class CompareSidebar extends React.Component<
     if (reason === DismissalReason.Close) {
       this.props.dispatcher.dismissDivergingBranchBanner(this.props.repository)
     }
-    this.props.dispatcher.recordDivergingBranchBannerDismissal()
 
     switch (reason) {
       case DismissalReason.Close:
-        this.setState({ hasConsumedNotification: false })
         break
       case DismissalReason.Compare:
       case DismissalReason.Merge:
-        this.setState({ hasConsumedNotification: true })
         break
       default:
         assertNever(reason, 'Unknown reason')
-    }
-  }
-
-  private onMerge = () => {
-    if (this.state.hasConsumedNotification) {
-      this.props.dispatcher.recordDivergingBranchBannerInfluencedMerge()
     }
   }
 

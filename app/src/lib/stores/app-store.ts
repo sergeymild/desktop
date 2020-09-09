@@ -132,7 +132,6 @@ import { IMatchedGitHubRepository, matchGitHubRepository } from '../repository-m
 import { formatRebaseValue, initializeRebaseFlowForConflictedRepository, isCurrentBranchForcePush } from '../rebase'
 import { RetryAction, RetryActionType } from '../../models/retry-actions'
 import { Default as DefaultShell, findShellOrDefault, launchShell, parse as parseShell, Shell } from '../shells'
-import { hasSeenUsageStatsNote, ILaunchStats, markUsageStatsNoteSeen, StatsStore } from '../stats'
 import { hasShownWelcomeFlow, markWelcomeFlowComplete } from '../welcome'
 import { getWindowState, WindowState, windowStateChannelName } from '../window-state'
 import { TypedBaseStore } from './base-store'
@@ -340,7 +339,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     private readonly gitHubUserStore: GitHubUserStore,
     private readonly cloningRepositoriesStore: CloningRepositoriesStore,
     private readonly issuesStore: IssuesStore,
-    private readonly statsStore: StatsStore,
     private readonly signInStore: SignInStore,
     private readonly accountsStore: AccountsStore,
     private readonly repositoriesStore: RepositoriesStore,
@@ -354,7 +352,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     this.gitStoreCache = new GitStoreCache(
       shell,
-      this.statsStore,
       (repo, store) => this.onGitStoreUpdated(repo, store),
       error => this.emitError(error)
     )
@@ -421,10 +418,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     this.signInStore.onDidAuthenticate((account, method) => {
       this._addAccount(account)
-
-      if (this.showWelcomeFlow) {
-        this.statsStore.recordWelcomeWizardSignInMethod(method)
-      }
     })
     this.signInStore.onDidUpdate(() => this.emitUpdate())
     this.signInStore.onDidError(error => this.emitError(error))
@@ -590,7 +583,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
       selectedTheme: this.selectedTheme,
       automaticallySwitchTheme: this.automaticallySwitchTheme,
       apiRepositories: this.apiRepositoriesStore.getState(),
-      optOutOfUsageTracking: this.statsStore.getOptOut(),
       localStashesCount: this.localStashesCount,
     }
   }
@@ -1034,16 +1026,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
       comparisonBranch,
       action.comparisonMode
     )
-
-    this.statsStore.recordBranchComparison()
-    const { branchesState } = this.repositoryStateCache.get(repository)
-
-    if (
-      branchesState.defaultBranch !== null &&
-      comparisonBranch.name === branchesState.defaultBranch.name
-    ) {
-      this.statsStore.recordDefaultBranchComparison()
-    }
 
     if (compare == null) {
       return
@@ -1829,7 +1811,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     )
 
     this.repositoryStateCache.updateChangesState(repository, state => ({
-      conflictState: updateConflictState(state, status, this.statsStore),
+      conflictState: updateConflictState(state, status),
     }))
 
     this.updateRebaseFlowConflictsIfFound(repository)
@@ -2743,7 +2725,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     const gitStore = this.gitStoreCache.get(repository)
     const kind = 'checkout'
 
-    const { changesState, branchesState } = this.repositoryStateCache.get(
+    const { changesState } = this.repositoryStateCache.get(
       repository
     )
 
@@ -2752,7 +2734,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     const hasChanges = changesState.workingDirectory.files.length > 0
     const strategyKind = uncommittedChangesStrategy.kind
     if (hasChanges) {
-      console.log("-0-0-0-0-0-", strategyKind)
       if (strategyKind === askToStash.kind) {
         this._showPopup({
           type: PopupType.StashAndSwitchBranch,
@@ -2841,11 +2822,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
       })
     }
 
-    const { defaultBranch } = branchesState
-    if (defaultBranch !== null && branch.name !== defaultBranch.name) {
-      this.statsStore.recordNonDefaultBranchCheckout()
-    }
-
     return repository
   }
 
@@ -2866,7 +2842,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     }
 
     await this._createStashAndDropPreviousEntry(repository, currentBranch.name)
-    this.statsStore.recordStashCreatedOnCurrentBranch()
 
     await this._refreshRepository(repository)
   }
@@ -3289,15 +3264,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
         this.updatePushPullFetchProgress(repository, null)
 
         this.updateMenuLabelsForSelectedRepository()
-
-        // Note that we're using `getAccountForRepository` here instead
-        // of the `account` instance we've got and that's because recordPush
-        // needs to be able to differentiate between a GHES account and a
-        // generic account and it can't do that only based on the endpoint.
-        this.statsStore.recordPush(
-          getAccountForRepository(this.accounts, repository),
-          options
-        )
       }
     })
   }
@@ -3429,12 +3395,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
           const retryAction: RetryAction = {
             type: RetryActionType.Pull,
             repository,
-          }
-
-          if (gitStore.pullWithRebase) {
-            this.statsStore.recordPullWithRebaseEnabled()
-          } else {
-            this.statsStore.recordPullWithDefaultSetting()
           }
 
           await gitStore.performFailableOperation(
@@ -3600,12 +3560,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     const repository = this.cloningRepositoriesStore.repositories.find(
       r => r.url === url && r.path === path
     )!
-
-    promise.then(success => {
-      if (success) {
-        this.statsStore.recordCloneRepository()
-      }
-    })
 
     return { promise, repository }
   }
@@ -3789,8 +3743,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     markWelcomeFlowComplete()
 
-    this.statsStore.recordWelcomeWizardTerminated()
-
     return Promise.resolve()
   }
 
@@ -3886,19 +3838,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
     repository: Repository,
     commitSha: string,
     branch: string,
-    mergeStatus: MergeTreeResult | null
   ): Promise<void> {
     const gitStore = this.gitStoreCache.get(repository)
-
-    if (mergeStatus !== null) {
-      if (mergeStatus.kind === ComputedAction.Clean) {
-        await this.statsStore.recordMergeHintSuccessAndUserProceeded()
-      } else if (mergeStatus.kind === ComputedAction.Conflicts) {
-        await this.statsStore.recordUserProceededAfterConflictWarning()
-      } else if (mergeStatus.kind === ComputedAction.Loading) {
-        await this.statsStore.recordUserProceededWhileLoading()
-      }
-    }
 
     const cherryPickResult = await gitStore.cherryPick(branch, commitSha)
     const { tip } = gitStore
@@ -3927,19 +3868,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
   public async _mergeBranch(
     repository: Repository,
     branch: string,
-    mergeStatus: MergeTreeResult | null
   ): Promise<void> {
     const gitStore = this.gitStoreCache.get(repository)
-
-    if (mergeStatus !== null) {
-      if (mergeStatus.kind === ComputedAction.Clean) {
-        this.statsStore.recordMergeHintSuccessAndUserProceeded()
-      } else if (mergeStatus.kind === ComputedAction.Conflicts) {
-        this.statsStore.recordUserProceededAfterConflictWarning()
-      } else if (mergeStatus.kind === ComputedAction.Loading) {
-        this.statsStore.recordUserProceededWhileLoading()
-      }
-    }
 
     const mergeResult = await gitStore.merge(branch)
     const { tip } = gitStore
@@ -4163,7 +4093,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
   /** This shouldn't be called directly. See `Dispatcher`. */
   public async _openShell(path: string) {
-    this.statsStore.recordOpenShell()
 
     try {
       const match = await findShellOrDefault(this.selectedShell)
@@ -4207,20 +4136,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
   ): Promise<void> {
     await saveGitIgnore(repository, text)
     return this._refreshRepository(repository)
-  }
-
-  /** Set whether the user has opted out of stats reporting. */
-  public async setStatsOptOut(
-    optOut: boolean,
-    userViewedPrompt: boolean
-  ): Promise<void> {
-    await this.statsStore.setOptOut(optOut, userViewedPrompt)
-
-    this.emitUpdate()
-  }
-
-  public markUsageStatsNoteSeen() {
-    markUsageStatsNoteSeen()
   }
 
   public _setConfirmRepositoryRemovalSetting(
@@ -4358,20 +4273,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     }))
 
     this.emitUpdate()
-  }
-
-  public _reportStats() {
-    // ensure the user has seen and acknowledged the current usage stats setting
-    if (!this.showWelcomeFlow && !hasSeenUsageStatsNote()) {
-      this._showPopup({ type: PopupType.UsageReportingChanges })
-      return Promise.resolve()
-    }
-
-    return this.statsStore.reportStats(this.accounts, this.repositories)
-  }
-
-  public _recordLaunchStats(stats: ILaunchStats): Promise<void> {
-    return this.statsStore.recordLaunchStats(stats)
   }
 
   public async _appendIgnoreRule(
@@ -5038,7 +4939,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
       }
     }
 
-    this.statsStore.recordPRBranchCheckout()
   }
 
   private async _getPullRequestHeadBranchInRepo(
@@ -5279,8 +5179,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     log.info(
       `[AppStore. _applyStashEntry] applied stash with commit name ${stashName}`
     )
-
-    this.statsStore.recordStashRestore()
     await this._refreshRepository(repository)
   }
 
@@ -5293,7 +5191,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
       `[AppStore. _popStash] popped stash with commit name ${stashName}`
     )
 
-    this.statsStore.recordStashRestore()
     await this._refreshRepository(repository)
     await this._loadLocalStashesCount()
   }
@@ -5308,7 +5205,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
       `[AppStore. _popStashEntry] popped stash with commit id ${stashEntry.stashSha}`
     )
 
-    this.statsStore.recordStashRestore()
     await this._refreshRepository(repository)
   }
 
@@ -5337,7 +5233,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
       `[AppStore. _dropStashEntry] dropped stash with commit name ${stashName}`
     )
 
-    await this.statsStore.recordStashDiscard()
     await this._loadLocalStashesCount()
   }
 

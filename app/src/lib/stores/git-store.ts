@@ -71,7 +71,6 @@ import { GitAuthor } from '../../models/git-author'
 import { IGitAccount } from '../../models/git-account'
 import { BaseStore } from './base-store'
 import { PullRequest } from '../../models/pull-request'
-import { StatsStore } from '../stats'
 import { getTagsToPush, storeTagsToPush } from './helpers/tags-to-push-storage'
 import { DiffSelection, ITextDiff } from '../../models/diff'
 import { getDefaultBranch } from '../helpers/default-branch'
@@ -130,8 +129,7 @@ export class GitStore extends BaseStore {
 
   public constructor(
     private readonly repository: Repository,
-    private readonly shell: IAppShell,
-    private readonly statsStore: StatsStore
+    private readonly shell: IAppShell
   ) {
     super()
 
@@ -302,7 +300,6 @@ export class GitStore extends BaseStore {
     newTags: ReadonlyArray<ITagItem>
   ) {
     const commitsToUpdate = new Set<ITagItem>()
-    let numCreatedTags = 0
 
     for (const tag of previousTags) {
       const newTag = newTags.find(t => t.hash === tag.hash)
@@ -321,12 +318,7 @@ export class GitStore extends BaseStore {
       if (previousTags.findIndex(t => t.hash === tag.hash) < 0) {
         // the tag has just been created.
         commitsToUpdate.add(tag)
-        numCreatedTags++
       }
-    }
-
-    if (numCreatedTags > 0) {
-      this.statsStore.recordTagCreated(numCreatedTags)
     }
 
     const commitsToStore = []
@@ -360,8 +352,6 @@ export class GitStore extends BaseStore {
     }
 
     await this.refreshTags(account)
-
-    this.statsStore.recordTagCreatedInDesktop()
   }
 
   public async deleteTag(account: IGitAccount | null, name: string, remote: boolean) {
@@ -374,8 +364,6 @@ export class GitStore extends BaseStore {
     if (remote) { this._remoteTags.delete(name) }
     await this.refreshTags(account)
     this.removeTagToPush(name)
-
-    this.statsStore.recordTagDeleted()
   }
 
   /** The list of ordered SHAs. */

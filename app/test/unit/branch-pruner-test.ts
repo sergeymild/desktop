@@ -12,8 +12,6 @@ import {
   createRepository as createPrunedRepository,
   setupRepository,
 } from '../helpers/repository-builder-branch-pruner'
-import { StatsStore, StatsDatabase } from '../../src/lib/stats'
-import { UiActivityMonitor } from '../../src/ui/lib/ui-activity-monitor'
 
 describe('BranchPruner', () => {
   const onGitStoreUpdated = () => {}
@@ -27,10 +25,6 @@ describe('BranchPruner', () => {
   beforeEach(async () => {
     gitStoreCache = new GitStoreCache(
       shell,
-      new StatsStore(
-        new StatsDatabase('test-StatsDatabase'),
-        new UiActivityMonitor()
-      ),
       onGitStoreUpdated,
       onDidError
     )

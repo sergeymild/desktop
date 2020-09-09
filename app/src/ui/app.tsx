@@ -18,7 +18,6 @@ import { RetryAction } from '../models/retry-actions'
 import { shouldRenderApplicationMenu } from './lib/features'
 import { matchExistingRepository } from '../lib/repository-matching'
 import { getDotComAPIEndpoint } from '../lib/api'
-import { ILaunchStats } from '../lib/stats'
 import { getVersion } from './lib/app-proxy'
 import { getOS } from '../lib/get-os'
 import { validatedRepositoryPath } from '../lib/stores/helpers/validated-repository-path'
@@ -76,11 +75,6 @@ const HourInMilliseconds = MinuteInMilliseconds * 60
  * Check for updates every 4 hours
  */
 const UpdateCheckInterval = 4 * HourInMilliseconds
-
-/**
- * Send usage stats every 4 hours
- */
-const SendStatsInterval = 4 * HourInMilliseconds
 
 interface IAppProps {
   readonly dispatcher: Dispatcher
@@ -182,20 +176,6 @@ export class App extends React.Component<IAppProps, IAppState> {
     })
 
     ipcRenderer.on(
-      'launch-timing-stats',
-      (
-        event: Electron.IpcRendererEvent,
-        { stats }: { stats: ILaunchStats }
-      ) => {
-        console.info(`App ready time: ${stats.mainReadyTime}ms`)
-        console.info(`Load time: ${stats.loadTime}ms`)
-        console.info(`Renderer ready time: ${stats.rendererReadyTime}ms`)
-
-        this.props.dispatcher.recordLaunchStats(stats)
-      }
-    )
-
-    ipcRenderer.on(
       'certificate-error',
       (
         event: Electron.IpcRendererEvent,
@@ -222,9 +202,6 @@ export class App extends React.Component<IAppProps, IAppState> {
     // Loading emoji is super important but maybe less important that loading
     // the app. So defer it until we have some breathing space.
     this.props.appStore.loadEmoji()
-
-    this.props.dispatcher.reportStats()
-    setInterval(() => this.props.dispatcher.reportStats(), SendStatsInterval)
 
     this.props.dispatcher.installGlobalLFSFilters(false)
 
@@ -275,15 +252,12 @@ export class App extends React.Component<IAppProps, IAppState> {
       case 'open-working-directory':
         return this.openCurrentRepositoryWorkingDirectory()
       case 'update-branch':
-        this.props.dispatcher.recordMenuInitiatedUpdate()
         return this.updateBranch()
       case 'compare-to-branch':
         return this.showHistory(true)
       case 'merge-branch':
-        this.props.dispatcher.recordMenuInitiatedMerge()
         return this.mergeBranch()
       case 'rebase-branch':
-        this.props.dispatcher.recordMenuInitiatedRebase()
         return this.showRebaseDialog()
       case 'show-repository-settings':
         return this.showRepositorySettings()
@@ -483,11 +457,9 @@ export class App extends React.Component<IAppProps, IAppState> {
       return
     }
 
-    const { mergeStatus } = state.compareState
     this.props.dispatcher.mergeBranch(
       selectedState.repository,
       defaultBranch.name,
-      mergeStatus
     )
   }
 
@@ -871,10 +843,7 @@ export class App extends React.Component<IAppProps, IAppState> {
     // But if they just dragged one, use the dialog so that they can initialize
     // it if needed.
     if (paths.length > 1) {
-      const addedRepositories = await this.addRepositories(paths)
-      if (addedRepositories.length > 0) {
-        this.props.dispatcher.recordAddExistingRepository()
-      }
+
     } else {
       // user may accidentally provide a folder within the repository
       // this ensures we use the repository root, if it is actually a repository
@@ -927,15 +896,6 @@ export class App extends React.Component<IAppProps, IAppState> {
     }
 
     return state.repository
-  }
-
-  private async addRepositories(paths: ReadonlyArray<string>) {
-    const repositories = await this.props.dispatcher.addRepositories(paths)
-    if (repositories.length > 0) {
-      this.props.dispatcher.selectRepository(repositories[0])
-    }
-
-    return repositories
   }
 
   private showRebaseDialog() {
@@ -1142,7 +1102,6 @@ export class App extends React.Component<IAppProps, IAppState> {
       dotComAccount={this.getDotComAccount()}
       enterpriseAccount={this.getEnterpriseAccount()}
       uncommittedChangesStrategyKind={this.state.uncommittedChangesStrategyKind}
-      optOutOfUsageTracking={this.state.optOutOfUsageTracking}
       selectedExternalEditor={this.state.selectedExternalEditor}
       automaticallySwitchTheme={this.state.automaticallySwitchTheme}
       selectedShell={this.state.selectedShell}
@@ -1325,6 +1284,7 @@ export class App extends React.Component<IAppProps, IAppState> {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/member-ordering
   private foldoutStyle = memoizeOne((sidebarWidth: number): React.CSSProperties => ({
     position: 'absolute',
     marginLeft: 0,
@@ -1463,7 +1423,6 @@ export class App extends React.Component<IAppProps, IAppState> {
 
     if (currentPullRequest == null) {
       dispatcher.createPullRequest(state.repository)
-      dispatcher.recordCreatePullRequest()
     } else {
       dispatcher.showPullRequest(state.repository)
     }
@@ -1679,7 +1638,6 @@ export class App extends React.Component<IAppProps, IAppState> {
     return (
       <Welcome
         dispatcher={this.props.dispatcher}
-        optOut={this.state.optOutOfUsageTracking}
         accounts={this.state.accounts}
         signInState={this.state.signInState}
       />

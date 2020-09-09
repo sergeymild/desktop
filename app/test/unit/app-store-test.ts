@@ -15,7 +15,6 @@ import {
 } from '../../src/lib/stores'
 import {
   TestGitHubUserDatabase,
-  TestStatsDatabase,
   TestIssuesDatabase,
   TestRepositoriesDatabase,
   TestPullRequestDatabase,
@@ -27,8 +26,6 @@ import {
 } from '../helpers/repositories'
 import { InMemoryStore, AsyncInMemoryStore } from '../helpers/stores'
 
-import { StatsStore } from '../../src/lib/stats'
-
 import {
   RepositorySectionTab,
   SelectionType,
@@ -37,7 +34,6 @@ import {
 import { Repository } from '../../src/models/repository'
 import { Commit } from '../../src/models/commit'
 import { getCommit, IStatusResult } from '../../src/lib/git'
-import { TestActivityMonitor } from '../helpers/test-activity-monitor'
 import { RepositoryStateCache } from '../../src/lib/stores/repository-state-cache'
 import { ApiRepositoriesStore } from '../../src/lib/stores/api-repositories-store'
 import { getStatusOrThrow } from '../helpers/status'
@@ -54,9 +50,6 @@ describe('AppStore', () => {
 
     const issuesDb = new TestIssuesDatabase()
     await issuesDb.reset()
-
-    const statsDb = new TestStatsDatabase()
-    await statsDb.reset()
 
     const repositoriesDb = new TestRepositoriesDatabase()
     await repositoriesDb.reset()
@@ -82,7 +75,6 @@ describe('AppStore', () => {
       githubUserStore,
       new CloningRepositoriesStore(),
       new IssuesStore(issuesDb),
-      new StatsStore(statsDb, new TestActivityMonitor()),
       new SignInStore(),
       accountsStore,
       repositoriesStore,

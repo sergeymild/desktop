@@ -62,7 +62,6 @@ export class CherryPickCommitList extends React.Component<ICherryPickCommitListP
       this.props.repository,
       commit.commit.sha,
       branch,
-      null,
     )
     this.props.onDismissed()
   }

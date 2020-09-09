@@ -101,7 +101,6 @@ export class NewCommitsBanner extends React.Component<
       branch: this.props.baseBranch,
       comparisonMode: ComparisonMode.Behind,
     })
-    dispatcher.recordDivergingBranchBannerInitiatedCompare()
     this.props.onDismiss(DismissalReason.Compare)
   }
 
@@ -113,7 +112,6 @@ export class NewCommitsBanner extends React.Component<
       branch: this.props.baseBranch,
       repository,
     })
-    dispatcher.recordDivergingBranchBannerInitatedMerge()
     this.props.onDismiss(DismissalReason.Merge)
   }
 }

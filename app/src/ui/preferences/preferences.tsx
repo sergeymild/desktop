@@ -42,7 +42,6 @@ interface IPreferencesProps {
   readonly dotComAccount: Account | null
   readonly enterpriseAccount: Account | null
   readonly onDismissed: () => void
-  readonly optOutOfUsageTracking: boolean
   readonly initialSelectedTab?: PreferencesTab
   readonly confirmRepositoryRemoval: boolean
   readonly confirmDiscardChanges: boolean
@@ -63,7 +62,6 @@ interface IPreferencesState {
   readonly initialCommitterEmail: string | null
   readonly initialDefaultBranch: string | null
   readonly disallowedCharactersMessage: string | null
-  readonly optOutOfUsageTracking: boolean
   readonly confirmRepositoryRemoval: boolean
   readonly confirmDiscardChanges: boolean
   readonly confirmForcePush: boolean
@@ -102,7 +100,6 @@ export class Preferences extends React.Component<
       initialDefaultBranch: null,
       disallowedCharactersMessage: null,
       availableEditors: [],
-      optOutOfUsageTracking: false,
       confirmRepositoryRemoval: false,
       confirmDiscardChanges: false,
       confirmForcePush: false,
@@ -163,7 +160,6 @@ export class Preferences extends React.Component<
       initialCommitterName,
       initialCommitterEmail,
       initialDefaultBranch,
-      optOutOfUsageTracking: this.props.optOutOfUsageTracking,
       confirmRepositoryRemoval: this.props.confirmRepositoryRemoval,
       confirmDiscardChanges: this.props.confirmDiscardChanges,
       confirmForcePush: this.props.confirmForcePush,
@@ -313,14 +309,12 @@ export class Preferences extends React.Component<
       case PreferencesTab.Advanced: {
         View = (
           <Advanced
-            optOutOfUsageTracking={this.state.optOutOfUsageTracking}
             confirmRepositoryRemoval={this.state.confirmRepositoryRemoval}
             confirmDiscardChanges={this.state.confirmDiscardChanges}
             confirmForcePush={this.state.confirmForcePush}
             uncommittedChangesStrategyKind={
               this.state.uncommittedChangesStrategyKind
             }
-            onOptOutofReportingchanged={this.onOptOutofReportingChanged}
             onConfirmRepositoryRemovalChanged={
               this.onConfirmRepositoryRemovalChanged
             }
@@ -348,10 +342,6 @@ export class Preferences extends React.Component<
 
   private onLockFileDeleteError = (e: Error) => {
     this.props.dispatcher.postError(e)
-  }
-
-  private onOptOutofReportingChanged = (value: boolean) => {
-    this.setState({ optOutOfUsageTracking: value })
   }
 
   private onConfirmRepositoryRemovalChanged = (value: boolean) => {
@@ -491,10 +481,6 @@ export class Preferences extends React.Component<
       return
     }
 
-    await this.props.dispatcher.setStatsOptOut(
-      this.state.optOutOfUsageTracking,
-      false
-    )
     await this.props.dispatcher.setConfirmRepoRemovalSetting(
       this.state.confirmRepositoryRemoval
     )

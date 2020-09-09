@@ -23,7 +23,7 @@ import {
 } from '../lib/conflicts'
 import { ManualConflictResolution } from '../../models/manual-conflict-resolution'
 import { BannerType } from '../../models/banner'
-import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { OkCancelButtonGroup } from '../dialog'
 
 interface IMergeConflictsDialogProps {
   readonly dispatcher: Dispatcher
@@ -78,7 +78,6 @@ export class MergeConflictsDialog extends React.Component<
       RepositorySectionTab.Changes
     )
     this.props.onDismissed()
-    this.props.dispatcher.recordGuidedConflictedMergeCompletion()
   }
 
   /**
@@ -118,15 +117,6 @@ export class MergeConflictsDialog extends React.Component<
         repository: this.props.repository,
       },
     })
-    this.props.dispatcher.recordMergeConflictsDialogDismissal()
-    const anyConflictedFiles =
-      getConflictedFiles(
-        this.props.workingDirectory,
-        this.props.manualResolutions
-      ).length > 0
-    if (anyConflictedFiles) {
-      this.props.dispatcher.recordAnyConflictsLeftOnMergeConflictsDialogDismissal()
-    }
   }
 
   private renderHeaderTitle(ourBranch: string, theirBranch?: string) {

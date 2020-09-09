@@ -71,12 +71,9 @@ export class MergeCallToAction extends React.Component<
   private onMergeClicked = async () => {
     const formState = this.props.formState
 
-    this.props.dispatcher.recordCompareInitiatedMerge()
-
     await this.props.dispatcher.mergeBranch(
       this.props.repository,
       formState.comparisonBranch.name,
-      null
     )
 
     this.props.dispatcher.executeCompare(this.props.repository, {

@@ -22,7 +22,6 @@ export class ConfigureGit extends React.Component<IConfigureGitProps, {}> {
 
         <ConfigureGitUser
           accounts={this.props.accounts}
-          onSave={this.continue}
           saveLabel="Continue"
         >
           <Button onClick={this.cancel}>Cancel</Button>
@@ -33,9 +32,5 @@ export class ConfigureGit extends React.Component<IConfigureGitProps, {}> {
 
   private cancel = () => {
     this.props.advance(WelcomeStep.Start)
-  }
-
-  private continue = () => {
-    this.props.advance(WelcomeStep.UsageOptOut)
   }
 }

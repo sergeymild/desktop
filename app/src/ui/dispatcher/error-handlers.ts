@@ -7,7 +7,7 @@ import { Dispatcher } from '.'
 import { ExternalEditorError } from '../../lib/editors/shared'
 import { ErrorWithMetadata } from '../../lib/error-with-metadata'
 import { AuthenticationErrors } from '../../lib/git/authentication'
-import { GitError, isAuthFailureError } from '../../lib/git/core'
+import { GitError, isAuthFailureError } from '../../lib/git'
 import { ShellError } from '../../lib/shells'
 import { UpstreamAlreadyExistsError } from '../../lib/stores/upstream-already-exists-error'
 
@@ -19,8 +19,7 @@ import {
 import { getDotComAPIEndpoint } from '../../lib/api'
 import { hasWritePermission } from '../../models/github-repository'
 import {
-  enableCreateForkFlow,
-  enableSchannelCheckRevokeOptOut,
+  enableCreateForkFlow
 } from '../../lib/feature-flag'
 import { RetryActionType } from '../../models/retry-actions'
 import { sendNonFatalException } from '../../lib/helpers/non-fatal-exception'
@@ -307,15 +306,6 @@ export async function mergeConflictHandler(
     return error
   }
 
-  switch (gitContext.kind) {
-    case 'pull':
-      dispatcher.mergeConflictDetectedFromPull()
-      break
-    case 'merge':
-      dispatcher.mergeConflictDetectedFromExplicitMerge()
-      break
-  }
-
   const { currentBranch, theirBranch } = gitContext
 
   dispatcher.showPopup({
@@ -470,7 +460,6 @@ export async function localChangesOverwrittenOnCheckoutHandler(
   // how we know we can safely move the changes to the destination
   // branch.
   if (gitContext === undefined || gitContext.kind !== 'checkout') {
-    dispatcher.recordErrorWhenSwitchingBranchesWithUncommmittedChanges()
     return error
   }
 
@@ -659,10 +648,6 @@ export async function schannelUnableToCheckRevocationForCertificate(
   dispatcher: Dispatcher
 ) {
   if (!__WIN32__) {
-    return error
-  }
-
-  if (!enableSchannelCheckRevokeOptOut()) {
     return error
   }
 

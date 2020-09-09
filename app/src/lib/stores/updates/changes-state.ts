@@ -6,16 +6,13 @@ import { IStatusResult } from '../../git'
 import {
   IChangesState,
   ConflictState,
-  MergeConflictState,
   isMergeConflictState,
   isRebaseConflictState,
-  RebaseConflictState,
   ChangesSelection,
   ChangesSelectionKind,
 } from '../../app-state'
 import { DiffSelectionType } from '../../../models/diff'
 import { caseInsensitiveCompare } from '../../compare'
-import { IStatsStore } from '../../stats'
 import { ManualConflictResolution } from '../../../models/manual-conflict-resolution'
 
 /**
@@ -146,95 +143,9 @@ function getConflictState(
   return null
 }
 
-function performEffectsForMergeStateChange(
-  prevConflictState: MergeConflictState | null,
-  newConflictState: MergeConflictState | null,
-  status: IStatusResult,
-  statsStore: IStatsStore
-): void {
-  const previousBranchName =
-    prevConflictState != null ? prevConflictState.currentBranch : null
-  const currentBranchName =
-    newConflictState != null ? newConflictState.currentBranch : null
-
-  const branchNameChanged =
-    previousBranchName != null &&
-    currentBranchName != null &&
-    previousBranchName !== currentBranchName
-
-  // The branch name has changed while remaining conflicted -> the merge must have been aborted
-  if (branchNameChanged) {
-    statsStore.recordMergeAbortedAfterConflicts()
-    return
-  }
-
-  const { currentTip } = status
-
-  // if the repository is no longer conflicted, what do we think happened?
-  if (
-    prevConflictState != null &&
-    newConflictState == null &&
-    currentTip != null
-  ) {
-    const previousTip = prevConflictState.currentTip
-
-    if (previousTip !== currentTip) {
-      statsStore.recordMergeSuccessAfterConflicts()
-    } else {
-      statsStore.recordMergeAbortedAfterConflicts()
-    }
-  }
-}
-
-function performEffectsForRebaseStateChange(
-  prevConflictState: RebaseConflictState | null,
-  newConflictState: RebaseConflictState | null,
-  status: IStatusResult,
-  statsStore: IStatsStore
-) {
-  const previousBranchName =
-    prevConflictState != null ? prevConflictState.targetBranch : null
-  const currentBranchName =
-    newConflictState != null ? newConflictState.targetBranch : null
-
-  const branchNameChanged =
-    previousBranchName != null &&
-    currentBranchName != null &&
-    previousBranchName !== currentBranchName
-
-  // The branch name has changed while remaining conflicted -> the rebase must have been aborted
-  if (branchNameChanged) {
-    statsStore.recordRebaseAbortedAfterConflicts()
-    return
-  }
-
-  const { currentTip, currentBranch } = status
-
-  // if the repository is no longer conflicted, what do we think happened?
-  if (
-    prevConflictState != null &&
-    newConflictState == null &&
-    currentTip != null &&
-    currentBranch != null
-  ) {
-    const previousTip = prevConflictState.originalBranchTip
-
-    const previousTipChanged =
-      previousTip !== currentTip &&
-      currentBranch === prevConflictState.targetBranch
-
-    if (!previousTipChanged) {
-      statsStore.recordRebaseAbortedAfterConflicts()
-    }
-  }
-
-  return
-}
-
 export function updateConflictState(
   state: IChangesState,
-  status: IStatusResult,
-  statsStore: IStatsStore
+  status: IStatusResult
 ): ConflictState | null {
   const prevConflictState = state.conflictState
 
@@ -253,12 +164,6 @@ export function updateConflictState(
     (prevConflictState == null || isMergeConflictState(prevConflictState)) &&
     (newConflictState == null || isMergeConflictState(newConflictState))
   ) {
-    performEffectsForMergeStateChange(
-      prevConflictState,
-      newConflictState,
-      status,
-      statsStore
-    )
     return newConflictState
   }
 
@@ -266,12 +171,6 @@ export function updateConflictState(
     (prevConflictState == null || isRebaseConflictState(prevConflictState)) &&
     (newConflictState == null || isRebaseConflictState(newConflictState))
   ) {
-    performEffectsForRebaseStateChange(
-      prevConflictState,
-      newConflictState,
-      status,
-      statsStore
-    )
     return newConflictState
   }
 

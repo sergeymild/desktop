@@ -10,7 +10,7 @@ import {
   RepositoryWithGitHubRepository,
   isRepositoryWithForkedGitHubRepository,
 } from '../../models/repository'
-import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { OkCancelButtonGroup } from '../dialog'
 import { sendNonFatalException } from '../../lib/helpers/non-fatal-exception'
 import { Account } from '../../models/account'
 import { API } from '../../lib/api'
@@ -53,7 +53,6 @@ export class CreateForkDialog extends React.Component<
         gitHubRepository.owner.login,
         gitHubRepository.name
       )
-      this.props.dispatcher.recordForkCreated()
       const updatedRepository = await this.props.dispatcher.convertRepositoryToFork(
         this.props.repository,
         fork

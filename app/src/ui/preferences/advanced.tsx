@@ -1,20 +1,15 @@
 import * as React from 'react'
 import { DialogContent } from '../dialog'
 import { Checkbox, CheckboxValue } from '../lib/checkbox'
-import { LinkButton } from '../lib/link-button'
-import { SamplesURL } from '../../lib/stats'
 import { UncommittedChangesStrategyKind } from '../../models/uncommitted-changes-strategy'
-import { enableSchannelCheckRevokeOptOut } from '../../lib/feature-flag'
 import { RadioButton } from '../lib/radio-button'
 
 interface IAdvancedPreferencesProps {
-  readonly optOutOfUsageTracking: boolean
   readonly confirmRepositoryRemoval: boolean
   readonly confirmDiscardChanges: boolean
   readonly confirmForcePush: boolean
   readonly uncommittedChangesStrategyKind: UncommittedChangesStrategyKind
   readonly schannelCheckRevoke: boolean | null
-  readonly onOptOutofReportingchanged: (checked: boolean) => void
   readonly onConfirmDiscardChangesChanged: (checked: boolean) => void
   readonly onConfirmRepositoryRemovalChanged: (checked: boolean) => void
   readonly onConfirmForcePushChanged: (checked: boolean) => void
@@ -25,7 +20,6 @@ interface IAdvancedPreferencesProps {
 }
 
 interface IAdvancedPreferencesState {
-  readonly optOutOfUsageTracking: boolean
   readonly confirmRepositoryRemoval: boolean
   readonly confirmDiscardChanges: boolean
   readonly confirmForcePush: boolean
@@ -40,21 +34,11 @@ export class Advanced extends React.Component<
     super(props)
 
     this.state = {
-      optOutOfUsageTracking: this.props.optOutOfUsageTracking,
       confirmRepositoryRemoval: this.props.confirmRepositoryRemoval,
       confirmDiscardChanges: this.props.confirmDiscardChanges,
       confirmForcePush: this.props.confirmForcePush,
       uncommittedChangesStrategyKind: this.props.uncommittedChangesStrategyKind,
     }
-  }
-
-  private onReportingOptOutChanged = (
-    event: React.FormEvent<HTMLInputElement>
-  ) => {
-    const value = !event.currentTarget.checked
-
-    this.setState({ optOutOfUsageTracking: value })
-    this.props.onOptOutofReportingchanged(value)
   }
 
   private onConfirmDiscardChangesChanged = (
@@ -96,15 +80,6 @@ export class Advanced extends React.Component<
   ) => {
     const value = event.currentTarget.checked
     this.props.onSchannelCheckRevokeChanged(value === false)
-  }
-
-  private reportDesktopUsageLabel() {
-    return (
-      <span>
-        Help GitHub Desktop improve by submitting{' '}
-        <LinkButton uri={SamplesURL}>usage stats</LinkButton>
-      </span>
-    )
   }
 
   public render() {
@@ -171,18 +146,6 @@ export class Advanced extends React.Component<
             onChange={this.onConfirmForcePushChanged}
           />
         </div>
-        <div className="advanced-section">
-          <h2>Usage</h2>
-          <Checkbox
-            label={this.reportDesktopUsageLabel()}
-            value={
-              this.state.optOutOfUsageTracking
-                ? CheckboxValue.Off
-                : CheckboxValue.On
-            }
-            onChange={this.onReportingOptOutChanged}
-          />
-        </div>
         {this.renderGitAdvancedSection()}
       </DialogContent>
     )
@@ -190,10 +153,6 @@ export class Advanced extends React.Component<
 
   private renderGitAdvancedSection() {
     if (!__WIN32__) {
-      return
-    }
-
-    if (!enableSchannelCheckRevokeOptOut()) {
       return
     }
 

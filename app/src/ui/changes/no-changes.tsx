@@ -344,13 +344,9 @@ export class NoChanges extends React.PureComponent<
         menuItemId={itemId}
         type="primary"
         disabled={!menuItem.enabled}
-        onClick={this.onPublishRepositoryClicked}
       />
     )
   }
-
-  private onPublishRepositoryClicked = () =>
-    dispatcher.recordSuggestedStepPublishRepository()
 
   private renderPublishBranchAction(tip: IValidBranch) {
     // This is a bit confusing, there's no dedicated
@@ -393,13 +389,9 @@ export class NoChanges extends React.PureComponent<
         buttonText="Publish branch"
         type="primary"
         disabled={!menuItem.enabled}
-        onClick={this.onPublishBranchClicked}
       />
     )
   }
-
-  private onPublishBranchClicked = () =>
-    dispatcher.recordSuggestedStepPublishBranch()
 
   private renderPullBranchAction(
     tip: IValidBranch,
@@ -549,13 +541,9 @@ export class NoChanges extends React.PureComponent<
         discoverabilityContent={this.renderDiscoverabilityElements(menuItem)}
         type="primary"
         disabled={!menuItem.enabled}
-        onClick={this.onCreatePullRequestClicked}
       />
     )
   }
-
-  private onCreatePullRequestClicked = () =>
-    dispatcher.recordSuggestedStepCreatePullRequest()
 
   private renderActions() {
     return (

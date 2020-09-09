@@ -51,7 +51,6 @@ let mainWindow: AppWindow | null = null
 const launchTime = now()
 
 let preventQuit = false
-let readyTime: number | null = null
 
 type OnDidLoadFn = (window: AppWindow) => void
 /** See the `onDidLoad` function. */
@@ -287,8 +286,6 @@ app.on('ready', () => {
   if (isDuplicateInstance || handlingSquirrelEvent) {
     return
   }
-
-  readyTime = now() - launchTime
 
   possibleProtocols.forEach(protocol => setAsDefaultProtocolClient(protocol))
 
@@ -692,12 +689,6 @@ function createWindow() {
 
   window.onDidLoad(() => {
     window.show()
-    window.sendLaunchTimingStats({
-      mainReadyTime: readyTime!,
-      loadTime: window.loadTime!,
-      rendererReadyTime: window.rendererReadyTime!,
-    })
-
     const fns = onDidLoadFns!
     onDidLoadFns = null
     for (const fn of fns) {

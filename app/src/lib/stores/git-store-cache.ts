@@ -1,7 +1,6 @@
 import { GitStore } from './git-store'
 import { Repository } from '../../models/repository'
 import { IAppShell } from '../app-shell'
-import { StatsStore } from '../stats'
 
 export class GitStoreCache {
   /** GitStores keyed by their hash. */
@@ -9,7 +8,6 @@ export class GitStoreCache {
 
   public constructor(
     private readonly shell: IAppShell,
-    private readonly statsStore: StatsStore,
     private readonly onGitStoreUpdated: (
       repository: Repository,
       gitStore: GitStore
@@ -26,7 +24,7 @@ export class GitStoreCache {
   public get(repository: Repository): GitStore {
     let gitStore = this.gitStores.get(repository.hash)
     if (gitStore === undefined) {
-      gitStore = new GitStore(repository, this.shell, this.statsStore)
+      gitStore = new GitStore(repository, this.shell)
       gitStore.onDidUpdate(() => this.onGitStoreUpdated(repository, gitStore!))
       gitStore.onDidError(error => this.onDidError(error))
 

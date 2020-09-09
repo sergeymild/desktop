@@ -43,7 +43,6 @@ import {
 import { GitHubUserDatabase } from '../lib/databases'
 import { URLActionType } from '../lib/parse-app-url'
 import { SelectionType, IAppState } from '../lib/app-state'
-import { StatsDatabase, StatsStore } from '../lib/stats'
 import {
   IssuesDatabase,
   RepositoriesDatabase,
@@ -53,12 +52,10 @@ import { shellNeedsPatching, updateEnvironmentForProcess } from '../lib/shell'
 import { installDevGlobals } from './install-globals'
 import { reportUncaughtException, sendErrorReport } from './main-process-proxy'
 import { getOS } from '../lib/get-os'
-import { getGUID } from '../lib/stats'
 import {
   enableSourceMaps,
   withSourceMappedStack,
 } from '../lib/source-map-support'
-import { UiActivityMonitor } from './lib/ui-activity-monitor'
 import { RepositoryStateCache } from '../lib/stores/repository-state-cache'
 import { ApiRepositoriesStore } from '../lib/stores/api-repositories-store'
 import { CommitStatusStore } from '../lib/stores/commit-status-store'
@@ -135,7 +132,6 @@ const sendErrorWithContext = (
   } else {
     const extra: Record<string, string> = {
       osVersion: getOS(),
-      guid: getGUID(),
       ...context,
     }
 
@@ -240,10 +236,6 @@ const gitHubUserStore = new GitHubUserStore(
 )
 const cloningRepositoriesStore = new CloningRepositoriesStore()
 const issuesStore = new IssuesStore(new IssuesDatabase('IssuesDatabase'))
-const statsStore = new StatsStore(
-  new StatsDatabase('StatsDatabase'),
-  new UiActivityMonitor()
-)
 const signInStore = new SignInStore()
 
 const accountsStore = new AccountsStore(localStorage, TokenStore)
@@ -271,7 +263,6 @@ const appStore = new AppStore(
   gitHubUserStore,
   cloningRepositoriesStore,
   issuesStore,
-  statsStore,
   signInStore,
   accountsStore,
   repositoriesStore,
@@ -287,7 +278,6 @@ appStore.onDidUpdate(state => {
 const dispatcher = new Dispatcher(
   appStore,
   repositoryStateManager,
-  statsStore,
   commitStatusStore
 )
 

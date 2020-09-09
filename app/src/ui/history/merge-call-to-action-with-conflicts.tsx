@@ -16,11 +16,6 @@ interface IMergeCallToActionWithConflictsProps {
   readonly currentBranch: Branch
   readonly comparisonBranch: Branch
   readonly commitsBehind: number
-
-  /**
-   * Callback to execute after a merge has been performed
-   */
-  readonly onMerged: () => void
 }
 
 export class MergeCallToActionWithConflicts extends React.Component<
@@ -157,14 +152,11 @@ export class MergeCallToActionWithConflicts extends React.Component<
   }
 
   private onMergeClicked = async () => {
-    const { comparisonBranch, repository, mergeStatus } = this.props
-
-    this.props.dispatcher.recordCompareInitiatedMerge()
+    const { comparisonBranch, repository } = this.props
 
     await this.props.dispatcher.mergeBranch(
       repository,
       comparisonBranch.name,
-      mergeStatus
     )
 
     this.props.dispatcher.executeCompare(repository, {
@@ -175,6 +167,5 @@ export class MergeCallToActionWithConflicts extends React.Component<
       showBranchList: false,
       filterText: '',
     })
-    this.props.onMerged()
   }
 }

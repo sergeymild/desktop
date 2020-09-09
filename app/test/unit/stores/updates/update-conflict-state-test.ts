@@ -7,18 +7,8 @@ import {
   ManualConflictResolution,
   ManualConflictResolutionKind,
 } from '../../../../src/models/manual-conflict-resolution'
-import { IStatsStore } from '../../../../src/lib/stats'
 
 describe('updateConflictState', () => {
-  let statsStore: IStatsStore
-  beforeEach(() => {
-    statsStore = {
-      recordMergeAbortedAfterConflicts: jest.fn(),
-      recordMergeSuccessAfterConflicts: jest.fn(),
-      recordRebaseAbortedAfterConflicts: jest.fn(),
-      recordRebaseSuccessAfterConflicts: jest.fn(),
-    }
-  })
 
   const manualResolutions = new Map<string, ManualConflictResolution>([
     ['foo', ManualConflictResolutionKind.theirs],
@@ -35,7 +25,7 @@ describe('updateConflictState', () => {
         },
       })
       const status = createStatus({ mergeHeadFound: false })
-      const conflictState = updateConflictState(prevState, status, statsStore)
+      const conflictState = updateConflictState(prevState, status)
       expect(conflictState).toBeNull()
     })
 
@@ -54,7 +44,7 @@ describe('updateConflictState', () => {
         currentTip: 'first-sha',
       })
 
-      const conflictState = updateConflictState(prevState, status, statsStore)
+      const conflictState = updateConflictState(prevState, status)
 
       expect(conflictState).toEqual({
         kind: 'merge',
@@ -79,7 +69,7 @@ describe('updateConflictState', () => {
         currentTip: undefined,
       })
 
-      const conflictState = updateConflictState(prevState, status, statsStore)
+      const conflictState = updateConflictState(prevState, status)
       expect(conflictState).toBeNull()
     })
 
@@ -93,7 +83,7 @@ describe('updateConflictState', () => {
         currentTip: 'first-sha',
       })
 
-      const conflictState = updateConflictState(prevState, status, statsStore)
+      const conflictState = updateConflictState(prevState, status)
 
       expect(conflictState).toEqual({
         kind: 'merge',
@@ -118,9 +108,7 @@ describe('updateConflictState', () => {
         currentTip: 'first-sha',
       })
 
-      updateConflictState(prevState, status, statsStore)
-
-      expect(statsStore.recordMergeAbortedAfterConflicts).toHaveBeenCalled()
+      updateConflictState(prevState, status)
     })
 
     it('increments abort counter when conflict resolved and tip has not changed', () => {
@@ -138,9 +126,7 @@ describe('updateConflictState', () => {
         currentTip: 'old-sha',
       })
 
-      updateConflictState(prevState, status, statsStore)
-
-      expect(statsStore.recordMergeAbortedAfterConflicts).toHaveBeenCalled()
+      updateConflictState(prevState, status)
     })
 
     it('increments success counter when conflict resolved and tip has changed', () => {
@@ -158,9 +144,7 @@ describe('updateConflictState', () => {
         currentTip: 'new-sha',
       })
 
-      updateConflictState(prevState, status, statsStore)
-
-      expect(statsStore.recordMergeSuccessAfterConflicts).toHaveBeenCalled()
+      updateConflictState(prevState, status)
     })
   })
 
@@ -177,7 +161,7 @@ describe('updateConflictState', () => {
         },
       })
       const status = createStatus({ rebaseInternalState: null })
-      const conflictState = updateConflictState(prevState, status, statsStore)
+      const conflictState = updateConflictState(prevState, status)
       expect(conflictState).toBeNull()
     })
 
@@ -195,7 +179,7 @@ describe('updateConflictState', () => {
         currentTip: 'first-sha',
       })
 
-      const conflictState = updateConflictState(prevState, status, statsStore)
+      const conflictState = updateConflictState(prevState, status)
 
       expect(conflictState).toEqual({
         kind: 'rebase',
@@ -228,7 +212,7 @@ describe('updateConflictState', () => {
         currentTip: 'first-sha',
       })
 
-      const conflictState = updateConflictState(prevState, status, statsStore)
+      const conflictState = updateConflictState(prevState, status)
 
       expect(conflictState).toEqual({
         kind: 'rebase',
@@ -260,9 +244,7 @@ describe('updateConflictState', () => {
         currentTip: 'current-sha',
       })
 
-      updateConflictState(prevState, status, statsStore)
-
-      expect(statsStore.recordRebaseAbortedAfterConflicts).toHaveBeenCalled()
+      updateConflictState(prevState, status)
     })
 
     it('increments abort counter when conflict resolved but tip has not changed', () => {
@@ -282,9 +264,7 @@ describe('updateConflictState', () => {
         currentTip: 'old-sha',
       })
 
-      updateConflictState(prevState, status, statsStore)
-
-      expect(statsStore.recordRebaseAbortedAfterConflicts).toHaveBeenCalled()
+      updateConflictState(prevState, status)
     })
 
     it('does not increment aborted counter when conflict resolved and tip has changed', () => {
@@ -304,11 +284,7 @@ describe('updateConflictState', () => {
         currentTip: 'new-sha',
       })
 
-      updateConflictState(prevState, status, statsStore)
-
-      expect(
-        statsStore.recordRebaseAbortedAfterConflicts
-      ).not.toHaveBeenCalled()
+      updateConflictState(prevState, status)
     })
   })
 })

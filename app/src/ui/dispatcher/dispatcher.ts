@@ -21,7 +21,6 @@ import { rejectOAuthRequest, requestAuthenticatedUser, resolveOAuthRequest } fro
 import { IOpenRepositoryFromURLAction, IUnknownAction, URLActionType } from '../../lib/parse-app-url'
 import { matchExistingRepository, urlsMatch } from '../../lib/repository-matching'
 import { Shell } from '../../lib/shells'
-import { ILaunchStats, StatsStore } from '../../lib/stats'
 import { AppStore } from '../../lib/stores'
 import { validatedRepositoryPath } from '../../lib/stores/helpers/validated-repository-path'
 import { RepositoryStateCache } from '../../lib/stores/repository-state-cache'
@@ -59,7 +58,6 @@ import { ApplicationTheme } from '../lib/application-theme'
 import { installCLI } from '../lib/install-cli'
 import { executeMenuItem } from '../main-process-proxy'
 import { CommitStatusStore, ICombinedRefCheck, StatusCallBack } from '../../lib/stores/commit-status-store'
-import { MergeTreeResult } from '../../models/merge'
 import { UncommittedChangesStrategy, UncommittedChangesStrategyKind } from '../../models/uncommitted-changes-strategy'
 import { RebaseFlowStep, RebaseStep } from '../../models/rebase-flow-step'
 import { IStashEntry } from '../../models/stash-entry'
@@ -88,7 +86,6 @@ export class Dispatcher {
   public constructor(
     private readonly appStore: AppStore,
     private readonly repositoryStateManager: RepositoryStateCache,
-    private readonly statsStore: StatsStore,
     private readonly commitStatusStore: CommitStatusStore
   ) {}
 
@@ -860,18 +857,16 @@ export class Dispatcher {
     repository: Repository,
     commitSha: string,
     branch: string,
-    mergeStatus: MergeTreeResult | null
   ): Promise<void> {
-    return this.appStore._cherryPickBranch(repository, commitSha, branch, mergeStatus)
+    return this.appStore._cherryPickBranch(repository, commitSha, branch)
   }
 
   /** Merge the named branch into the current branch. */
   public mergeBranch(
     repository: Repository,
     branch: string,
-    mergeStatus: MergeTreeResult | null
   ): Promise<void> {
-    return this.appStore._mergeBranch(repository, branch, mergeStatus)
+    return this.appStore._mergeBranch(repository, branch)
   }
 
   /**
@@ -1030,8 +1025,6 @@ export class Dispatcher {
         return
       }
 
-      this.statsStore.recordRebaseSuccessWithoutConflicts()
-
       await this.completeRebase(
         repository,
         {
@@ -1124,8 +1117,6 @@ export class Dispatcher {
         return
       }
 
-      this.statsStore.recordRebaseSuccessAfterConflicts()
-
       await this.completeRebase(
         repository,
         {
@@ -1208,16 +1199,6 @@ export class Dispatcher {
     }
   }
 
-  /** Record the given launch stats. */
-  public recordLaunchStats(stats: ILaunchStats): Promise<void> {
-    return this.appStore._recordLaunchStats(stats)
-  }
-
-  /** Report any stats if needed. */
-  public reportStats(): Promise<void> {
-    return this.appStore._reportStats()
-  }
-
   /** Changes the URL for the remote that matches the given name  */
   public setRemoteURL(
     repository: Repository,
@@ -1271,18 +1252,6 @@ export class Dispatcher {
    */
   public saveGitIgnore(repository: Repository, text: string): Promise<void> {
     return this.appStore._saveGitIgnore(repository, text)
-  }
-
-  /** Set whether the user has opted out of stats reporting. */
-  public setStatsOptOut(
-    optOut: boolean,
-    userViewedPrompt: boolean
-  ): Promise<void> {
-    return this.appStore.setStatsOptOut(optOut, userViewedPrompt)
-  }
-
-  public markUsageStatsNoteSeen() {
-    this.appStore.markUsageStatsNoteSeen()
   }
 
   /**
@@ -1734,7 +1703,6 @@ export class Dispatcher {
 
         if (existingRepository) {
           await this.selectRepository(existingRepository)
-          this.statsStore.recordAddExistingRepository()
         } else {
           await this.showPopup({
             type: PopupType.AddRepository,
@@ -1907,7 +1875,6 @@ export class Dispatcher {
         return this.mergeBranch(
           retryAction.repository,
           retryAction.theirBranch,
-          null
         )
 
       case RetryActionType.CherryPick:
@@ -1915,7 +1882,6 @@ export class Dispatcher {
           retryAction.repository,
           retryAction.commitSha,
           retryAction.theirBranch,
-          null
         )
 
       case RetryActionType.Rebase:
@@ -2168,50 +2134,6 @@ export class Dispatcher {
   }
 
   /**
-   * Updates the application state to indicate a conflict is in-progress
-   * as a result of a pull and increments the relevant metric.
-   */
-  public mergeConflictDetectedFromPull() {
-    return this.statsStore.recordMergeConflictFromPull()
-  }
-
-  /**
-   * Updates the application state to indicate a conflict is in-progress
-   * as a result of a merge and increments the relevant metric.
-   */
-  public mergeConflictDetectedFromExplicitMerge() {
-    return this.statsStore.recordMergeConflictFromExplicitMerge()
-  }
-
-  /**
-   * Increments the `mergeIntoCurrentBranchMenuCount` metric
-   */
-  public recordMenuInitiatedMerge() {
-    return this.statsStore.recordMenuInitiatedMerge()
-  }
-
-  /**
-   * Increments the `rebaseIntoCurrentBranchMenuCount` metric
-   */
-  public recordMenuInitiatedRebase() {
-    return this.statsStore.recordMenuInitiatedRebase()
-  }
-
-  /**
-   * Increments the `updateFromDefaultBranchMenuCount` metric
-   */
-  public recordMenuInitiatedUpdate() {
-    return this.statsStore.recordMenuInitiatedUpdate()
-  }
-
-  /**
-   * Increments the `mergesInitiatedFromComparison` metric
-   */
-  public recordCompareInitiatedMerge() {
-    return this.statsStore.recordCompareInitiatedMerge()
-  }
-
-  /**
    * Set the application-wide theme
    */
   public setSelectedTheme(theme: ApplicationTheme) {
@@ -2223,117 +2145,6 @@ export class Dispatcher {
    */
   public onAutomaticallySwitchThemeChanged(theme: boolean) {
     return this.appStore._setAutomaticallySwitchTheme(theme)
-  }
-
-  /**
-   * Increments either the `repoWithIndicatorClicked` or
-   * the `repoWithoutIndicatorClicked` metric
-   */
-  public recordRepoClicked(repoHasIndicator: boolean) {
-    return this.statsStore.recordRepoClicked(repoHasIndicator)
-  }
-
-  /** The number of times the user dismisses the diverged branch notification
-   * Increments the `divergingBranchBannerDismissal` metric
-   */
-  public recordDivergingBranchBannerDismissal() {
-    return this.statsStore.recordDivergingBranchBannerDismissal()
-  }
-
-  /**
-   * Increments the `divergingBranchBannerInitiatedCompare` metric
-   */
-  public recordDivergingBranchBannerInitiatedCompare() {
-    return this.statsStore.recordDivergingBranchBannerInitiatedCompare()
-  }
-
-  /**
-   * Increments the `divergingBranchBannerInfluencedMerge` metric
-   */
-  public recordDivergingBranchBannerInfluencedMerge() {
-    return this.statsStore.recordDivergingBranchBannerInfluencedMerge()
-  }
-
-  /**
-   * Increments the `divergingBranchBannerInitatedMerge` metric
-   */
-  public recordDivergingBranchBannerInitatedMerge() {
-    return this.statsStore.recordDivergingBranchBannerInitatedMerge()
-  }
-
-  /**
-   * Increments the `createPullRequestCount` metric
-   */
-  public recordCreatePullRequest() {
-    return this.statsStore.recordCreatePullRequest()
-  }
-
-  public recordWelcomeWizardInitiated() {
-    return this.statsStore.recordWelcomeWizardInitiated()
-  }
-
-  public recordCreateRepository() {
-    this.statsStore.recordCreateRepository()
-  }
-
-  public recordAddExistingRepository() {
-    this.statsStore.recordAddExistingRepository()
-  }
-
-  /**
-   * Increments the `mergeConflictsDialogDismissalCount` metric
-   */
-  public recordMergeConflictsDialogDismissal() {
-    this.statsStore.recordMergeConflictsDialogDismissal()
-  }
-
-  /**
-   * Increments the `mergeConflictsDialogReopenedCount` metric
-   */
-  public recordMergeConflictsDialogReopened() {
-    this.statsStore.recordMergeConflictsDialogReopened()
-  }
-
-  /**
-   * Increments the `anyConflictsLeftOnMergeConflictsDialogDismissalCount` metric
-   */
-  public recordAnyConflictsLeftOnMergeConflictsDialogDismissal() {
-    this.statsStore.recordAnyConflictsLeftOnMergeConflictsDialogDismissal()
-  }
-
-  /**
-   * Increments the `guidedConflictedMergeCompletionCount` metric
-   */
-  public recordGuidedConflictedMergeCompletion() {
-    this.statsStore.recordGuidedConflictedMergeCompletion()
-  }
-
-  /**
-   * Increments the `unguidedConflictedMergeCompletionCount` metric
-   */
-  public recordUnguidedConflictedMergeCompletion() {
-    this.statsStore.recordUnguidedConflictedMergeCompletion()
-  }
-
-  // TODO: more rebase-related actions
-
-  /**
-   * Increments the `rebaseConflictsDialogDismissalCount` metric
-   */
-  public recordRebaseConflictsDialogDismissal() {
-    this.statsStore.recordRebaseConflictsDialogDismissal()
-  }
-
-  /**
-   * Increments the `rebaseConflictsDialogReopenedCount` metric
-   */
-  public recordRebaseConflictsDialogReopened() {
-    this.statsStore.recordRebaseConflictsDialogReopened()
-  }
-
-  /** Increments the `errorWhenSwitchingBranchesWithUncommmittedChanges` metric */
-  public recordErrorWhenSwitchingBranchesWithUncommmittedChanges() {
-    return this.statsStore.recordErrorWhenSwitchingBranchesWithUncommmittedChanges()
   }
 
   /**
@@ -2426,54 +2237,6 @@ export class Dispatcher {
   }
 
   /**
-   * Increment the number of times the user has opened their external editor
-   * from the suggested next steps view
-   */
-  public recordSuggestedStepOpenInExternalEditor(): Promise<void> {
-    return this.statsStore.recordSuggestedStepOpenInExternalEditor()
-  }
-
-  /**
-   * Increment the number of times the user has opened their repository in
-   * Finder/Explorerfrom the suggested next steps view
-   */
-  public recordSuggestedStepOpenWorkingDirectory(): Promise<void> {
-    return this.statsStore.recordSuggestedStepOpenWorkingDirectory()
-  }
-
-  /**
-   * Increment the number of times the user has opened their repository on
-   * GitHub from the suggested next steps view
-   */
-  public recordSuggestedStepViewOnGitHub(): Promise<void> {
-    return this.statsStore.recordSuggestedStepViewOnGitHub()
-  }
-
-  /**
-   * Increment the number of times the user has used the publish repository
-   * action from the suggested next steps view
-   */
-  public recordSuggestedStepPublishRepository(): Promise<void> {
-    return this.statsStore.recordSuggestedStepPublishRepository()
-  }
-
-  /**
-   * Increment the number of times the user has used the publish branch
-   * action branch from the suggested next steps view
-   */
-  public recordSuggestedStepPublishBranch(): Promise<void> {
-    return this.statsStore.recordSuggestedStepPublishBranch()
-  }
-
-  /**
-   * Increment the number of times the user has used the Create PR suggestion
-   * in the suggested next steps view.
-   */
-  public recordSuggestedStepCreatePullRequest(): Promise<void> {
-    return this.statsStore.recordSuggestedStepCreatePullRequest()
-  }
-
-  /**
    * Moves unconmitted changes to the branch being checked out
    */
   public async moveChangesToBranchAndCheckout(
@@ -2486,31 +2249,15 @@ export class Dispatcher {
     )
   }
 
-  /**
-   * Increments the `forksCreated ` metric` indicating that the user has
-   * elected to create a fork when presented with a dialog informing
-   * them that they don't have write access to the current repository.
-   */
-  public recordForkCreated() {
-    return this.statsStore.recordForkCreated()
-  }
-
   /** Open the issue creation page for a GitHub repository in a browser */
   public async openIssueCreationPage(repository: Repository): Promise<boolean> {
     // Default to creating issue on parent repo
     // See https://github.com/desktop/desktop/issues/9232 for rationale
     const url = getGitHubHtmlUrl(repository)
     if (url !== null) {
-      this.statsStore.recordIssueCreationWebpageOpened()
       return this.appStore._openInBrowser(`${url}/issues/new/choose`)
     } else {
       return false
     }
-  }
-
-  public onSetStatsOptOut = (optOut: boolean) => {
-    this.appStore.setStatsOptOut(optOut, true)
-    this.appStore.markUsageStatsNoteSeen()
-    this.appStore._reportStats()
   }
 }
