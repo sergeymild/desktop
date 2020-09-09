@@ -64,7 +64,6 @@ export class CompareSidebar extends React.Component<ICompareSidebarProps, {}> {
 
   public render() {
     const { filterText } = this.props.compareState
-    const placeholderText = getPlaceholderText(this.props.compareState)
 
     return (
       <div id="compare-view">
@@ -74,9 +73,9 @@ export class CompareSidebar extends React.Component<ICompareSidebarProps, {}> {
 
         <div className="compare-form">
           <FancyTextBox
-            symbol={OcticonSymbol.commit}
+            symbol={OcticonSymbol.gitCommit}
             type="search"
-            placeholder={placeholderText}
+            placeholder="Type to search commit..."
             value={filterText}
             onRef={this.onTextBoxRef}
             onValueChanged={this.onBranchFilterTextChanged}
@@ -344,20 +343,6 @@ export class CompareSidebar extends React.Component<ICompareSidebarProps, {}> {
 
   private onDeleteTag = (tagName: string) => {
     this.props.dispatcher.showDeleteTagDialog(this.props.repository, tagName)
-  }
-}
-
-function getPlaceholderText(state: ICompareState) {
-  const { allBranches, formState } = state
-
-  if (allBranches.length === 0) {
-    return __DARWIN__ ? 'No Branches to Compare' : 'No branches to compare'
-  } else if (formState.kind === HistoryTabMode.History) {
-    return __DARWIN__
-      ? 'Select Branch to Compare...'
-      : 'Select branch to compare...'
-  } else {
-    return undefined
   }
 }
 

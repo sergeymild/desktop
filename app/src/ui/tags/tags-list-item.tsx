@@ -24,7 +24,7 @@ export const TagListItem: React.FC<IProps> = (
   }) => {
 
   const icon = item.tag.remote
-    ? OcticonSymbol.clock
+    ? OcticonSymbol.server
     : OcticonSymbol.tag
 
   const handleContextMenu = (event: React.MouseEvent<any>) => {
@@ -33,7 +33,7 @@ export const TagListItem: React.FC<IProps> = (
   }
 
   return (
-    <div className="stash-list-item" onContextMenu={handleContextMenu}>
+    <div className="tag-list-item" onContextMenu={handleContextMenu}>
       <div className="info">
         <div className="summary" title={item.tag.name}>{item.tag.name}</div>
         <div className="description" title={item.tag.subject || ""}>
