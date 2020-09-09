@@ -120,6 +120,7 @@ export class GitStore extends BaseStore {
   private _tagsToPush: ReadonlyArray<string> = []
 
   private _defaultRemote: IRemote | null = null
+  private _remotes: ReadonlyArray<IRemote> = []
 
   private _currentRemote: IRemote | null = null
 
@@ -1102,8 +1103,8 @@ export class GitStore extends BaseStore {
   }
 
   public async loadRemotes(): Promise<void> {
-    const remotes = await getRemotes(this.repository)
-    this._defaultRemote = findDefaultRemote(remotes)
+    this._remotes = await getRemotes(this.repository)
+    this._defaultRemote = findDefaultRemote(this._remotes)
 
     const currentRemoteName =
       this.tip.kind === TipState.Valid && this.tip.branch.remote !== null
@@ -1115,14 +1116,14 @@ export class GitStore extends BaseStore {
     // been removed we'll default to the default branch.
     this._currentRemote =
       currentRemoteName !== null
-        ? remotes.find(r => r.name === currentRemoteName) || this._defaultRemote
+        ? this._remotes.find(r => r.name === currentRemoteName) || this._defaultRemote
         : this._defaultRemote
 
     const parent =
       this.repository.gitHubRepository &&
       this.repository.gitHubRepository.parent
 
-    this._upstreamRemote = parent ? findUpstreamRemote(parent, remotes) : null
+    this._upstreamRemote = parent ? findUpstreamRemote(parent, this._remotes) : null
 
     this.emitUpdate()
   }

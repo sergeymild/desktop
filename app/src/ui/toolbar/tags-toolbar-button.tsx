@@ -14,19 +14,10 @@ interface IProps {
   readonly appStore: AppStore
   readonly isOpen: boolean
   readonly tagList: IRepositoryTags | null
+  readonly currentTag: string | null
 }
 
-interface IState {
-  currentTag: string | null
-}
-
-class TagsToolBarButton extends React.PureComponent<IProps, IState> {
-  public constructor(props: IProps) {
-    super(props);
-    this.state = {
-      currentTag: null
-    }
-  }
+class TagsToolBarButton extends React.PureComponent<IProps, {}> {
 
   private renderBranchFoldout = (): JSX.Element | null => {
     if (this.props.tagList === null) { return null }
@@ -44,17 +35,11 @@ class TagsToolBarButton extends React.PureComponent<IProps, IState> {
     }
   }
 
-  public componentDidMount() {
-    const tag = this.props.appStore.getCurrentTagName(this.props.repository)
-    this.setState({currentTag: tag})
-  }
-
   public render() {
-    console.log("toolbar render")
     const currentState: DropdownState = this.props.isOpen ? 'open' : 'closed'
 
     return <ToolbarDropdown
-      title={this.state.currentTag || "No tag"}
+      title={this.props.currentTag || "No tag"}
       description={"Tags"}
       dropdownState={currentState}
       icon={OcticonSymbol.tag}

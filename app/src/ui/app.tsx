@@ -1448,7 +1448,9 @@ export class App extends React.Component<IAppProps, IAppState> {
 
 
     const repository = selection.repository
+    const currentTagName = this.props.appStore.getCurrentTagName(repository)
     return <TagsToolBarButton
+      currentTag={currentTagName}
       isOpen={isOpen}
       tagList={this.props.appStore.repositoryTags(repository)}
       repository={repository}
