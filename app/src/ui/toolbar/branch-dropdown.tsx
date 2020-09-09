@@ -1,19 +1,15 @@
 import * as React from 'react'
-import { Dispatcher } from '../dispatcher'
 import { OcticonSymbol, syncClockwise } from '../octicons'
 import { Repository } from '../../models/repository'
 import { TipState } from '../../models/tip'
 import { ToolbarDropdown, DropdownState } from './dropdown'
 import { IRepositoryState, isRebaseConflictState } from '../../lib/app-state'
-import { BranchesContainer, PullRequestBadge } from '../branches'
+import { BranchesContainer } from '../branches'
 import { assertNever } from '../../lib/fatal-error'
-import { BranchesTab } from '../../models/branches-tab'
-import { PullRequest } from '../../models/pull-request'
 import classNames from 'classnames'
 import { UncommittedChangesStrategy } from '../../models/uncommitted-changes-strategy'
 
 interface IBranchDropdownProps {
-  readonly dispatcher: Dispatcher
 
   /** The currently selected repository. */
   readonly repository: Repository
@@ -31,18 +27,6 @@ interface IBranchDropdownProps {
    * @param state    - The new state of the drop down
    */
   readonly onDropDownStateChanged: (state: DropdownState) => void
-
-  /** The currently selected tab. */
-  readonly selectedTab: BranchesTab
-
-  /** The open pull requests in the repository. */
-  readonly pullRequests: ReadonlyArray<PullRequest>
-
-  /** The pull request associated with the current branch. */
-  readonly currentPullRequest: PullRequest | null
-
-  /** Are we currently loading pull requests? */
-  readonly isLoadingPullRequests: boolean
 
   readonly selectedUncommittedChangesStrategy: UncommittedChangesStrategy
 }
@@ -66,12 +50,7 @@ export class BranchDropdown extends React.Component<IBranchDropdownProps> {
         recentBranches={branchesState.recentBranches}
         currentBranch={currentBranch}
         defaultBranch={branchesState.defaultBranch}
-        dispatcher={this.props.dispatcher}
         repository={this.props.repository}
-        selectedTab={this.props.selectedTab}
-        pullRequests={this.props.pullRequests}
-        currentPullRequest={this.props.currentPullRequest}
-        isLoadingPullRequests={this.props.isLoadingPullRequests}
         currentBranchProtected={currentBranchProtected}
         selectedUncommittedChangesStrategy={
           this.props.selectedUncommittedChangesStrategy
@@ -104,10 +83,6 @@ export class BranchDropdown extends React.Component<IBranchDropdownProps> {
     let canOpen = true
     let disabled = false
     let tooltip: string
-
-    if (this.props.currentPullRequest) {
-      icon = OcticonSymbol.gitPullRequest
-    }
 
     if (tip.kind === TipState.Unknown) {
       // TODO: this is bad and I feel bad
@@ -171,24 +146,7 @@ export class BranchDropdown extends React.Component<IBranchDropdownProps> {
         progressValue={progressValue}
         buttonClassName={buttonClassName}
       >
-        {this.renderPullRequestInfo()}
       </ToolbarDropdown>
-    )
-  }
-
-  private renderPullRequestInfo() {
-    const pr = this.props.currentPullRequest
-
-    if (pr === null) {
-      return null
-    }
-
-    return (
-      <PullRequestBadge
-        number={pr.pullRequestNumber}
-        dispatcher={this.props.dispatcher}
-        repository={pr.base.gitHubRepository}
-      />
     )
   }
 }

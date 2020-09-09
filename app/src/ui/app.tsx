@@ -1468,19 +1468,13 @@ export class App extends React.Component<IAppProps, IAppState> {
       currentFoldout !== null && currentFoldout.type === FoldoutType.Branch
 
     const repository = selection.repository
-    const { branchesState } = selection.state
 
     return (
       <BranchDropdown
-        dispatcher={this.props.dispatcher}
         isOpen={isOpen}
         onDropDownStateChanged={this.onBranchDropdownStateChanged}
         repository={repository}
         repositoryState={selection.state}
-        selectedTab={this.state.selectedBranchesTab}
-        pullRequests={branchesState.openPullRequests}
-        currentPullRequest={branchesState.currentPullRequest}
-        isLoadingPullRequests={branchesState.isLoadingPullRequests}
         selectedUncommittedChangesStrategy={getUncommittedChangesStrategy(
           this.state.uncommittedChangesStrategyKind
         )}

@@ -31,7 +31,6 @@ import { Account } from '../../models/account'
 import { AppMenu, ExecutableMenuItem } from '../../models/app-menu'
 import { IAuthor } from '../../models/author'
 import { Branch } from '../../models/branch'
-import { BranchesTab } from '../../models/branches-tab'
 import { CloneRepositoryTab } from '../../models/clone-repository-tab'
 import { CloningRepository } from '../../models/cloning-repository'
 import { Commit, CommitOneLine, ICommitContext } from '../../models/commit'
@@ -1938,11 +1937,6 @@ export class Dispatcher {
    */
   public refreshApiRepositories(account: Account) {
     return this.appStore._refreshApiRepositories(account)
-  }
-
-  /** Change the selected Branches foldout tab. */
-  public changeBranchesTab(tab: BranchesTab): Promise<void> {
-    return this.appStore._changeBranchesTab(tab)
   }
 
   /**

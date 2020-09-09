@@ -15,7 +15,6 @@ import { Account } from '../../models/account'
 import { AppMenu, IMenu } from '../../models/app-menu'
 import { IAuthor } from '../../models/author'
 import { Branch, IAheadBehind } from '../../models/branch'
-import { BranchesTab } from '../../models/branches-tab'
 import { CloneRepositoryTab } from '../../models/clone-repository-tab'
 import { CloningRepository } from '../../models/cloning-repository'
 import { Commit, CommitOneLine, ICommitContext } from '../../models/commit'
@@ -331,7 +330,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
   private selectedCloneRepositoryTab = CloneRepositoryTab.DotCom
 
-  private selectedBranchesTab = BranchesTab.Branches
   private selectedTheme = ApplicationTheme.Light
   private automaticallySwitchTheme = false
 
@@ -579,7 +577,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
       repositoryFilterText: this.repositoryFilterText,
       resolvedExternalEditor: this.resolvedExternalEditor,
       selectedCloneRepositoryTab: this.selectedCloneRepositoryTab,
-      selectedBranchesTab: this.selectedBranchesTab,
       selectedTheme: this.selectedTheme,
       automaticallySwitchTheme: this.automaticallySwitchTheme,
       apiRepositories: this.apiRepositoriesStore.getState(),
@@ -1376,9 +1373,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
       this._refreshIssues(ghRepo)
       this.refreshMentionables(ghRepo)
 
-      this.pullRequestCoordinator.getAllPullRequests(repository).then(prs => {
-        this.onPullRequestChanged(repository, prs)
-      })
+      const prs = await this.pullRequestCoordinator.getAllPullRequests(repository)
+      this.onPullRequestChanged(repository, prs)
     }
 
     // The selected repository could have changed while we were refreshing.
@@ -4692,14 +4688,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
    */
   public _refreshApiRepositories(account: Account) {
     return this.apiRepositoriesStore.loadRepositories(account)
-  }
-
-  public _changeBranchesTab(tab: BranchesTab): Promise<void> {
-    this.selectedBranchesTab = tab
-
-    this.emitUpdate()
-
-    return Promise.resolve()
   }
 
   public async _showGitHubExplore(repository: Repository): Promise<void> {

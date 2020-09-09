@@ -10,7 +10,6 @@ import { CloningRepository } from '../models/cloning-repository'
 import { IMenu } from '../models/app-menu'
 import { IRemote } from '../models/remote'
 import { CloneRepositoryTab } from '../models/clone-repository-tab'
-import { BranchesTab } from '../models/branches-tab'
 import { PullRequest } from '../models/pull-request'
 import { IAuthor } from '../models/author'
 import { MergeTreeResult } from '../models/merge'
@@ -197,9 +196,6 @@ export interface IAppState {
 
   /** The currently selected tab for Clone Repository. */
   readonly selectedCloneRepositoryTab: CloneRepositoryTab
-
-  /** The currently selected tab for the Branches foldout. */
-  readonly selectedBranchesTab: BranchesTab
 
   /** The currently selected appearance (aka theme) */
   readonly selectedTheme: ApplicationTheme
