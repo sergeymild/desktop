@@ -1,14 +1,10 @@
 import * as React from 'react'
 import * as Path from 'path'
-import { basename } from 'path'
-
 import { Dispatcher } from '../dispatcher'
 import { IMenuItem } from '../../lib/menu-item'
 import { revealInFileManager } from '../../lib/app-shell'
 import { AppFileStatusKind, WorkingDirectoryFileChange, WorkingDirectoryStatus } from '../../models/status'
 import { DiffSelectionType } from '../../models/diff'
-import { CommitIdentity } from '../../models/commit-identity'
-import { ICommitMessage } from '../../models/commit-message'
 import { Repository } from '../../models/repository'
 import { IAuthor } from '../../models/author'
 import { ClickSource, List } from '../lib/list'
@@ -20,19 +16,19 @@ import {
   OpenWithDefaultProgramLabel,
   RevealInFileManagerLabel,
 } from '../lib/context-menu'
-import { CommitMessage } from './commit-message'
 import { ChangedFile } from './changed-file'
 import { IAutocompletionProvider } from '../autocompletion'
 import { showContextualMenu } from '../main-process-proxy'
 import { arrayEquals } from '../../lib/equality'
 import { clipboard } from 'electron'
-import { Commit, ICommitContext } from '../../models/commit'
+import { ICommitContext } from '../../models/commit'
 import { ConflictState, RebaseConflictState } from '../../lib/app-state'
 import { ContinueRebase } from './continue-rebase'
-import { hasWritePermission } from '../../models/github-repository'
 import { hasConflictedFiles } from '../../lib/status'
 import { ChangesListMenu } from './changes-list-menu'
 import { ChangesListHeader } from './changes-list-header'
+import { PopupType } from '../../models/popup'
+import { Button } from '../lib/button'
 
 const RowHeight = 29
 
@@ -94,7 +90,6 @@ interface IChangesListProps {
   readonly onCreateCommit: (context: ICommitContext) => Promise<boolean>
   readonly onDiscardChanges: (file: WorkingDirectoryFileChange) => void
   readonly askForConfirmationOnDiscardChanges: boolean
-  readonly focusCommitMessage: boolean
   readonly onDiscardChangesFromFiles: (
     files: ReadonlyArray<WorkingDirectoryFileChange>,
     isDiscardingAllChanges: boolean,
@@ -116,7 +111,6 @@ interface IChangesListProps {
    * The currently checked out branch (null if no branch is checked out).
    */
   readonly branch: string | null
-  readonly commitAuthor: CommitIdentity | null
   readonly dispatcher: Dispatcher
   readonly availableWidth: number
   readonly isCommitting: boolean
@@ -127,7 +121,6 @@ interface IChangesListProps {
    * List Props for documentation.
    */
   readonly onRowClick?: (row: number, source: ClickSource) => void
-  readonly commitMessage: ICommitMessage
 
   /** The autocompletion providers available to the repository. */
   readonly autocompletionProviders: ReadonlyArray<IAutocompletionProvider<any>>
@@ -159,8 +152,7 @@ interface IChangesListProps {
    * @param fullPath The full path to the file on disk
    */
   readonly onOpenInExternalEditor: (fullPath: string) => void
-  readonly mostRecentLocalCommit: Commit | null
-  readonly lastCommit: Commit | null
+
 }
 
 interface IChangesState {
@@ -537,31 +529,6 @@ export class ChangesList extends React.Component<IChangesListProps,
     showContextualMenu(items)
   }
 
-  private getPlaceholderMessage(
-    files: ReadonlyArray<WorkingDirectoryFileChange>,
-    prepopulateCommitSummary: boolean,
-  ) {
-    if (!prepopulateCommitSummary) {
-      return 'Summary (required)'
-    }
-
-    const firstFile = files[0]
-    const fileName = basename(firstFile.path)
-
-    switch (firstFile.status.kind) {
-      case AppFileStatusKind.New:
-      case AppFileStatusKind.Untracked:
-        return `Create ${fileName}`
-      case AppFileStatusKind.Deleted:
-        return `Delete ${fileName}`
-      default:
-        // TODO:
-        // this doesn't feel like a great message for AppFileStatus.Copied or
-        // AppFileStatus.Renamed but without more insight (and whether this
-        // affects other parts of the flow) we can just default to this for now
-        return `Update ${fileName}`
-    }
-  }
 
   private onScroll = (scrollTop: number, clientHeight: number) => {
     this.props.onChangesListScrolled(scrollTop)
@@ -574,7 +541,6 @@ export class ChangesList extends React.Component<IChangesListProps,
       repository,
       dispatcher,
       isCommitting,
-      currentBranchProtected,
     } = this.props
 
     if (rebaseConflictState !== null) {
@@ -594,56 +560,16 @@ export class ChangesList extends React.Component<IChangesListProps,
       )
     }
 
-    const fileCount = workingDirectory.files.length
-
-    const includeAllValue = getIncludeAllValue(
-      workingDirectory,
-      rebaseConflictState,
-    )
-
-    const anyFilesSelected =
-      fileCount > 0 && includeAllValue !== CheckboxValue.Off
-
-    const filesSelected = workingDirectory.files.filter(
-      f => f.selection.getSelectionType() !== DiffSelectionType.None,
-    )
-
-    // When a single file is selected, we use a default commit summary
-    // based on the file name and change status.
-    // However, for onboarding tutorial repositories, we don't want to do this.
-    // See https://github.com/desktop/desktop/issues/8354
-    const prepopulateCommitSummary =
-      filesSelected.length === 1
-
-    // if this is not a github repo, we don't want to
-    // restrict what the user can do at all
-    const hasWritePermissionForRepository =
-      this.props.repository.gitHubRepository === null ||
-      hasWritePermission(this.props.repository.gitHubRepository)
-
     return (
-      <CommitMessage
-        onCreateCommit={this.props.onCreateCommit}
-        branch={this.props.branch}
-        commitAuthor={this.props.commitAuthor}
-        anyFilesSelected={anyFilesSelected}
-        repository={repository}
-        dispatcher={dispatcher}
-        commitMessage={this.props.commitMessage}
-        focusCommitMessage={this.props.focusCommitMessage}
-        autocompletionProviders={this.props.autocompletionProviders}
-        isCommitting={isCommitting}
-        mostRecentLocalCommit={this.props.mostRecentLocalCommit}
-        lastCommit={this.props.lastCommit}
-        placeholder={this.getPlaceholderMessage(
-          filesSelected,
-          prepopulateCommitSummary,
-        )}
-        prepopulateCommitSummary={prepopulateCommitSummary}
-        key={repository.id}
-        showBranchProtected={fileCount > 0 && currentBranchProtected}
-        showNoWriteAccess={fileCount > 0 && !hasWritePermissionForRepository}
-      />
+      <Button
+        type="submit"
+        className="commit-button"
+        disabled={this.props.workingDirectory.files.length === 0}
+        onClick={() => this.props.dispatcher.showPopup({
+          type: PopupType.Commit,
+          repository,
+        })}
+      >Commit</Button>
     )
   }
 

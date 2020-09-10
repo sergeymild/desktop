@@ -43,7 +43,6 @@ interface IRepositoryViewProps {
   readonly imageDiffType: ImageDiffType
   readonly hideWhitespaceInDiff: boolean
   readonly askForConfirmationOnDiscardChanges: boolean
-  readonly focusCommitMessage: boolean
   readonly accounts: ReadonlyArray<Account>
   readonly stashesCount: number
 
@@ -193,13 +192,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
         ? this.state.changesListScrollTop
         : undefined
     this.previousSection = RepositorySectionTab.Changes
-    const {commitSHAs} = this.props.state.compareState
-    let lastCommit: Commit | null = null
-    if (commitSHAs.length > 0) {
-      const {commitLookup} = this.props.state
-      const lastCommitSha = commitSHAs[0]
-      lastCommit = commitLookup.get(lastCommitSha) || null
-    }
 
     return (
       <ChangesSidebar
@@ -207,16 +199,13 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
         dispatcher={this.props.dispatcher}
         changes={this.props.state.changesState}
         branch={branchName}
-        commitAuthor={this.props.state.commitAuthor}
         emoji={this.props.emoji}
         mostRecentLocalCommit={mostRecentLocalCommit}
-        lastCommit={lastCommit}
         issuesStore={this.props.issuesStore}
         availableWidth={availableWidth}
         gitHubUserStore={this.props.gitHubUserStore}
         isCommitting={this.props.state.isCommitting}
         isPushPullFetchInProgress={this.props.state.isPushPullFetchInProgress}
-        focusCommitMessage={this.props.focusCommitMessage}
         askForConfirmationOnDiscardChanges={
           this.props.askForConfirmationOnDiscardChanges
         }

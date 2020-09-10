@@ -63,7 +63,7 @@ import {
   Foldout,
   FoldoutType,
   HistoryTabMode,
-  IAppState,
+  IAppState, IBranchesState,
   ICompareBranch,
   ICompareFormUpdate,
   ICompareToBranch,
@@ -71,7 +71,7 @@ import {
   IDivergingBranchBannerState,
   IRebaseState,
   IRepositoryState,
-  isMergeConflictState,
+  isMergeConflictState, isRebaseConflictState,
   MergeConflictState,
   PossibleSelections,
   RebaseConflictState,
@@ -192,6 +192,7 @@ import { findUpstreamRemote, UpstreamRemoteName } from './helpers/find-upstream-
 import { WorkflowPreferences } from '../../models/workflow-preferences'
 import { RepositoryIndicatorUpdater } from './helpers/repository-indicator-updater'
 import { CherryPickResult } from '../git/cherry-pick'
+import { CommitIdentity } from '../../models/commit-identity'
 
 const LastSelectedRepositoryIDKey = 'last-selected-repository-id'
 
@@ -5319,6 +5320,59 @@ export class AppStore extends TypedBaseStore<IAppState> {
       }
     }
     return repository
+  }
+
+  public getLastCommit(repository: Repository): Commit | null {
+    const state = this.repositoryStateCache.get(repository).compareState
+    const gitStore = this.gitStoreCache.get(repository)
+    const {commitLookup} = gitStore
+    if (state.commitSHAs.length === 0) {
+      return null
+    }
+    const lastCommitSha = state.commitSHAs[0]
+    return commitLookup.get(lastCommitSha) || null
+  }
+
+  public getMostRecentCommit(repository: Repository): Commit | null {
+    const localCommitSHAs = this.repositoryStateCache.get(repository).localCommitSHAs
+    const gitStore = this.gitStoreCache.get(repository)
+    const {commitLookup} = gitStore
+    if (localCommitSHAs.length === 0) { return null }
+    return commitLookup.get(localCommitSHAs[0]) || null
+  }
+
+  public getRebaseConflictState(repository: Repository): RebaseConflictState | null {
+    const state = this.repositoryStateCache.get(repository).changesState
+    const { conflictState } = state
+    if (!conflictState) { return null }
+    return isRebaseConflictState(conflictState) ? conflictState : null
+  }
+
+  public getWorkingDirectory(repository: Repository): WorkingDirectoryStatus {
+    return this.repositoryStateCache.get(repository).changesState.workingDirectory
+  }
+
+  public isCurrentBranchProtected(repository: Repository): boolean {
+    return this.repositoryStateCache.get(repository).changesState.currentBranchProtected
+  }
+
+  public branchState(repository: Repository): IBranchesState {
+    const { branchesState } = this.repositoryStateCache.get(repository)
+    return branchesState
+  }
+
+  public getCommitAuthor(repository: Repository): CommitIdentity | null {
+    const { commitAuthor } = this.repositoryStateCache.get(repository)
+    return commitAuthor
+  }
+
+  public getCommitMessage(repository: Repository): ICommitMessage {
+    const { commitMessage } = this.repositoryStateCache.get(repository).changesState
+    return commitMessage
+  }
+
+  public getFocusCommitMessage(): boolean {
+    return this.focusCommitMessage
   }
 }
 

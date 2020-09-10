@@ -15,7 +15,6 @@ import { assertNever } from '../lib/fatal-error'
 import { shell } from '../lib/app-shell'
 import { updateStore, UpdateStatus } from './lib/update-store'
 import { RetryAction } from '../models/retry-actions'
-import { shouldRenderApplicationMenu } from './lib/features'
 import { matchExistingRepository } from '../lib/repository-matching'
 import { getDotComAPIEndpoint } from '../lib/api'
 import { getVersion } from './lib/app-proxy'
@@ -26,7 +25,6 @@ import {
   Repository,
   getGitHubHtmlUrl,
 } from '../models/repository'
-import { findItemByAccessKey, itemIsSelectable } from '../models/app-menu'
 import { Account } from '../models/account'
 import { TipState } from '../models/tip'
 import { CloneRepositoryTab } from '../models/clone-repository-tab'
@@ -67,6 +65,7 @@ import { getUncommittedChangesStrategy } from '../models/uncommitted-changes-str
 import {TagsToolBarButton} from './toolbar/tags-toolbar-button'
 import { AppPopup } from './popups/AppPopup'
 import memoizeOne from 'memoize-one'
+import { KeyEventsHandler } from './key-events-handler'
 
 const MinuteInMilliseconds = 1000 * 60
 const HourInMilliseconds = MinuteInMilliseconds * 60
@@ -101,13 +100,6 @@ const ReadyDelay = 100
 
 export class App extends React.Component<IAppProps, IAppState> {
   private loading = true
-
-  /**
-   * Used on non-macOS platforms to support the Alt key behavior for
-   * the custom application menu. See the event handlers for window
-   * keyup and keydown.
-   */
-  private lastKeyPressed: string | null = null
 
   private updateIntervalHandle?: number
 
@@ -715,121 +707,6 @@ export class App extends React.Component<IAppProps, IAppState> {
       }
       e.preventDefault()
     }
-
-    if (shouldRenderApplicationMenu()) {
-      window.addEventListener('keydown', this.onWindowKeyDown)
-      window.addEventListener('keyup', this.onWindowKeyUp)
-    }
-  }
-
-  /**
-   * On Windows pressing the Alt key and holding it down should
-   * highlight the application menu.
-   *
-   * This method in conjunction with the onWindowKeyUp sets the
-   * appMenuToolbarHighlight state when the Alt key (and only the
-   * Alt key) is pressed.
-   */
-  private onWindowKeyDown = (event: KeyboardEvent) => {
-    if (event.defaultPrevented) {
-      return
-    }
-
-    if (this.isShowingModal) {
-      return
-    }
-
-    if (shouldRenderApplicationMenu()) {
-      if (event.key === 'Shift' && event.altKey) {
-        this.props.dispatcher.setAccessKeyHighlightState(false)
-      } else if (event.key === 'Alt') {
-        if (event.shiftKey) {
-          return
-        }
-        // Immediately close the menu if open and the user hits Alt. This is
-        // a Windows convention.
-        if (
-          this.state.currentFoldout &&
-          this.state.currentFoldout.type === FoldoutType.AppMenu
-        ) {
-          // Only close it the menu when the key is pressed if there's an open
-          // menu. If there isn't we should close it when the key is released
-          // instead and that's taken care of in the onWindowKeyUp function.
-          if (this.state.appMenuState.length > 1) {
-            this.props.dispatcher.setAppMenuState(menu => menu.withReset())
-            this.props.dispatcher.closeFoldout(FoldoutType.AppMenu)
-          }
-        }
-
-        this.props.dispatcher.setAccessKeyHighlightState(true)
-      } else if (event.altKey && !event.ctrlKey && !event.metaKey) {
-        if (this.state.appMenuState.length) {
-          const candidates = this.state.appMenuState[0].items
-          const menuItemForAccessKey = findItemByAccessKey(
-            event.key,
-            candidates
-          )
-
-          if (menuItemForAccessKey && itemIsSelectable(menuItemForAccessKey)) {
-            if (menuItemForAccessKey.type === 'submenuItem') {
-              this.props.dispatcher.setAppMenuState(menu =>
-                menu
-                  .withReset()
-                  .withSelectedItem(menuItemForAccessKey)
-                  .withOpenedMenu(menuItemForAccessKey, true)
-              )
-
-              this.props.dispatcher.showFoldout({
-                type: FoldoutType.AppMenu,
-                enableAccessKeyNavigation: true,
-                openedWithAccessKey: true,
-              })
-            } else {
-              this.props.dispatcher.executeMenuItem(menuItemForAccessKey)
-            }
-
-            event.preventDefault()
-          }
-        }
-      } else if (!event.altKey) {
-        this.props.dispatcher.setAccessKeyHighlightState(false)
-      }
-    }
-
-    this.lastKeyPressed = event.key
-  }
-
-  /**
-   * Open the application menu foldout when the Alt key is pressed.
-   *
-   * See onWindowKeyDown for more information.
-   */
-  private onWindowKeyUp = (event: KeyboardEvent) => {
-    if (event.defaultPrevented) {
-      return
-    }
-
-    if (shouldRenderApplicationMenu()) {
-      if (event.key === 'Alt') {
-        this.props.dispatcher.setAccessKeyHighlightState(false)
-
-        if (this.lastKeyPressed === 'Alt') {
-          if (
-            this.state.currentFoldout &&
-            this.state.currentFoldout.type === FoldoutType.AppMenu
-          ) {
-            this.props.dispatcher.setAppMenuState(menu => menu.withReset())
-            this.props.dispatcher.closeFoldout(FoldoutType.AppMenu)
-          } else {
-            this.props.dispatcher.showFoldout({
-              type: FoldoutType.AppMenu,
-              enableAccessKeyNavigation: true,
-              openedWithAccessKey: false,
-            })
-          }
-        }
-      }
-    }
   }
 
   private async handleDragAndDrop(fileList: FileList) {
@@ -1093,6 +970,7 @@ export class App extends React.Component<IAppProps, IAppState> {
     // Hide any dialogs while we're displaying an error
     if (this.state.errors.length) { return null }
     return <AppPopup
+      appStore={this.props.appStore}
       popup={this.state.currentPopup}
       dispatcher={this.props.dispatcher}
       repositoryStateManager={this.props.repositoryStateManager}
@@ -1597,7 +1475,6 @@ export class App extends React.Component<IAppProps, IAppState> {
           onViewCommitOnGitHub={this.onViewCommitOnGitHub}
           imageDiffType={state.imageDiffType}
           hideWhitespaceInDiff={state.hideWhitespaceInDiff}
-          focusCommitMessage={state.focusCommitMessage}
           askForConfirmationOnDiscardChanges={
             state.askForConfirmationOnDiscardChanges
           }
@@ -1651,6 +1528,12 @@ export class App extends React.Component<IAppProps, IAppState> {
       ? ApplicationTheme.Light
       : this.state.selectedTheme
 
+    let repository: Repository | null = null
+    const repo = this.state.selectedState?.repository
+    if (repo instanceof Repository) {
+      repository = repo
+    }
+
     return (
       <div id="desktop-app-chrome" className={className}>
         <AppTheme theme={currentTheme} />
@@ -1660,6 +1543,12 @@ export class App extends React.Component<IAppProps, IAppState> {
           : this.renderApp()}
         {this.renderZoomInfo()}
         {this.renderFullScreenInfo()}
+        <KeyEventsHandler
+          appMenuState={this.state.appMenuState}
+          currentFoldout={this.state.currentFoldout}
+          isShowingModal={this.isShowingModal}
+          repository={repository}
+        />
       </div>
     )
   }

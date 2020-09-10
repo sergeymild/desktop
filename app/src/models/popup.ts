@@ -67,6 +67,7 @@ export enum PopupType {
   ConfirmDiscardSelection,
   CherryPick,
   CherryPickCommitList,
+  Commit
 }
 
 export type Popup =
@@ -270,4 +271,8 @@ export type Popup =
       type: PopupType.CherryPickCommitList
       repository: Repository
       branch: Branch
+    }
+ | {
+      type: PopupType.Commit
+      repository: Repository
     }

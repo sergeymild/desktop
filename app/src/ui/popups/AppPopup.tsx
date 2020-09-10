@@ -65,11 +65,13 @@ import { Account } from '../../models/account'
 import { ExternalEditor } from '../../lib/editors'
 import { Shell } from '../../lib/shells'
 import { ApplicationTheme } from '../lib/application-theme'
-import { SignInState } from '../../lib/stores'
+import { AppStore, SignInState } from '../../lib/stores'
 import { CloneRepositoryTab } from '../../models/clone-repository-tab'
 import { IAccountRepositories } from '../../lib/stores/api-repositories-store'
+import { CommitMessagePopup } from './commit-message'
 
 interface IProps {
+  readonly appStore: AppStore
   readonly popup: Popup | null
   readonly dispatcher: Dispatcher
   readonly repositoryStateManager: RepositoryStateCache
@@ -136,7 +138,7 @@ interface IProps {
    */
   readonly onShowRebaseConflictsBanner: (
     repository: Repository,
-    targetBranch: string
+    targetBranch: string,
   ) => void
   readonly openCurrentRepositoryInShell: () => void
 }
@@ -165,7 +167,8 @@ export const AppPopup: React.FC<IProps> = (
     selectedState,
     resolvedExternalEditor,
     onShowRebaseConflictsBanner,
-    openCurrentRepositoryInShell
+    openCurrentRepositoryInShell,
+    appStore
   }) => {
 
   if (!popup) {
@@ -418,7 +421,7 @@ export const AppPopup: React.FC<IProps> = (
 
       const detachedTip: IDetachedHead = {
         kind: TipState.Detached,
-        currentSha: popup.commitSha
+        currentSha: popup.commitSha,
       }
 
       return (
@@ -558,7 +561,7 @@ export const AppPopup: React.FC<IProps> = (
       )
     case PopupType.CLIInstalled:
       return (
-        <CLIInstalled key="cli-installed" onDismissed={onPopupDismissedFn}/>
+        <CLIInstalled key="cli-installed" onDismissed={onPopupDismissedFn} />
       )
     case PopupType.GenericGitAuthentication:
       return (
@@ -895,6 +898,37 @@ export const AppPopup: React.FC<IProps> = (
         repository={popup.repository}
         commit={popup.commitSha}
         onDismissed={onPopupDismissedFn}
+      />
+    case PopupType.Commit:
+      const lastCommit = appStore.getLastCommit(popup.repository)
+      const rebaseConflictState = appStore.getRebaseConflictState(popup.repository)
+      const workingDirectory = appStore.getWorkingDirectory(popup.repository)
+      const isCurrentBranchProtected = appStore.isCurrentBranchProtected(popup.repository)
+      const commitAuthor = appStore.getCommitAuthor(popup.repository)
+      const commitMessage = appStore.getCommitMessage(popup.repository)
+      const mostRecentLocalCommit = appStore.getMostRecentCommit(popup.repository)
+      const focusCommitMessage = appStore.getFocusCommitMessage()
+
+      const tip = appStore.branchState(popup.repository).tip
+      let branchName: string | null = null
+      if (tip.kind === TipState.Valid) {
+        branchName = tip.branch.name
+      } else if (tip.kind === TipState.Unborn) {
+        branchName = tip.ref
+      }
+      return <CommitMessagePopup
+        onDismissed={onPopupDismissedFn}
+        rebaseConflictState={rebaseConflictState}
+        isCommitting={false}
+        workingDirectory={workingDirectory}
+        repository={popup.repository}
+        currentBranchProtected={isCurrentBranchProtected}
+        lastCommit={lastCommit}
+        mostRecentLocalCommit={mostRecentLocalCommit}
+        branch={branchName}
+        commitAuthor={commitAuthor}
+        commitMessage={commitMessage}
+        focusCommitMessage={focusCommitMessage}
       />
     default:
       return assertNever(popup, `Unknown popup type: ${popup}`)

@@ -16,7 +16,6 @@ import {
 } from '../../models/repository'
 import { Dispatcher } from '../dispatcher'
 import { IssuesStore, GitHubUserStore } from '../../lib/stores'
-import { CommitIdentity } from '../../models/commit-identity'
 import { Commit, ICommitContext } from '../../models/commit'
 import { UndoCommit } from './undo-commit'
 import {
@@ -48,17 +47,15 @@ interface IChangesSidebarProps {
   readonly repository: Repository
   readonly changes: IChangesState
   readonly dispatcher: Dispatcher
-  readonly commitAuthor: CommitIdentity | null
+
   readonly branch: string | null
   readonly emoji: Map<string, string>
   readonly mostRecentLocalCommit: Commit | null
-  readonly lastCommit: Commit | null
   readonly issuesStore: IssuesStore
   readonly availableWidth: number
   readonly isCommitting: boolean
   readonly isPushPullFetchInProgress: boolean
   readonly gitHubUserStore: GitHubUserStore
-  readonly focusCommitMessage: boolean
   readonly askForConfirmationOnDiscardChanges: boolean
   readonly accounts: ReadonlyArray<Account>
   /** The name of the currently selected external editor */
@@ -356,7 +353,6 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
   public render() {
     const {
       workingDirectory,
-      commitMessage,
       showCoAuthoredBy,
       coAuthors,
       conflictState,
@@ -389,18 +385,13 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
           onIncludeChanged={this.onIncludeChanged}
           onSelectAll={this.onSelectAll}
           onDiscardChanges={this.onDiscardChanges}
-          mostRecentLocalCommit={this.props.mostRecentLocalCommit}
-          lastCommit={this.props.lastCommit}
           askForConfirmationOnDiscardChanges={
             this.props.askForConfirmationOnDiscardChanges
           }
           onDiscardChangesFromFiles={this.onDiscardChangesFromFiles}
           onOpenItem={this.onOpenItem}
           onRowClick={this.onChangedItemClick}
-          commitAuthor={this.props.commitAuthor}
           branch={this.props.branch}
-          commitMessage={commitMessage}
-          focusCommitMessage={this.props.focusCommitMessage}
           autocompletionProviders={this.autocompletionProviders!}
           availableWidth={this.props.availableWidth}
           onIgnore={this.onIgnore}
