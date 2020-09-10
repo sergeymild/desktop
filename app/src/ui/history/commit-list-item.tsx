@@ -16,6 +16,7 @@ import { Dispatcher } from '../dispatcher'
 import { Repository } from '../../models/repository'
 import { dispatcher } from '../index'
 import { PopupType } from '../../models/popup'
+import { ResetCommitType } from '../../lib/git'
 
 interface ICommitProps {
   readonly gitHubRepository: GitHubRepository | null
@@ -140,6 +141,13 @@ export class CommitListItem extends React.PureComponent<
     dispatcher!.checkoutToCommit(repository!, this.props.commit.sha)
   }
 
+  private resetToCommit = (type: ResetCommitType) => {
+    const dispatcher = this.props.dispatcher
+    const repository = this.props.repository
+    if (!dispatcher && !repository) { return }
+    dispatcher!.resetToCommit(repository!, this.props.commit.sha, type)
+  }
+
   private onViewOnGitHub = () => {
     if (this.props.onViewCommitOnGitHub) {
       this.props.onViewCommitOnGitHub(this.props.commit.sha)
@@ -198,6 +206,25 @@ export class CommitListItem extends React.PureComponent<
       },
       enabled: this.props.onRevertCommit !== undefined,
     })
+    items.push(
+      {
+        label: 'Reset to this commit',
+        submenu: [
+          {
+            label: 'Soft - keep all changes',
+            action: () => this.resetToCommit(ResetCommitType.soft),
+          },
+          {
+            label: 'Mixed - keep working copy but reset index',
+            action: () => this.resetToCommit(ResetCommitType.mixed),
+          },
+          {
+            label: 'Hard - discard all changes',
+            action: () => this.resetToCommit(ResetCommitType.hard),
+          }
+        ]
+      }
+    )
     items.push({type: 'separator'})
 
     if (enableGitTagsCreation()) {

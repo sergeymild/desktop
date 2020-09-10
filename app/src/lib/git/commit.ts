@@ -6,6 +6,12 @@ import { unstageAll } from './reset'
 import { ManualConflictResolution } from '../../models/manual-conflict-resolution'
 import { stageManualConflictResolution } from './stage'
 
+export enum ResetCommitType {
+  soft = "--soft",
+  mixed = "--mixed",
+  hard = "--hard"
+}
+
 export async function checkoutToCommit(
   repository: Repository,
   commitSha: string
@@ -15,6 +21,25 @@ export async function checkoutToCommit(
       ['checkout', commitSha],
       repository.path,
       'checkoutToCommit',
+      {}
+    )
+    return true
+  } catch (e) {
+    logCommitError(e)
+    return false
+  }
+}
+
+export async function resetToCommit(
+  repository: Repository,
+  commitSha: string,
+  type: ResetCommitType
+): Promise<boolean> {
+  try {
+    await git(
+      ['reset', type, commitSha],
+      repository.path,
+      'resetToCommit',
       {}
     )
     return true

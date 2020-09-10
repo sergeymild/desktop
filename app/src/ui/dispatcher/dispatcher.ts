@@ -15,7 +15,15 @@ import {
 import { ExternalEditor } from '../../lib/editors'
 import { assertNever, fatalError } from '../../lib/fatal-error'
 import { setGenericPassword, setGenericUsername } from '../../lib/generic-git-auth'
-import { getBranches, getCommitsInRange, isGitRepository, ITagItem, PushOptions, RebaseResult } from '../../lib/git'
+import {
+  getBranches,
+  getCommitsInRange,
+  isGitRepository,
+  ITagItem,
+  PushOptions,
+  RebaseResult,
+  ResetCommitType,
+} from '../../lib/git'
 import { isGitOnPath } from '../../lib/is-git-on-path'
 import { rejectOAuthRequest, requestAuthenticatedUser, resolveOAuthRequest } from '../../lib/oauth'
 import { IOpenRepositoryFromURLAction, IUnknownAction, URLActionType } from '../../lib/parse-app-url'
@@ -482,6 +490,14 @@ export class Dispatcher {
     commitSha: string
   ) {
     this.appStore._checkoutToCommit(repository, commitSha)
+  }
+
+  public resetToCommit(
+    repository: Repository,
+    commitSha: string,
+    type: ResetCommitType
+  ) {
+    this.appStore._resetToCommit(repository, commitSha, type)
   }
 
   public checkoutToTag(

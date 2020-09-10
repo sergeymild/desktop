@@ -120,6 +120,8 @@ import {
   rebase,
   RebaseResult,
   renameBranch,
+  ResetCommitType,
+  resetToCommit,
   saveGitIgnore,
   updateRef,
 } from '../git'
@@ -2648,6 +2650,16 @@ export class AppStore extends TypedBaseStore<IAppState> {
       repository,
       commitSha
     })
+  }
+
+  public async _resetToCommit(
+    repository: Repository,
+    commitSha: string,
+    type: ResetCommitType
+  ) {
+    await resetToCommit(repository, commitSha, type)
+    await this._push(repository, {forceWithLease: true})
+    return await this._refreshRepository(repository)
   }
 
   public async _checkoutToTag(
