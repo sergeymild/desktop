@@ -1,14 +1,15 @@
 import * as React from 'react'
 import { PathLabel } from '../lib/path-label'
 import { AppFileStatus } from '../../models/status'
-import { IDiff, DiffType } from '../../models/diff'
+import { DiffType, LineEndingsChange } from '../../models/diff'
 import { Octicon, OcticonSymbol, iconForStatus } from '../octicons'
 import { mapStatus } from '../../lib/status'
 
 interface IProps {
   readonly path: string
   readonly status: AppFileStatus
-  readonly diff: IDiff | null
+  readonly diffKing?: DiffType
+  readonly lineEndingsChange?: LineEndingsChange
 }
 
 /** Displays information about a file */
@@ -32,14 +33,12 @@ export class ChangedFileDetails extends React.Component<IProps, {}> {
   }
 
   private renderDecorator() {
-    const diff = this.props.diff
+    const {diffKing, lineEndingsChange} = this.props
 
-    if (diff === null) {
-      return null
-    }
+    if (diffKing === undefined) { return null }
 
-    if (diff.kind === DiffType.Text && diff.lineEndingsChange) {
-      const message = `Warning: line endings will be changed from '${diff.lineEndingsChange.from}' to '${diff.lineEndingsChange.to}'.`
+    if (diffKing === DiffType.Text && lineEndingsChange !== undefined) {
+      const message = `Warning: line endings will be changed from '${lineEndingsChange.from}' to '${lineEndingsChange.to}'.`
       return (
         <Octicon
           symbol={OcticonSymbol.alert}

@@ -1,11 +1,6 @@
 import * as React from 'react'
 import { ChangedFileDetails } from './changed-file-details'
-import {
-  DiffSelection,
-  IDiff,
-  ImageDiffType,
-  ITextDiff,
-} from '../../models/diff'
+import { DiffSelection, DiffType, IDiff, ImageDiffType, ITextDiff } from '../../models/diff'
 import { WorkingDirectoryFileChange } from '../../models/status'
 import { Repository } from '../../models/repository'
 import { Dispatcher } from '../dispatcher'
@@ -80,7 +75,11 @@ export class Changes extends React.Component<IProps, {}> {
     const isCommitting = this.props.isCommitting
     return (
       <div className="changed-file">
-        <ChangedFileDetails path={file.path} status={file.status} diff={diff} />
+        <ChangedFileDetails
+          path={file.path}
+          status={file.status}
+          diffKing={diff?.kind}
+          lineEndingsChange={(diff?.kind === DiffType.Text) ? diff.lineEndingsChange : undefined}/>
         <SeamlessDiffSwitcher
           repository={this.props.repository}
           imageDiffType={this.props.imageDiffType}
