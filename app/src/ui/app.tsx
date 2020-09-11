@@ -37,9 +37,7 @@ import { RepositoryView } from './repository'
 import { CloningRepositoryView } from './cloning-repository'
 import {
   Toolbar,
-  DropdownState,
   PushPullButton,
-  BranchDropdown,
   RevertProgress,
 } from './toolbar'
 import { showCertificateTrustDialog, sendReady } from './main-process-proxy'
@@ -59,11 +57,11 @@ import {
   isCurrentBranchForcePush,
 } from '../lib/rebase'
 import { BannerType } from '../models/banner'
-import { getUncommittedChangesStrategy } from '../models/uncommitted-changes-strategy'
 import {TagsToolBarButton} from './toolbar/tags-toolbar-button'
 import { AppPopup } from './popups/AppPopup'
 import { KeyEventsHandler } from './key-events-handler'
 import { ToolbarRepositoryButton } from './toolbar/toolbar-repository-button'
+import { ToolbarBranchButton } from './toolbar/toolbar-branch-button'
 
 const MinuteInMilliseconds = 1000 * 60
 const HourInMilliseconds = MinuteInMilliseconds * 60
@@ -1253,14 +1251,6 @@ export class App extends React.Component<IAppProps, IAppState> {
     }
   }
 
-  private onBranchDropdownStateChanged = (newState: DropdownState) => {
-    if (newState === 'open') {
-      this.props.dispatcher.showFoldout({ type: FoldoutType.Branch })
-    } else {
-      this.props.dispatcher.closeFoldout(FoldoutType.Branch)
-    }
-  }
-
   private renderTagsToolbarButton(): JSX.Element | null {
     const selection = this.state.selectedState
 
@@ -1283,30 +1273,13 @@ export class App extends React.Component<IAppProps, IAppState> {
   }
 
   private renderBranchToolbarButton(): JSX.Element | null {
-    const selection = this.state.selectedState
-
-    if (selection == null || selection.type !== SelectionType.Repository) {
-      return null
-    }
-
-    const currentFoldout = this.state.currentFoldout
-
-    const isOpen =
-      currentFoldout !== null && currentFoldout.type === FoldoutType.Branch
-
-    const repository = selection.repository
-
-    return (
-      <BranchDropdown
-        isOpen={isOpen}
-        onDropDownStateChanged={this.onBranchDropdownStateChanged}
-        repository={repository}
-        repositoryState={selection.state}
-        selectedUncommittedChangesStrategy={getUncommittedChangesStrategy(
-          this.state.uncommittedChangesStrategyKind
-        )}
-      />
-    )
+    return <ToolbarBranchButton
+      uncommittedChangesStrategyKind={this.state.uncommittedChangesStrategyKind}
+      selectionType={this.state.selectedState?.type}
+      repository={this.state.selectedState?.repository}
+      state={this.state.selectedState?.state}
+      currentFoldout={this.state.currentFoldout}
+    />
   }
 
   // we currently only render one banner at a time

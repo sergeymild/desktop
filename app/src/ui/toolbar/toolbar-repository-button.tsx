@@ -10,11 +10,11 @@ interface IProps {
   readonly repository: Repository | CloningRepository | undefined
   readonly repositoriesCount: number
   readonly currentFoldout: Foldout | null
-  readonly  renderRepositoryList: () => JSX.Element
+  readonly renderRepositoryList: () => JSX.Element
 }
 
 export class ToolbarRepositoryButton extends React.PureComponent<IProps, {}> {
-  private onRepositoryDropdownStateChanged = (newState: DropdownState) => {
+  private onDropdownStateChanged = (newState: DropdownState) => {
     if (newState === 'open') {
       dispatcher.showFoldout({ type: FoldoutType.Repository })
     } else {
@@ -53,7 +53,7 @@ export class ToolbarRepositoryButton extends React.PureComponent<IProps, {}> {
       title={title}
       description={__DARWIN__ ? 'Current Repository' : 'Current repository'}
       tooltip={tooltip}
-      onDropdownStateChanged={this.onRepositoryDropdownStateChanged}
+      onDropdownStateChanged={this.onDropdownStateChanged}
       dropdownContentRenderer={this.props.renderRepositoryList}
       dropdownState={currentState}
     />

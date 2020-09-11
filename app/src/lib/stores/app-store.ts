@@ -63,7 +63,8 @@ import {
   Foldout,
   FoldoutType,
   HistoryTabMode,
-  IAppState, IBranchesState,
+  IAppState,
+  IBranchesState,
   ICompareBranch,
   ICompareFormUpdate,
   ICompareToBranch,
@@ -71,7 +72,8 @@ import {
   IDivergingBranchBannerState,
   IRebaseState,
   IRepositoryState,
-  isMergeConflictState, isRebaseConflictState,
+  isMergeConflictState,
+  isRebaseConflictState,
   MergeConflictState,
   PossibleSelections,
   RebaseConflictState,
@@ -509,6 +511,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
   private getSelectedState(): PossibleSelections | null {
     const repository = this.selectedRepository
+
     if (!repository) {
       return null
     }
@@ -525,11 +528,12 @@ export class AppStore extends TypedBaseStore<IAppState> {
         type: SelectionType.CloningRepository,
         repository,
         progress,
+        state: undefined
       }
     }
 
     if (repository.missing) {
-      return { type: SelectionType.MissingRepository, repository }
+      return { type: SelectionType.MissingRepository, repository, state: undefined }
     }
 
     return {

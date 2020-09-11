@@ -49,8 +49,13 @@ export type PossibleSelections =
       type: SelectionType.CloningRepository
       repository: CloningRepository
       progress: ICloneProgress
+      state: undefined
     }
-  | { type: SelectionType.MissingRepository; repository: Repository }
+  | {
+      type: SelectionType.MissingRepository;
+      repository: Repository
+      state: undefined
+    }
 
 /** All of the shared app state. */
 export interface IAppState {
