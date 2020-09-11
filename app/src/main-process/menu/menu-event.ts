@@ -21,7 +21,6 @@ export type MenuEvent =
   | 'rebase-branch'
   | 'show-repository-settings'
   | 'open-in-shell'
-  | 'compare-on-github'
   | 'view-repository-on-github'
   | 'clone-repository'
   | 'show-about'

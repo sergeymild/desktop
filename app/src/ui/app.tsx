@@ -235,8 +235,6 @@ export class App extends React.Component<IAppProps, IAppState> {
         return this.showRepositorySettings()
       case 'view-repository-on-github':
         return this.viewRepositoryOnGitHub()
-      case 'compare-on-github':
-        return this.compareBranchOnDotcom()
       case 'create-issue-in-repository-on-github':
         return this.openIssueCreationOnGitHub()
       case 'open-in-shell':
@@ -445,29 +443,6 @@ export class App extends React.Component<IAppProps, IAppState> {
       type: PopupType.MergeBranch,
       repository: state.repository,
     })
-  }
-
-  private compareBranchOnDotcom() {
-    const htmlURL = this.getCurrentRepositoryGitHubURL()
-    if (!htmlURL) {
-      return
-    }
-
-    const state = this.state.selectedState
-    if (state == null || state.type !== SelectionType.Repository) {
-      return
-    }
-
-    const branchTip = state.state.branchesState.tip
-    if (
-      branchTip.kind !== TipState.Valid ||
-      !branchTip.branch.upstreamWithoutRemote
-    ) {
-      return
-    }
-
-    const compareURL = `${htmlURL}/compare/${branchTip.branch.upstreamWithoutRemote}`
-    this.props.dispatcher.openInBrowser(compareURL)
   }
 
   private openCurrentRepositoryWorkingDirectory() {
@@ -809,21 +784,6 @@ export class App extends React.Component<IAppProps, IAppState> {
         this.props.dispatcher.openInBrowser(url)
       }
     }
-  }
-
-  /** Returns the URL to the current repository if hosted on GitHub */
-  private getCurrentRepositoryGitHubURL() {
-    const repository = this.getRepository()
-
-    if (
-      !repository ||
-      repository instanceof CloningRepository ||
-      !repository.gitHubRepository
-    ) {
-      return null
-    }
-
-    return repository.gitHubRepository.htmlURL
   }
 
   private openCurrentRepositoryInShell = () => {

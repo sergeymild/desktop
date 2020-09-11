@@ -391,12 +391,7 @@ export function buildDefaultMenu({
         click: emit('rebase-branch'),
       },
       separator,
-      {
-        label: __DARWIN__ ? 'Compare on GitHub' : 'Compare on &GitHub',
-        id: 'compare-on-github',
-        accelerator: 'CmdOrCtrl+Shift+C',
-        click: emit('compare-on-github'),
-      },
+
       {
         label: pullRequestLabel,
         id: 'create-pull-request',
