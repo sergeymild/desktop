@@ -2,22 +2,19 @@ import React from 'react'
 import { DropdownState, ToolbarDropdown } from './dropdown'
 import { OcticonSymbol } from '../octicons'
 import { Repository } from '../../models/repository'
-
-import { AppStore } from '../../lib/stores'
 import { TagsList } from '../tags/tags-list'
-import { FoldoutType } from '../../lib/app-state'
+import { Foldout, FoldoutType } from '../../lib/app-state'
 import { dispatcher } from '../index'
 import { IRepositoryTags } from '../../lib/git'
 
 interface IProps {
   readonly repository: Repository
-  readonly appStore: AppStore
-  readonly isOpen: boolean
   readonly tagList: IRepositoryTags | null
   readonly currentTag: string | null
+  readonly currentFoldout: Foldout | null
 }
 
-class TagsToolBarButton extends React.PureComponent<IProps, {}> {
+class ToolbarTagsButton extends React.PureComponent<IProps, {}> {
 
   private renderBranchFoldout = (): JSX.Element | null => {
     if (this.props.tagList === null) { return null }
@@ -36,7 +33,8 @@ class TagsToolBarButton extends React.PureComponent<IProps, {}> {
   }
 
   public render() {
-    const currentState: DropdownState = this.props.isOpen ? 'open' : 'closed'
+    const isOpen: boolean = (this.props.currentFoldout?.type === FoldoutType.Tags) || false
+    const currentState: DropdownState = isOpen ? 'open' : 'closed'
 
     return <ToolbarDropdown
       title={this.props.currentTag || "No tag"}
@@ -48,4 +46,4 @@ class TagsToolBarButton extends React.PureComponent<IProps, {}> {
   }
 }
 
-export { TagsToolBarButton }
+export { ToolbarTagsButton }

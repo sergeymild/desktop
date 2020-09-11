@@ -57,7 +57,7 @@ import {
   isCurrentBranchForcePush,
 } from '../lib/rebase'
 import { BannerType } from '../models/banner'
-import {TagsToolBarButton} from './toolbar/tags-toolbar-button'
+import {ToolbarTagsButton} from './toolbar/toolbar-tags-button'
 import { AppPopup } from './popups/AppPopup'
 import { KeyEventsHandler } from './key-events-handler'
 import { ToolbarRepositoryButton } from './toolbar/toolbar-repository-button'
@@ -1258,18 +1258,13 @@ export class App extends React.Component<IAppProps, IAppState> {
       return null
     }
 
-    const isOpen: boolean =
-      (this.state.currentFoldout && this.state.currentFoldout.type === FoldoutType.Tags) || false
-
-
     const repository = selection.repository
     const currentTagName = this.props.appStore.getCurrentTagName(repository)
-    return <TagsToolBarButton
+    return <ToolbarTagsButton
+      currentFoldout={this.state.currentFoldout}
       currentTag={currentTagName}
-      isOpen={isOpen}
       tagList={this.props.appStore.repositoryTags(repository)}
-      repository={repository}
-      appStore={this.props.appStore}/>
+      repository={repository} />
   }
 
   private renderBranchToolbarButton(): JSX.Element | null {
