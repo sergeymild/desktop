@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Dialog, DialogContent, DialogFooter, OkCancelButtonGroup } from '../dialog'
-import { FoldoutType, RebaseConflictState } from '../../lib/app-state'
+import { RebaseConflictState } from '../../lib/app-state'
 import { WorkingDirectoryStatus } from '../../models/status'
 import { isRepositoryWithGitHubRepository, Repository } from '../../models/repository'
 import { Checkbox, CheckboxValue } from '../lib/checkbox'
@@ -222,9 +222,7 @@ export class CommitMessagePopup extends React.Component<IProps, IState> {
   }
 
   private onSwitchBranch = () => {
-    dispatcher.showFoldout({
-      type: FoldoutType.Branch,
-    })
+
   }
 
   private onMakeFork = () => {

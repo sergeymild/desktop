@@ -40,7 +40,6 @@ import {
   ToolbarDropdown,
   DropdownState,
   PushPullButton,
-  BranchDropdown,
   RevertProgress,
 } from './toolbar'
 import { OcticonSymbol, iconForRepository } from './octicons'
@@ -61,11 +60,11 @@ import {
   isCurrentBranchForcePush,
 } from '../lib/rebase'
 import { BannerType } from '../models/banner'
-import { getUncommittedChangesStrategy } from '../models/uncommitted-changes-strategy'
 import {TagsToolBarButton} from './toolbar/tags-toolbar-button'
 import { AppPopup } from './popups/AppPopup'
 import memoizeOne from 'memoize-one'
 import { KeyEventsHandler } from './key-events-handler'
+import { SupportSidebarView } from './support-sidebar-view'
 
 const MinuteInMilliseconds = 1000 * 60
 const HourInMilliseconds = MinuteInMilliseconds * 60
@@ -227,8 +226,6 @@ export class App extends React.Component<IAppProps, IAppState> {
         return this.showAddLocalRepo()
       case 'create-branch':
         return this.showCreateBranch()
-      case 'show-branches':
-        return this.showBranches()
       case 'remove-repository':
         return this.removeRepository(this.getRepository())
       case 'create-repository':
@@ -640,22 +637,6 @@ export class App extends React.Component<IAppProps, IAppState> {
     return this.props.dispatcher.showFoldout({
       type: FoldoutType.Repository,
     })
-  }
-
-  private showBranches() {
-    const state = this.state.selectedState
-    if (state == null || state.type !== SelectionType.Repository) {
-      return
-    }
-
-    if (
-      this.state.currentFoldout &&
-      this.state.currentFoldout.type === FoldoutType.Branch
-    ) {
-      return this.props.dispatcher.closeFoldout(FoldoutType.Branch)
-    }
-
-    return this.props.dispatcher.showFoldout({ type: FoldoutType.Branch })
   }
 
   private push(options?: { forceWithLease: boolean }) {
@@ -1306,14 +1287,6 @@ export class App extends React.Component<IAppProps, IAppState> {
     }
   }
 
-  private onBranchDropdownStateChanged = (newState: DropdownState) => {
-    if (newState === 'open') {
-      this.props.dispatcher.showFoldout({ type: FoldoutType.Branch })
-    } else {
-      this.props.dispatcher.closeFoldout(FoldoutType.Branch)
-    }
-  }
-
   private renderTagsToolbarButton(): JSX.Element | null {
     const selection = this.state.selectedState
 
@@ -1333,33 +1306,6 @@ export class App extends React.Component<IAppProps, IAppState> {
       tagList={this.props.appStore.repositoryTags(repository)}
       repository={repository}
       appStore={this.props.appStore}/>
-  }
-
-  private renderBranchToolbarButton(): JSX.Element | null {
-    const selection = this.state.selectedState
-
-    if (selection == null || selection.type !== SelectionType.Repository) {
-      return null
-    }
-
-    const currentFoldout = this.state.currentFoldout
-
-    const isOpen =
-      currentFoldout !== null && currentFoldout.type === FoldoutType.Branch
-
-    const repository = selection.repository
-
-    return (
-      <BranchDropdown
-        isOpen={isOpen}
-        onDropDownStateChanged={this.onBranchDropdownStateChanged}
-        repository={repository}
-        repositoryState={selection.state}
-        selectedUncommittedChangesStrategy={getUncommittedChangesStrategy(
-          this.state.uncommittedChangesStrategyKind
-        )}
-      />
-    )
   }
 
   // we currently only render one banner at a time
@@ -1420,11 +1366,10 @@ export class App extends React.Component<IAppProps, IAppState> {
       <Toolbar id="desktop-app-toolbar">
         <div
           className="sidebar-section"
-          style={{ width: this.state.sidebarWidth }}
+
         >
           {this.renderRepositoryToolbarButton()}
         </div>
-        {this.renderBranchToolbarButton()}
         {this.renderTagsToolbarButton()}
         {this.renderPushPullToolbarButton()}
       </Toolbar>
@@ -1459,34 +1404,41 @@ export class App extends React.Component<IAppProps, IAppState> {
         : undefined
 
       return (
-        <RepositoryView
-          // When switching repositories we want to remount the RepositoryView
-          // component to reset the scroll positions.
-          key={selectedState.repository.hash}
-          repository={selectedState.repository}
-          state={selectedState.state}
-          dispatcher={this.props.dispatcher}
-          emoji={state.emoji}
-          sidebarWidth={state.sidebarWidth}
-          commitSummaryWidth={state.commitSummaryWidth}
-          stashedFilesWidth={state.stashedFilesWidth}
-          issuesStore={this.props.issuesStore}
-          gitHubUserStore={this.props.gitHubUserStore}
-          onViewCommitOnGitHub={this.onViewCommitOnGitHub}
-          imageDiffType={state.imageDiffType}
-          hideWhitespaceInDiff={state.hideWhitespaceInDiff}
-          askForConfirmationOnDiscardChanges={
-            state.askForConfirmationOnDiscardChanges
-          }
-          accounts={state.accounts}
-          externalEditorLabel={externalEditorLabel}
-          resolvedExternalEditor={state.resolvedExternalEditor}
-          onOpenInExternalEditor={this.openFileInExternalEditor}
-          appMenu={state.appMenuState[0]}
-          isShowingModal={this.isShowingModal}
-          isShowingFoldout={this.state.currentFoldout !== null}
-          stashesCount={this.state.localStashesCount}
-        />
+        <div id="repository-container">
+          <SupportSidebarView
+            width={this.state.supportSidebarWidth}
+            selectedState={this.state.selectedState}
+            uncommittedChangesStrategyKind={this.state.uncommittedChangesStrategyKind}
+          />
+          <RepositoryView
+            // When switching repositories we want to remount the RepositoryView
+            // component to reset the scroll positions.
+            key={selectedState.repository.hash}
+            repository={selectedState.repository}
+            state={selectedState.state}
+            dispatcher={this.props.dispatcher}
+            emoji={state.emoji}
+            sidebarWidth={state.sidebarWidth}
+            commitSummaryWidth={state.commitSummaryWidth}
+            stashedFilesWidth={state.stashedFilesWidth}
+            issuesStore={this.props.issuesStore}
+            gitHubUserStore={this.props.gitHubUserStore}
+            onViewCommitOnGitHub={this.onViewCommitOnGitHub}
+            imageDiffType={state.imageDiffType}
+            hideWhitespaceInDiff={state.hideWhitespaceInDiff}
+            askForConfirmationOnDiscardChanges={
+              state.askForConfirmationOnDiscardChanges
+            }
+            accounts={state.accounts}
+            externalEditorLabel={externalEditorLabel}
+            resolvedExternalEditor={state.resolvedExternalEditor}
+            onOpenInExternalEditor={this.openFileInExternalEditor}
+            appMenu={state.appMenuState[0]}
+            isShowingModal={this.isShowingModal}
+            isShowingFoldout={this.state.currentFoldout !== null}
+            stashesCount={this.state.localStashesCount}
+          />
+        </div>
       )
     } else if (selectedState.type === SelectionType.CloningRepository) {
       return (

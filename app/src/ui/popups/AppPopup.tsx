@@ -196,7 +196,6 @@ export const AppPopup: React.FC<IProps> = (
       return (
         <DeleteBranch
           key="delete-branch"
-          dispatcher={dispatcher}
           repository={popup.repository}
           branch={popup.branch}
           existsOnRemote={popup.existsOnRemote}

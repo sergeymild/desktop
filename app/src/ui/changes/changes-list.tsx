@@ -29,6 +29,7 @@ import { ChangesListMenu } from './changes-list-menu'
 import { ChangesListHeader } from './changes-list-header'
 import { PopupType } from '../../models/popup'
 import { Button } from '../lib/button'
+import { Row } from '../lib/row'
 
 const RowHeight = 29
 
@@ -561,15 +562,17 @@ export class ChangesList extends React.Component<IChangesListProps,
     }
 
     return (
+      <Row className="merge-button-row">
       <Button
         type="submit"
-        className="commit-button"
+        className="commit-button merge-button"
         disabled={this.props.workingDirectory.files.length === 0}
         onClick={() => this.props.dispatcher.showPopup({
           type: PopupType.Commit,
           repository,
         })}
       >Commit</Button>
+      </Row>
     )
   }
 

@@ -187,12 +187,6 @@ export function buildDefaultMenu({
         accelerator: 'CmdOrCtrl+T',
         click: emit('choose-repository'),
       },
-      {
-        label: __DARWIN__ ? 'Show Branches List' : '&Branches list',
-        id: 'show-branches-list',
-        accelerator: 'CmdOrCtrl+B',
-        click: emit('show-branches'),
-      },
       separator,
       {
         label: __DARWIN__ ? 'Go to Summary' : 'Go to &Summary',

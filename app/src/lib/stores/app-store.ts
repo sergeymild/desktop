@@ -203,8 +203,10 @@ const RecentRepositoriesKey = 'recently-selected-repositories'
  */
 const RecentRepositoriesLength = 3
 
+const defaultSupportSidebarWidth: number = 200
 const defaultSidebarWidth: number = 250
 const sidebarWidthConfigKey: string = 'sidebar-width'
+const supportSidebarWidthConfigKey: string = 'support-sidebar-width'
 
 const defaultCommitSummaryWidth: number = 250
 const commitSummaryWidthConfigKey: string = 'commit-summary-width'
@@ -299,6 +301,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private appIsFocused: boolean = false
 
   private sidebarWidth: number = defaultSidebarWidth
+  private supportSidebarWidth: number = defaultSupportSidebarWidth
   private commitSummaryWidth: number = defaultCommitSummaryWidth
   private stashedFilesWidth: number = defaultStashedFilesWidth
   private windowState: WindowState
@@ -562,6 +565,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       focusCommitMessage: this.focusCommitMessage,
       emoji: this.emoji,
       sidebarWidth: this.sidebarWidth,
+      supportSidebarWidth: this.supportSidebarWidth,
       commitSummaryWidth: this.commitSummaryWidth,
       stashedFilesWidth: this.stashedFilesWidth,
       appMenuState: this.appMenu ? this.appMenu.openMenus : [],
@@ -1585,6 +1589,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     this.updateRepositorySelectionAfterRepositoriesChanged()
 
     this.sidebarWidth = getNumber(sidebarWidthConfigKey, defaultSidebarWidth)
+    this.supportSidebarWidth = getNumber(supportSidebarWidthConfigKey, defaultSupportSidebarWidth)
     this.commitSummaryWidth = getNumber(
       commitSummaryWidthConfigKey,
       defaultCommitSummaryWidth
@@ -3770,9 +3775,24 @@ export class AppStore extends TypedBaseStore<IAppState> {
     return Promise.resolve()
   }
 
+  public _setSupportSidebarWidth(width: number): Promise<void> {
+    this.supportSidebarWidth = width
+    setNumber(supportSidebarWidthConfigKey, width)
+    this.emitUpdate()
+    return Promise.resolve()
+  }
+
   public _resetSidebarWidth(): Promise<void> {
     this.sidebarWidth = defaultSidebarWidth
     localStorage.removeItem(sidebarWidthConfigKey)
+    this.emitUpdate()
+
+    return Promise.resolve()
+  }
+
+  public _resetSupportSidebarWidth(): Promise<void> {
+    this.supportSidebarWidth = defaultSupportSidebarWidth
+    localStorage.removeItem(supportSidebarWidthConfigKey)
     this.emitUpdate()
 
     return Promise.resolve()

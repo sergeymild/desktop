@@ -1,16 +1,15 @@
 import * as React from 'react'
 
-import { Dispatcher } from '../dispatcher'
 import { Repository } from '../../models/repository'
 import { Branch } from '../../models/branch'
 import { Checkbox, CheckboxValue } from '../lib/checkbox'
 import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { Ref } from '../lib/ref'
-import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { OkCancelButtonGroup } from '../dialog'
 import { HistoryTabMode } from '../../lib/app-state'
+import { dispatcher } from '../index'
 
 interface IDeleteBranchProps {
-  readonly dispatcher: Dispatcher
   readonly repository: Repository
   readonly branch: Branch
   readonly existsOnRemote: boolean
@@ -96,7 +95,7 @@ export class DeleteBranch extends React.Component<
   }
 
   private deleteBranch = async () => {
-    const { dispatcher, repository, branch } = this.props
+    const { repository, branch } = this.props
 
     this.setState({ isDeleting: true })
 
@@ -110,7 +109,7 @@ export class DeleteBranch extends React.Component<
     // we need to exit out of the compare state after the
     // branch has been deleted. Calling executeCompare allows
     // us to do just that.
-    this.props.dispatcher.executeCompare(repository, {
+    dispatcher.executeCompare(repository, {
       kind: HistoryTabMode.History,
     })
 

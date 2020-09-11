@@ -142,6 +142,7 @@ export interface IAppState {
    * repository.
    */
   readonly sidebarWidth: number
+  readonly supportSidebarWidth: number
 
   /** The width of the commit summary column in the history view */
   readonly commitSummaryWidth: number
@@ -224,7 +225,6 @@ export interface IAppState {
 
 export enum FoldoutType {
   Repository,
-  Branch,
   AppMenu,
   AddMenu,
   Tags,
@@ -250,10 +250,6 @@ export type AppMenuFoldout = {
   openedWithAccessKey?: boolean
 }
 
-export type BranchFoldout = {
-  type: FoldoutType.Branch
-}
-
 export type TagsFoldout = {
   type: FoldoutType.Tags
 }
@@ -261,7 +257,6 @@ export type TagsFoldout = {
 export type Foldout =
   | { type: FoldoutType.Repository }
   | { type: FoldoutType.AddMenu }
-  | BranchFoldout
   | AppMenuFoldout
   | TagsFoldout
 

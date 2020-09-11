@@ -728,6 +728,10 @@ export class Dispatcher {
     return this.appStore._setSidebarWidth(width)
   }
 
+  public setSupportSidebarWidth(width: number): Promise<void> {
+    return this.appStore._setSupportSidebarWidth(width)
+  }
+
   /**
    * Set the update banner's visibility
    */
@@ -781,6 +785,10 @@ export class Dispatcher {
    */
   public resetSidebarWidth(): Promise<void> {
     return this.appStore._resetSidebarWidth()
+  }
+
+  public resetSupportSidebarWidth(): Promise<void> {
+    return this.appStore._resetSupportSidebarWidth()
   }
 
   /**

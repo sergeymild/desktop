@@ -1,17 +1,17 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import { Grid, AutoSizer } from 'react-virtualized'
-import { shallowEquals, arrayEquals } from '../../../lib/equality'
+import { Grid } from 'react-virtualized'
+import { arrayEquals, shallowEquals } from '../../../lib/equality'
 import { FocusContainer } from '../../lib/focus-container'
 import { ListRow } from './list-row'
 import {
-  findNextSelectableRow,
-  SelectionSource,
-  SelectionDirection,
-  IMouseClickSource,
-  IKeyboardSource,
-  ISelectAllSource,
   findLastSelectableRow,
+  findNextSelectableRow,
+  IKeyboardSource,
+  IMouseClickSource,
+  ISelectAllSource,
+  SelectionDirection,
+  SelectionSource,
 } from './selection'
 import { createUniqueId, releaseUniqueId } from '../../lib/id-pool'
 import { range } from '../../../lib/range'
@@ -215,10 +215,10 @@ interface IListProps {
 
 interface IListState {
   /** The available height for the list as determined by ResizeObserver */
-  readonly height?: number
+  readonly height: number
 
   /** The available width for the list as determined by ResizeObserver */
-  readonly width?: number
+  readonly width: number
 
   readonly rowIdPrefix?: string
 }
@@ -264,7 +264,7 @@ export class List extends React.Component<IListProps, IListState> {
 
   private list: HTMLDivElement | null = null
   private grid: React.Component<any, any> | null = null
-  private readonly resizeObserver: ResizeObserver | null = null
+  private resizeObserver: ResizeObserver | null = null
   private updateSizeTimeoutId: NodeJS.Immediate | null = null
 
   public constructor(props: IListProps) {
@@ -276,34 +276,20 @@ export class List extends React.Component<IListProps, IListState> {
       this.scrollToRow = props.selectedRows[0]
     }
 
-    this.state = {}
-
-    const ResizeObserverClass: typeof ResizeObserver = (window as any)
-      .ResizeObserver
-
-    if (ResizeObserver || false) {
-      this.resizeObserver = new ResizeObserverClass(entries => {
-        for (const entry of entries) {
-          if (entry.target === this.list) {
-            // We might end up causing a recursive update by updating the state
-            // when we're reacting to a resize so we'll defer it until after
-            // react is done with this frame.
-            if (this.updateSizeTimeoutId !== null) {
-              clearImmediate(this.updateSizeTimeoutId)
-            }
-
-            this.updateSizeTimeoutId = setImmediate(
-              this.onResized,
-              entry.target,
-              entry.contentRect
-            )
-          }
-        }
-      })
+    this.state = {
+      height: 1,
+      width: 1,
     }
   }
 
-  private onResized = (target: HTMLElement, contentRect: ClientRect) => {
+  public componentDidMount() {
+    this.resizeObserver = new ResizeObserver(() => {
+      this.onResized(this.list!)
+    })
+    this.resizeObserver?.observe(this.list!)
+  }
+
+  private onResized = (target: HTMLElement) => {
     this.updateSizeTimeoutId = null
 
     const [width, height] = [target.offsetWidth, target.offsetHeight]
@@ -354,16 +340,6 @@ export class List extends React.Component<IListProps, IListState> {
       // to electron's default behavior which is to select all selectable
       // text in the renderer.
       element.addEventListener('select-all', this.onSelectAll)
-    }
-
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect()
-
-      if (element !== null) {
-        this.resizeObserver.observe(element)
-      } else {
-        this.setState({ width: undefined, height: undefined })
-      }
     }
   }
 
@@ -712,24 +688,6 @@ export class List extends React.Component<IListProps, IListState> {
   }
 
   public render() {
-    let content: JSX.Element[] | JSX.Element | null
-
-    if (this.resizeObserver) {
-      content =
-        this.state.width && this.state.height
-          ? this.renderContents(this.state.width, this.state.height)
-          : null
-    } else {
-      // Legacy in the event that we don't have ResizeObserver
-      content = (
-        <AutoSizer disableWidth={true} disableHeight={true}>
-          {({ width, height }: { width: number; height: number }) =>
-            this.renderContents(width, height)
-          }
-        </AutoSizer>
-      )
-    }
-
     // we select the last item from the selection array for this prop
     const activeDescendant =
       this.props.selectedRows.length && this.state.rowIdPrefix
@@ -749,7 +707,7 @@ export class List extends React.Component<IListProps, IListState> {
         role={role}
         aria-activedescendant={activeDescendant}
       >
-        {content}
+        {this.renderContents(this.state.width, this.state.height)}
       </div>
     )
   }
@@ -790,6 +748,7 @@ export class List extends React.Component<IListProps, IListState> {
    * @param height - The height of the Grid as given by AutoSizer
    */
   private renderGrid(width: number, height: number) {
+    console.log("--0-0-0--", width, height)
     let scrollToRow = this.props.scrollToRow
     if (scrollToRow === undefined) {
       scrollToRow = this.scrollToRow

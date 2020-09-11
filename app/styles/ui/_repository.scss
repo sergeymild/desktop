@@ -1,6 +1,34 @@
 @import '../mixins';
 
 /** A React component holding the currently selected repository */
+#repository-container {
+  display: flex;
+  flex-direction: row;
+  height: calc(100vh - var(--darwin-title-bar-height) - var(--toolbar-height));
+}
+
+#support-sidebar-view {
+  border-right: 1px solid var(--box-border-color);
+
+  .branches-container {
+    width: 100%;
+
+    .filter-list.branches-list {
+      width: 100%;
+
+      .no-branches {
+        width: 100%;
+
+        .blankslate-image {
+          width: unset;
+          min-width: unset;
+          max-width: unset;
+        }
+      }
+    }
+  }
+}
+
 #repository {
   display: flex;
   flex-direction: row;

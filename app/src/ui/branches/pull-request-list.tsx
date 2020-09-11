@@ -17,7 +17,6 @@ import {
 } from '../../models/repository'
 import { Button } from '../lib/button'
 import { Octicon, syncClockwise } from '../octicons'
-import { FoldoutType } from '../../lib/app-state'
 import { startTimer } from '../lib/timing'
 
 interface IPullRequestListItem extends IFilterListItem {
@@ -180,7 +179,6 @@ export class PullRequestList extends React.Component<
   ) => {
     const pullRequest = item.pullRequest
 
-    this.props.dispatcher.closeFoldout(FoldoutType.Branch)
     const timer = startTimer(
       'checkout pull request from list',
       this.props.repository
@@ -238,7 +236,6 @@ export class PullRequestList extends React.Component<
   }
 
   private onCreatePullRequest = () => {
-    this.props.dispatcher.closeFoldout(FoldoutType.Branch)
     this.props.dispatcher.createPullRequest(this.props.repository)
   }
 }

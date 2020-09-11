@@ -4,8 +4,6 @@ import { Repository } from '../../models/repository'
 import { Branch } from '../../models/branch'
 import { PopupType } from '../../models/popup'
 
-import { FoldoutType } from '../../lib/app-state'
-
 import { Row } from '../lib/row'
 import { Octicon, OcticonSymbol } from '../octicons'
 import { Button } from '../lib/button'
@@ -97,6 +95,17 @@ export class BranchesContainer extends React.Component<
         label: "Rename",
         action: () => this.onRename(branch),
         enabled: true,
+      },
+      {type: 'separator'},
+      {
+        label: "Delete",
+        action: () => dispatcher.showPopup({
+          type: PopupType.DeleteBranch,
+          repository: this.props.repository,
+          branch: branch,
+          existsOnRemote: true
+        }),
+        enabled: true,
       }
     ]
 
@@ -130,7 +139,6 @@ export class BranchesContainer extends React.Component<
   }
 
   private onMergeClick = () => {
-    dispatcher.closeFoldout(FoldoutType.Branch)
     dispatcher.showPopup({
       type: PopupType.MergeBranch,
       repository: this.props.repository,
@@ -138,7 +146,6 @@ export class BranchesContainer extends React.Component<
   }
 
   private onBranchItemClick = (branch: Branch) => {
-    dispatcher.closeFoldout(FoldoutType.Branch)
 
     const {
       currentBranch,
@@ -174,7 +181,6 @@ export class BranchesContainer extends React.Component<
   private onCreateBranchWithName = (name: string) => {
     const { repository, currentBranchProtected } = this.props
 
-    dispatcher.closeFoldout(FoldoutType.Branch)
     dispatcher.showPopup({
       type: PopupType.CreateBranch,
       repository,
