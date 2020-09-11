@@ -6,12 +6,12 @@ import { IAheadBehind } from '../../models/branch'
 import { TipState } from '../../models/tip'
 import { FetchType } from '../../models/fetch'
 
-import { Dispatcher } from '../dispatcher'
 import { Octicon, OcticonSymbol, syncClockwise } from '../octicons'
 import { RelativeTime } from '../relative-time'
 
 import { ToolbarButton, ToolbarButtonStyle } from './button'
 import classNames from 'classnames'
+import { dispatcher } from '../index'
 
 interface IPushPullButtonProps {
   /**
@@ -31,9 +31,6 @@ interface IPushPullButtonProps {
 
   /** Progress information associated with the current operation */
   readonly progress: Progress | null
-
-  /** The global dispatcher, to invoke repository operations. */
-  readonly dispatcher: Dispatcher
 
   /** The current repository */
   readonly repository: Repository
@@ -291,19 +288,19 @@ function forcePushButton(
  */
 export class PushPullButton extends React.PureComponent<IPushPullButtonProps, {}> {
   private push = () => {
-    this.props.dispatcher.push(this.props.repository)
+    dispatcher.push(this.props.repository)
   }
 
   private forcePushWithLease = () => {
-    this.props.dispatcher.confirmOrForcePush(this.props.repository)
+    dispatcher.confirmOrForcePush(this.props.repository)
   }
 
   private pull = () => {
-    this.props.dispatcher.pull(this.props.repository)
+    dispatcher.pull(this.props.repository)
   }
 
   private fetch = () => {
-    this.props.dispatcher.fetch(
+    dispatcher.fetch(
       this.props.repository,
       FetchType.UserInitiatedTask
     )

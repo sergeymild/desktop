@@ -1,19 +1,13 @@
 import * as React from 'react'
 import { ipcRenderer, remote } from 'electron'
-import { TransitionGroup, CSSTransition } from 'react-transition-group'
+import { CSSTransition, TransitionGroup } from 'react-transition-group'
 
-import {
-  IAppState,
-  RepositorySectionTab,
-  FoldoutType,
-  SelectionType,
-  HistoryTabMode,
-} from '../lib/app-state'
+import { FoldoutType, HistoryTabMode, IAppState, RepositorySectionTab, SelectionType } from '../lib/app-state'
 import { Dispatcher } from './dispatcher'
 import { AppStore, GitHubUserStore, IssuesStore } from '../lib/stores'
 import { assertNever } from '../lib/fatal-error'
 import { shell } from '../lib/app-shell'
-import { updateStore, UpdateStatus } from './lib/update-store'
+import { UpdateStatus, updateStore } from './lib/update-store'
 import { RetryAction } from '../models/retry-actions'
 import { matchExistingRepository } from '../lib/repository-matching'
 import { getDotComAPIEndpoint } from '../lib/api'
@@ -21,47 +15,37 @@ import { getVersion } from './lib/app-proxy'
 import { getOS } from '../lib/get-os'
 import { validatedRepositoryPath } from '../lib/stores/helpers/validated-repository-path'
 import { MenuEvent } from '../main-process/menu'
-import {
-  Repository,
-  getGitHubHtmlUrl,
-} from '../models/repository'
+import { getGitHubHtmlUrl, Repository } from '../models/repository'
 import { Account } from '../models/account'
 import { TipState } from '../models/tip'
 import { CloneRepositoryTab } from '../models/clone-repository-tab'
 import { CloningRepository } from '../models/cloning-repository'
 
-import { TitleBar, ZoomInfo, FullScreenInfo } from './window'
+import { FullScreenInfo, TitleBar, ZoomInfo } from './window'
 
 import { RepositoriesList } from './repositories-list'
 import { RepositoryView } from './repository'
 import { CloningRepositoryView } from './cloning-repository'
-import {
-  Toolbar,
-  PushPullButton,
-  RevertProgress,
-} from './toolbar'
-import { showCertificateTrustDialog, sendReady } from './main-process-proxy'
+import { Toolbar } from './toolbar'
+import { sendReady, showCertificateTrustDialog } from './main-process-proxy'
 import { Welcome } from './welcome'
 import { AppMenuBar } from './app-menu'
-import { UpdateAvailable, renderBanner } from './banners'
+import { renderBanner, UpdateAvailable } from './banners'
 import { AppError } from './app-error'
 import { MissingRepository } from './missing-repository'
 import { NoRepositoriesView } from './no-repositories'
 import { AppTheme } from './app-theme'
 import { ApplicationTheme } from './lib/application-theme'
 import { RepositoryStateCache } from '../lib/stores/repository-state-cache'
-import { PopupType, Popup } from '../models/popup'
-import {
-  initializeNewRebaseFlow,
-  initializeRebaseFlowForConflictedRepository,
-  isCurrentBranchForcePush,
-} from '../lib/rebase'
+import { Popup, PopupType } from '../models/popup'
+import { initializeNewRebaseFlow, initializeRebaseFlowForConflictedRepository } from '../lib/rebase'
 import { BannerType } from '../models/banner'
-import {ToolbarTagsButton} from './toolbar/toolbar-tags-button'
+import { ToolbarTagsButton } from './toolbar/toolbar-tags-button'
 import { AppPopup } from './popups/AppPopup'
 import { KeyEventsHandler } from './key-events-handler'
 import { ToolbarRepositoryButton } from './toolbar/toolbar-repository-button'
 import { ToolbarBranchButton } from './toolbar/toolbar-branch-button'
+import { ToolbarPushPullButton } from './toolbar/toolbar-push-pull-button'
 
 const MinuteInMilliseconds = 1000 * 60
 const HourInMilliseconds = MinuteInMilliseconds * 60
@@ -1160,50 +1144,9 @@ export class App extends React.Component<IAppProps, IAppState> {
   }
 
   private renderPushPullToolbarButton() {
-    const selection = this.state.selectedState
-    if (!selection || selection.type !== SelectionType.Repository) {
-      return null
-    }
-
-    const state = selection.state
-    const revertProgress = state.revertProgress
-    if (revertProgress) {
-      return <RevertProgress progress={revertProgress} />
-    }
-
-    let remoteName = state.remote ? state.remote.name : null
-    const progress = state.pushPullFetchProgress
-
-    const { conflictState } = state.changesState
-
-    const rebaseInProgress =
-      conflictState !== null && conflictState.kind === 'rebase'
-
-    const { aheadBehind, branchesState } = state
-    const { pullWithRebase, tip } = branchesState
-
-    if (tip.kind === TipState.Valid && tip.branch.remote !== null) {
-      remoteName = tip.branch.remote
-    }
-
-    const isForcePush = isCurrentBranchForcePush(branchesState, aheadBehind)
-
-    return (
-      <PushPullButton
-        dispatcher={this.props.dispatcher}
-        repository={selection.repository}
-        aheadBehind={state.aheadBehind}
-        numTagsToPush={state.tagsToPush !== null ? state.tagsToPush.length : 0}
-        remoteName={remoteName}
-        lastFetched={state.lastFetched}
-        networkActionInProgress={state.isPushPullFetchInProgress}
-        progress={progress}
-        tipState={tip.kind}
-        pullWithRebase={pullWithRebase}
-        rebaseInProgress={rebaseInProgress}
-        isForcePush={isForcePush}
-      />
-    )
+    return <ToolbarPushPullButton
+      selectedState={this.state.selectedState}
+    />
   }
 
   private showCreateBranch = () => {
