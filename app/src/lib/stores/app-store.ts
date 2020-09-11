@@ -3064,9 +3064,10 @@ export class AppStore extends TypedBaseStore<IAppState> {
       }
 
       if (branchToCheckout === null) {
-        throw new Error(
+        this._pushError(new Error(
           `It's not possible to delete the only existing branch in a repository.`
-        )
+        ))
+        return
       }
 
       const nonNullBranchToCheckout = branchToCheckout

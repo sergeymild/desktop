@@ -5,6 +5,7 @@ import { Branch } from '../../models/branch'
 import { IBranchListItem } from './group-branches'
 import { BranchListItem } from './branch-list-item'
 import { IMatches } from '../../lib/fuzzy-find'
+import memoizeOne from 'memoize-one'
 
 export function renderDefaultBranch(
   item: IBranchListItem,
@@ -16,12 +17,12 @@ export function renderDefaultBranch(
   const commit = branch.tip
   const currentBranchName = currentBranch ? currentBranch.name : null
 
-  const handleContextMenu = (event: React.MouseEvent<any>) => {
+  const handleContextMenu = memoizeOne((event: React.MouseEvent<any>) => {
     if (onContextMenu !== undefined) {
       event.preventDefault()
       onContextMenu(branch)
     }
-  }
+  })
 
   return (
     <BranchListItem

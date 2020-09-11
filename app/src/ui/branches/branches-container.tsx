@@ -91,11 +91,28 @@ export class BranchesContainer extends React.Component<
     })
   }
 
+  private onDelete = (branch: Branch) => {
+    dispatcher.closeCurrentFoldout()
+    dispatcher.showPopup({
+      type: PopupType.DeleteBranch,
+      existsOnRemote: true,
+      branch: branch,
+      repository: this.props.repository
+    })
+  }
+
   private onContextMenu = (branch: Branch) => {
     const items: IMenuItem[] = [
       {
         label: "Rename",
         action: () => this.onRename(branch),
+        enabled: true,
+      },
+
+      {type: 'separator'},
+      {
+        label: "Delete",
+        action: () => this.onDelete(branch),
         enabled: true,
       }
     ]
