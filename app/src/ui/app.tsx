@@ -37,13 +37,11 @@ import { RepositoryView } from './repository'
 import { CloningRepositoryView } from './cloning-repository'
 import {
   Toolbar,
-  ToolbarDropdown,
   DropdownState,
   PushPullButton,
   BranchDropdown,
   RevertProgress,
 } from './toolbar'
-import { OcticonSymbol, iconForRepository } from './octicons'
 import { showCertificateTrustDialog, sendReady } from './main-process-proxy'
 import { Welcome } from './welcome'
 import { AppMenuBar } from './app-menu'
@@ -64,8 +62,8 @@ import { BannerType } from '../models/banner'
 import { getUncommittedChangesStrategy } from '../models/uncommitted-changes-strategy'
 import {TagsToolBarButton} from './toolbar/tags-toolbar-button'
 import { AppPopup } from './popups/AppPopup'
-import memoizeOne from 'memoize-one'
 import { KeyEventsHandler } from './key-events-handler'
+import { ToolbarRepositoryButton } from './toolbar/toolbar-repository-button'
 
 const MinuteInMilliseconds = 1000 * 60
 const HourInMilliseconds = MinuteInMilliseconds * 60
@@ -1154,64 +1152,13 @@ export class App extends React.Component<IAppProps, IAppState> {
     shell.showFolderContents(repository.path)
   }
 
-  private onRepositoryDropdownStateChanged = (newState: DropdownState) => {
-    if (newState === 'open') {
-      this.props.dispatcher.showFoldout({ type: FoldoutType.Repository })
-    } else {
-      this.props.dispatcher.closeFoldout(FoldoutType.Repository)
-    }
-  }
-
-  // eslint-disable-next-line @typescript-eslint/member-ordering
-  private foldoutStyle = memoizeOne((sidebarWidth: number): React.CSSProperties => ({
-    position: 'absolute',
-    marginLeft: 0,
-    width: sidebarWidth,
-    minWidth: sidebarWidth,
-    height: '100%',
-    top: 0,
-  }))
-
   private renderRepositoryToolbarButton() {
-    const selection = this.state.selectedState
-
-    const repository = selection ? selection.repository : null
-
-    let icon: OcticonSymbol
-    let title: string
-    if (repository) {
-      icon = iconForRepository(repository)
-      title = repository.name
-    } else if (this.state.repositories.length > 0) {
-      icon = OcticonSymbol.repo
-      title = __DARWIN__ ? 'Select a Repository' : 'Select a repository'
-    } else {
-      icon = OcticonSymbol.repo
-      title = __DARWIN__ ? 'No Repositories' : 'No repositories'
-    }
-
-    const isOpen =
-      this.state.currentFoldout &&
-      this.state.currentFoldout.type === FoldoutType.Repository
-
-    const currentState: DropdownState = isOpen ? 'open' : 'closed'
-
-    const tooltip = repository && !isOpen ? repository.path : undefined
-
-
-
-    return (
-      <ToolbarDropdown
-        icon={icon}
-        title={title}
-        description={__DARWIN__ ? 'Current Repository' : 'Current repository'}
-        tooltip={tooltip}
-        foldoutStyle={this.foldoutStyle(this.state.sidebarWidth)}
-        onDropdownStateChanged={this.onRepositoryDropdownStateChanged}
-        dropdownContentRenderer={this.renderRepositoryList}
-        dropdownState={currentState}
-      />
-    )
+    return <ToolbarRepositoryButton
+      repository={this.state.selectedState?.repository}
+      currentFoldout={this.state.currentFoldout}
+      renderRepositoryList={this.renderRepositoryList}
+      repositoriesCount={this.state.repositories.length}
+    />
   }
 
   private renderPushPullToolbarButton() {
