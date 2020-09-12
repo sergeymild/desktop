@@ -106,7 +106,7 @@ const allMenuIds: ReadonlyArray<MenuIDs> = [
   'discard-all-changes',
   'preferences',
   'update-branch',
-  'compare-to-branch',
+  'commit-changes',
   'merge-branch',
   'rebase-branch',
   'view-repository-on-github',
@@ -118,9 +118,11 @@ const allMenuIds: ReadonlyArray<MenuIDs> = [
   'go-to-commit-message',
   'create-branch',
   'show-changes',
+  'show-stashes',
   'show-history',
   'show-repository-list',
   'show-branches-list',
+  'show-tags',
   'open-working-directory',
   'show-repository-settings',
   'open-external-editor',
@@ -216,10 +218,11 @@ function getRepositoryMenuBuilder(state: IAppState): MenuStateBuilder {
     'show-repository-settings',
     'go-to-commit-message',
     'show-changes',
+    'show-stashes',
     'show-history',
     'show-branches-list',
+    'show-tags',
     'open-external-editor',
-    'compare-to-branch',
   ]
 
   const menuStateBuilder = new MenuStateBuilder()
@@ -246,6 +249,10 @@ function getRepositoryMenuBuilder(state: IAppState): MenuStateBuilder {
     menuStateBuilder.setEnabled(
       'update-branch',
       onNonDefaultBranch && hasDefaultBranch && !onDetachedHead
+    )
+    menuStateBuilder.setEnabled(
+      'commit-changes',
+      hasChangedFiles
     )
     menuStateBuilder.setEnabled('merge-branch', onBranch)
     menuStateBuilder.setEnabled('rebase-branch', onBranch)
@@ -276,8 +283,6 @@ function getRepositoryMenuBuilder(state: IAppState): MenuStateBuilder {
       'discard-all-changes',
       repositoryActive && hasChangedFiles && !rebaseInProgress
     )
-
-    menuStateBuilder.setEnabled('compare-to-branch', !onDetachedHead)
 
     if (
       selectedState &&
@@ -313,7 +318,6 @@ function getRepositoryMenuBuilder(state: IAppState): MenuStateBuilder {
 
     menuStateBuilder.disable('push')
     menuStateBuilder.disable('pull')
-    menuStateBuilder.disable('compare-to-branch')
   }
 
   return menuStateBuilder

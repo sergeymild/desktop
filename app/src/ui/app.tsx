@@ -46,6 +46,7 @@ import { KeyEventsHandler } from './key-events-handler'
 import { ToolbarRepositoryButton } from './toolbar/toolbar-repository-button'
 import { ToolbarBranchButton } from './toolbar/toolbar-branch-button'
 import { ToolbarPushPullButton } from './toolbar/toolbar-push-pull-button'
+import { dispatcher } from './index'
 
 const MinuteInMilliseconds = 1000 * 60
 const HourInMilliseconds = MinuteInMilliseconds * 60
@@ -190,6 +191,8 @@ export class App extends React.Component<IAppProps, IAppState> {
       return
     }
 
+    log.info(`onMenuEvent: '${name}'`)
+
     switch (name) {
       case 'push':
         return this.push()
@@ -199,6 +202,8 @@ export class App extends React.Component<IAppProps, IAppState> {
         return this.pull()
       case 'show-changes':
         return this.showChanges()
+      case 'show-stashes':
+        return this.showStashes()
       case 'show-history':
         return this.showHistory()
       case 'choose-repository':
@@ -209,6 +214,8 @@ export class App extends React.Component<IAppProps, IAppState> {
         return this.showCreateBranch()
       case 'show-branches':
         return this.showBranches()
+      case 'show-tags':
+        return this.showTags()
       case 'remove-repository':
         return this.removeRepository(this.getRepository())
       case 'create-repository':
@@ -225,8 +232,15 @@ export class App extends React.Component<IAppProps, IAppState> {
         return this.openCurrentRepositoryWorkingDirectory()
       case 'update-branch':
         return this.updateBranch()
-      case 'compare-to-branch':
-        return this.showHistory(true)
+      case 'commit-changes':
+        const repository = this.state.selectedState?.repository
+        if (!repository || repository instanceof CloningRepository) {
+          return
+        }
+        return dispatcher.showPopup({
+          type: PopupType.Commit,
+          repository
+        })
       case 'merge-branch':
         return this.mergeBranch()
       case 'rebase-branch':
@@ -244,7 +258,9 @@ export class App extends React.Component<IAppProps, IAppState> {
       case 'show-about':
         return this.showAbout()
       case 'boomtown':
-        return this.boomtown()
+        return setImmediate(() => {
+          throw new Error('Boomtown!')
+        })
       case 'go-to-commit-message':
         return this.goToCommitMessage()
       case 'open-pull-request':
@@ -258,7 +274,8 @@ export class App extends React.Component<IAppProps, IAppState> {
       case 'show-release-notes-popup':
         return this.showFakeReleaseNotesPopup()
       case 'test-prune-branches':
-        return this.testPruneBranches()
+        if (!__DEV__) { return }
+        return this.props.appStore._testPruneBranches()
       case 'find-text':
         return this.findText()
       default:
@@ -321,14 +338,6 @@ export class App extends React.Component<IAppProps, IAppState> {
     }
   }
 
-  private testPruneBranches() {
-    if (!__DEV__) {
-      return
-    }
-
-    this.props.appStore._testPruneBranches()
-  }
-
   /**
    * Handler for the 'select-all' menu event, dispatches
    * a custom DOM event originating from the element which
@@ -370,12 +379,6 @@ export class App extends React.Component<IAppProps, IAppState> {
     } else {
       document.dispatchEvent(event)
     }
-  }
-
-  private boomtown() {
-    setImmediate(() => {
-      throw new Error('Boomtown!')
-    })
   }
 
   private async goToCommitMessage() {
@@ -584,6 +587,19 @@ export class App extends React.Component<IAppProps, IAppState> {
     )
   }
 
+  private showStashes() {
+    const state = this.state.selectedState
+    if (state == null || state.type !== SelectionType.Repository) {
+      return
+    }
+
+    this.props.dispatcher.closeCurrentFoldout()
+    return this.props.dispatcher.changeRepositorySection(
+      state.repository,
+      RepositorySectionTab.Stash
+    )
+  }
+
   private chooseRepository() {
     if (
       this.state.currentFoldout &&
@@ -611,6 +627,22 @@ export class App extends React.Component<IAppProps, IAppState> {
     }
 
     return this.props.dispatcher.showFoldout({ type: FoldoutType.Branch })
+  }
+
+  private showTags() {
+    const state = this.state.selectedState
+    if (state == null || state.type !== SelectionType.Repository) {
+      return
+    }
+
+    if (
+      this.state.currentFoldout &&
+      this.state.currentFoldout.type === FoldoutType.Tags
+    ) {
+      return this.props.dispatcher.closeFoldout(FoldoutType.Tags)
+    }
+
+    return this.props.dispatcher.showFoldout({ type: FoldoutType.Tags })
   }
 
   private push(options?: { forceWithLease: boolean }) {
@@ -1346,12 +1378,6 @@ export class App extends React.Component<IAppProps, IAppState> {
       ? ApplicationTheme.Light
       : this.state.selectedTheme
 
-    let repository: Repository | null = null
-    const repo = this.state.selectedState?.repository
-    if (repo instanceof Repository) {
-      repository = repo
-    }
-
     return (
       <div id="desktop-app-chrome" className={className}>
         <AppTheme theme={currentTheme} />
@@ -1365,7 +1391,6 @@ export class App extends React.Component<IAppProps, IAppState> {
           appMenuState={this.state.appMenuState}
           currentFoldout={this.state.currentFoldout}
           isShowingModal={this.isShowingModal}
-          repository={repository}
         />
       </div>
     )

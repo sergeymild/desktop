@@ -3,14 +3,11 @@ import { shouldRenderApplicationMenu } from './lib/features'
 import { Foldout, FoldoutType } from '../lib/app-state'
 import { findItemByAccessKey, IMenu, itemIsSelectable } from '../models/app-menu'
 import { dispatcher } from './index'
-import { Repository } from '../models/repository'
-import { PopupType } from '../models/popup'
 
 interface IProps {
   readonly isShowingModal: boolean
   readonly currentFoldout: Foldout | null
   readonly appMenuState: ReadonlyArray<IMenu>
-  readonly repository: Repository | null
 }
 
 export class KeyEventsHandler extends React.PureComponent<IProps, {}> {
@@ -110,14 +107,6 @@ export class KeyEventsHandler extends React.PureComponent<IProps, {}> {
    */
   private onWindowKeyUp = (event: KeyboardEvent) => {
     if (event.defaultPrevented) {
-      return
-    }
-
-    // show commit dialog
-    if (event.key === "c" && !this.props.isShowingModal) {
-      const repository = this.props.repository
-      if (!repository) { return }
-      dispatcher.showPopup({type: PopupType.Commit, repository})
       return
     }
 

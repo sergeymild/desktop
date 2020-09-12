@@ -50,21 +50,16 @@ export async function findEditorOrDefault(
   name: string | null
 ): Promise<IFoundEditor<ExternalEditor> | null> {
   const editors = await getAvailableEditors()
-  if (editors.length === 0) {
-    return null
+  if (editors.length === 0) { return null }
+  if (!name) { return editors[0] }
+
+  const match = editors.find(p => p.editor === name) || null
+  if (!match) {
+    const menuItemName = __DARWIN__ ? 'Preferences' : 'Options'
+    const message = `The editor '${name}' could not be found. Please open ${menuItemName} and choose an available editor.`
+
+    throw new ExternalEditorError(message, { openPreferences: true })
   }
 
-  if (name) {
-    const match = editors.find(p => p.editor === name) || null
-    if (!match) {
-      const menuItemName = __DARWIN__ ? 'Preferences' : 'Options'
-      const message = `The editor '${name}' could not be found. Please open ${menuItemName} and choose an available editor.`
-
-      throw new ExternalEditorError(message, { openPreferences: true })
-    }
-
-    return match
-  }
-
-  return editors[0]
+  return match
 }

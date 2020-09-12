@@ -182,9 +182,15 @@ export function buildDefaultMenu({
         click: emit('show-history'),
       },
       {
+        label: __DARWIN__ ? 'Show Stashes' : '&Stashes',
+        id: 'show-stashes',
+        accelerator: 'CmdOrCtrl+3',
+        click: emit('show-stashes'),
+      },
+      {
         label: __DARWIN__ ? 'Show Repository List' : 'Repository &list',
         id: 'show-repository-list',
-        accelerator: 'CmdOrCtrl+T',
+        accelerator: 'CmdOrCtrl+L',
         click: emit('choose-repository'),
       },
       {
@@ -192,6 +198,12 @@ export function buildDefaultMenu({
         id: 'show-branches-list',
         accelerator: 'CmdOrCtrl+B',
         click: emit('show-branches'),
+      },
+      {
+        label: __DARWIN__ ? 'Show Tags List' : '&Tags list',
+        id: 'show-tags',
+        accelerator: 'CmdOrCtrl+T',
+        click: emit('show-tags'),
       },
       separator,
       {
@@ -362,17 +374,19 @@ export function buildDefaultMenu({
       separator,
       {
         label: __DARWIN__
+          ? `Commit changes`
+          : `&Commit changes`,
+        id: 'commit-changes',
+        accelerator: 'CmdOrCtrl+Shift+C',
+        click: emit('commit-changes'),
+      },
+      {
+        label: __DARWIN__
           ? `Update from ${defaultBranchName}`
           : `&Update from ${defaultBranchName}`,
         id: 'update-branch',
         accelerator: 'CmdOrCtrl+Shift+U',
         click: emit('update-branch'),
-      },
-      {
-        label: __DARWIN__ ? 'Compare to Branch' : '&Compare to branch',
-        id: 'compare-to-branch',
-        accelerator: 'CmdOrCtrl+Shift+B',
-        click: emit('compare-to-branch'),
       },
       {
         label: __DARWIN__
@@ -385,7 +399,7 @@ export function buildDefaultMenu({
       {
         label: __DARWIN__
           ? 'Rebase Current Branch…'
-          : 'R&ebase current branch…',
+          : 'R&rebase current branch…',
         id: 'rebase-branch',
         accelerator: 'CmdOrCtrl+Shift+E',
         click: emit('rebase-branch'),
