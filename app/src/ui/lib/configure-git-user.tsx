@@ -4,14 +4,14 @@ import { lookupPreferredEmail } from '../../lib/email'
 import {
   getGlobalConfigValue,
   setGlobalConfigValue,
-} from '../../lib/git/config'
+} from '../../lib/git'
 import { CommitListItem } from '../history/commit-list-item'
 import { Account } from '../../models/account'
 import { CommitIdentity } from '../../models/commit-identity'
-import { Form } from '../lib/form'
-import { Button } from '../lib/button'
-import { TextBox } from '../lib/text-box'
-import { Row } from '../lib/row'
+import { Form } from './form'
+import { Button } from './button'
+import { TextBox } from './text-box'
+import { Row } from './row'
 import {
   isConfigFileLockError,
   parseConfigLockFilePathFromError,

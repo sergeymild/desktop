@@ -289,53 +289,59 @@ export class App extends React.Component<IAppProps, IAppState> {
    * about a new release being available.
    */
   private showFakeReleaseNotesPopup() {
-    if (__DEV__) {
-      this.props.dispatcher.showPopup({
-        type: PopupType.ReleaseNotes,
-        newRelease: {
-          latestVersion: '42.7.99',
-          datePublished: 'Awesomeber 71, 2025',
-          pretext:
-            'There is something so different here that we wanted to include some pretext for it',
-          enhancements: [
-            {
-              kind: 'new',
-              message: 'An awesome new feature!',
-            },
-            {
-              kind: 'improved',
-              message: 'This is so much better',
-            },
-            {
-              kind: 'improved',
-              message:
-                'Testing links to profile pages by a mention to @shiftkey',
-            },
-          ],
-          bugfixes: [
-            {
-              kind: 'fixed',
-              message: 'Fixed this one thing',
-            },
-            {
-              kind: 'fixed',
-              message: 'Fixed this thing over here too',
-            },
-            {
-              kind: 'fixed',
-              message:
-                'Testing links to issues by calling out #42. Assuming it is fixed by now.',
-            },
-          ],
-          other: [
-            {
-              kind: 'other',
-              message: 'In other news...',
-            },
-          ],
-        },
-      })
-    }
+    this.props.dispatcher.showPopup({
+      type: PopupType.ReleaseNotes,
+      newRelease: {
+        latestVersion: '42.7.99',
+        datePublished: 'Awesomeber 71, 2025',
+        pretext:
+          'There is something so different here that we wanted to include some pretext for it',
+        enhancements: [
+          {
+            kind: 'new',
+            message: 'Tags list',
+          },
+          {
+            kind: 'new',
+            message: 'Stashes tab',
+          },
+          {
+            kind: 'new',
+            message: 'Quick stash and discard buttons',
+          },
+          {
+            kind: 'new',
+            message: 'Delete branch option in branch context menu',
+          },
+
+          {
+            kind: 'new',
+            message: 'Create branch here in history context menu',
+          },
+          {
+            kind: 'new',
+            message: 'Reset to this commit in history context menu',
+          },
+          {
+            kind: 'new',
+            message: 'On clear branch new merge into button',
+          },
+          {
+            kind: 'new',
+            message: 'On clear branch new cherry-pick into button',
+          },
+        ],
+        bugfixes: [
+
+        ],
+        other: [
+          {
+            kind: 'other',
+            message: 'Some performance improvements...',
+          },
+        ],
+      },
+    })
   }
 
   /**

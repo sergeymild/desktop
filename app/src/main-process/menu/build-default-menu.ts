@@ -496,6 +496,11 @@ export function buildDefaultMenu({
     showLogsItem,
   ]
 
+  helpItems.push({
+    label: 'Release notes',
+    click: emit('show-release-notes-popup')
+  })
+
   if (__DEV__) {
     helpItems.push(
       separator,
@@ -508,15 +513,6 @@ export function buildDefaultMenu({
       {
         label: 'Crash renderer process…',
         click: emit('boomtown'),
-      },
-      {
-        label: 'Show popup',
-        submenu: [
-          {
-            label: 'Release notes',
-            click: emit('show-release-notes-popup'),
-          },
-        ],
       },
       {
         label: 'Prune branches',
