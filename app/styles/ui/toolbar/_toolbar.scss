@@ -98,3 +98,24 @@
     }
   }
 }
+
+.toolbar-button-new {
+  .button-component {
+    min-width: var(--toolbar-height);
+    flex-direction: column-reverse;
+    justify-content: center;
+
+    .icon {
+      margin-right: 0;
+      margin-top: 4px;
+    }
+
+    .text {
+      margin-right: 0;
+    }
+
+    &:disabled {
+      .icon, .text { color: var(--toolbar-button-secondary-color) }
+    }
+  }
+}

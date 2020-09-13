@@ -47,6 +47,8 @@ import { ToolbarRepositoryButton } from './toolbar/toolbar-repository-button'
 import { ToolbarBranchButton } from './toolbar/toolbar-branch-button'
 import { ToolbarPushPullButton } from './toolbar/toolbar-push-pull-button'
 import { dispatcher } from './index'
+import { ToolbarPullButton } from './toolbar/toolbar-pull-button'
+import { ToolbarPushButton } from './toolbar/toolbar-push-button'
 
 const MinuteInMilliseconds = 1000 * 60
 const HourInMilliseconds = MinuteInMilliseconds * 60
@@ -651,7 +653,7 @@ export class App extends React.Component<IAppProps, IAppState> {
     return this.props.dispatcher.showFoldout({ type: FoldoutType.Tags })
   }
 
-  private push(options?: { forceWithLease: boolean }) {
+  private push = (options?: { forceWithLease: boolean }) => {
     const state = this.state.selectedState
     if (state == null || state.type !== SelectionType.Repository) {
       return
@@ -664,7 +666,7 @@ export class App extends React.Component<IAppProps, IAppState> {
     }
   }
 
-  private async pull() {
+  private pull = async () => {
     const state = this.state.selectedState
     if (state == null || state.type !== SelectionType.Repository) {
       return
@@ -1283,8 +1285,36 @@ export class App extends React.Component<IAppProps, IAppState> {
         {this.renderBranchToolbarButton()}
         {this.renderTagsToolbarButton()}
         {this.renderPushPullToolbarButton()}
+        {this.renderToolbarPullButton()}
+        {this.renderToolbarPushButton()}
       </Toolbar>
     )
+  }
+
+  private renderToolbarPullButton() {
+    let isRefreshing = false
+    const selection = this.state.selectedState
+    if (selection && selection.type === SelectionType.Repository) {
+      isRefreshing = selection.state.isPushPullFetchInProgress
+    }
+
+    return <ToolbarPullButton
+      tipKind={selection?.state?.branchesState.tip.kind}
+      repository={selection?.repository}
+      isRefreshing={isRefreshing}/>
+  }
+
+  private renderToolbarPushButton() {
+    let isRefreshing = false
+    const selection = this.state.selectedState
+    if (selection && selection.type === SelectionType.Repository) {
+      isRefreshing = selection.state.isPushPullFetchInProgress
+    }
+
+    return <ToolbarPushButton
+      tipKind={selection?.state?.branchesState.tip.kind}
+      repository={selection?.repository}
+      isRefreshing={isRefreshing}/>
   }
 
   private renderRepository() {

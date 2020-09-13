@@ -63,6 +63,8 @@ function renderAheadBehind(aheadBehind: IAheadBehind, numTagsToPush: number) {
     return null
   }
 
+  console.log(`renderAheadBehind ahead: ${ahead}, numTagsToPush: ${numTagsToPush}`, )
+
   const content = new Array<JSX.Element>()
   if (ahead > 0 || numTagsToPush > 0) {
     content.push(
