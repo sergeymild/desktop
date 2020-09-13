@@ -15,6 +15,7 @@
     "strict": true,
     "noEmit": true,
     "outDir": "./out",
+    "experimentalDecorators": true,
     "lib": ["ES2017", "DOM", "DOM.Iterable", "ES2018.Promise"]
   },
   "plugins": [

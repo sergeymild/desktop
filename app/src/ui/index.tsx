@@ -6,7 +6,7 @@ import * as Path from 'path'
 
 import * as moment from 'moment'
 
-import { ipcRenderer, remote } from 'electron'
+import {  ipcRenderer, remote } from 'electron'
 
 import { App } from './app'
 import {
@@ -59,7 +59,7 @@ import {
 import { RepositoryStateCache } from '../lib/stores/repository-state-cache'
 import { ApiRepositoriesStore } from '../lib/stores/api-repositories-store'
 import { CommitStatusStore } from '../lib/stores/commit-status-store'
-import { PullRequestCoordinator } from '../lib/stores/pull-request-coordinator'
+import { PullRequestCoordinator } from '../lib/stores'
 
 // We're using a polyfill for the upcoming CSS4 `:focus-ring` pseudo-selector.
 // This allows us to not have to override default accessibility driven focus
@@ -119,7 +119,7 @@ let lastUnhandledRejectionTime: Date | null = null
 const sendErrorWithContext = (
   error: Error,
   context: { [key: string]: string } = {},
-  nonFatal?: boolean
+  nonFatal?: boolean,
 ) => {
   error = withSourceMappedStack(error)
 
@@ -127,7 +127,7 @@ const sendErrorWithContext = (
 
   if (__DEV__ || process.env.TEST_ENV) {
     console.error(
-      `An uncaught exception was thrown. If this were a production build it would be reported to Central. Instead, maybe give it a lil lookyloo.`
+      `An uncaught exception was thrown. If this were a production build it would be reported to Central. Instead, maybe give it a lil lookyloo.`,
     )
   } else {
     const extra: Record<string, string> = {
@@ -203,7 +203,7 @@ process.on(
   'send-non-fatal-exception',
   (error: Error, context?: { [key: string]: string }) => {
     sendErrorWithContext(error, context, true)
-  }
+  },
 )
 
 /**
@@ -232,7 +232,7 @@ window.addEventListener('unhandledrejection', ev => {
 })
 
 const gitHubUserStore = new GitHubUserStore(
-  new GitHubUserDatabase('GitHubUserDatabase')
+  new GitHubUserDatabase('GitHubUserDatabase'),
 )
 const cloningRepositoriesStore = new CloningRepositoriesStore()
 const issuesStore = new IssuesStore(new IssuesDatabase('IssuesDatabase'))
@@ -240,17 +240,17 @@ const signInStore = new SignInStore()
 
 const accountsStore = new AccountsStore(localStorage, TokenStore)
 const repositoriesStore = new RepositoriesStore(
-  new RepositoriesDatabase('Database')
+  new RepositoriesDatabase('Database'),
 )
 
 const pullRequestStore = new PullRequestStore(
   new PullRequestDatabase('PullRequestDatabase'),
-  repositoriesStore
+  repositoriesStore,
 )
 
 const pullRequestCoordinator = new PullRequestCoordinator(
   pullRequestStore,
-  repositoriesStore
+  repositoriesStore,
 )
 
 const repositoryStateManager = new RepositoryStateCache()
@@ -268,7 +268,7 @@ const appStore = new AppStore(
   repositoriesStore,
   pullRequestCoordinator,
   repositoryStateManager,
-  apiRepositoriesStore
+  apiRepositoriesStore,
 )
 
 appStore.onDidUpdate(state => {
@@ -278,7 +278,7 @@ appStore.onDidUpdate(state => {
 const dispatcher = new Dispatcher(
   appStore,
   repositoryStateManager,
-  commitStatusStore
+  commitStatusStore,
 )
 
 dispatcher.registerErrorHandler(defaultErrorHandler)
