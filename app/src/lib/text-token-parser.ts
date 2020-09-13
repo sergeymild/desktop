@@ -12,22 +12,10 @@ export enum TokenType {
    */
   Text,
   /*
-   * A token representing an emoji character - should be replaced with an image.
-   */
-  Emoji,
-  /*
    * A token representing a generic link - should be drawn as a hyperlink
    * to launch the browser.
    */
   Link,
-}
-
-export type EmojiMatch = {
-  readonly kind: TokenType.Emoji
-  // The alternate text to display with the image, e.g. ':+1:'
-  readonly text: string
-  // The path on disk to the image.
-  readonly path: string
 }
 
 export type HyperlinkMatch = {
@@ -44,25 +32,22 @@ export type PlainText = {
   readonly text: string
 }
 
-export type TokenResult = PlainText | EmojiMatch | HyperlinkMatch
+export type TokenResult = PlainText | HyperlinkMatch
 
 type LookupResult = {
   nextIndex: number
 }
 
 /**
- * A look-ahead tokenizer designed for scanning commit messages for emoji, issues, mentions and links.
+ * A look-ahead tokenizer designed for scanning commit messages for issues, mentions and links.
  */
 export class Tokenizer {
-  private readonly emoji: Map<string, string>
   private readonly repository: GitHubRepository | null = null
 
   private _results = new Array<TokenResult>()
   private _currentString = ''
 
-  public constructor(emoji: Map<string, string>, repository?: Repository) {
-    this.emoji = emoji
-
+  public constructor(repository?: Repository) {
     if (repository && isRepositoryWithGitHubRepository(repository)) {
       this.repository = getNonForkGitHubRepository(repository)
     }
@@ -111,23 +96,6 @@ export class Tokenizer {
 
     // as a fallback use the entire remaining string
     return text.length
-  }
-
-  private scanForEmoji(text: string, index: number): LookupResult | null {
-    const nextIndex = this.scanForEndOfWord(text, index)
-    const maybeEmoji = text.slice(index, nextIndex)
-    if (!/^:.*?:$/.test(maybeEmoji)) {
-      return null
-    }
-
-    const path = this.emoji.get(maybeEmoji)
-    if (!path) {
-      return null
-    }
-
-    this.flush()
-    this._results.push({ kind: TokenType.Emoji, text: maybeEmoji, path })
-    return { nextIndex }
   }
 
   private scanForIssue(
@@ -270,10 +238,6 @@ export class Tokenizer {
     while (i < text.length) {
       const element = text[i]
       switch (element) {
-        case ':':
-          i = this.inspectAndMove(element, i, () => this.scanForEmoji(text, i))
-          break
-
         case 'h':
           i = this.inspectAndMove(element, i, () =>
             this.scanForHyperlink(text, i)
@@ -299,10 +263,6 @@ export class Tokenizer {
     while (i < text.length) {
       const element = text[i]
       switch (element) {
-        case ':':
-          i = this.inspectAndMove(element, i, () => this.scanForEmoji(text, i))
-          break
-
         case '#':
           i = this.inspectAndMove(element, i, () =>
             this.scanForIssue(text, i, repository)

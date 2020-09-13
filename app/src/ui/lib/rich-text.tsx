@@ -9,9 +9,6 @@ import memoizeOne from 'memoize-one'
 interface IRichTextProps {
   readonly className?: string
 
-  /** A lookup of emoji characters to map to image resources */
-  readonly emoji: Map<string, string>
-
   /**
    * The raw text to inspect for things to highlight or an array
    * of tokens already compiled by the `Tokenizer` class in
@@ -33,25 +30,15 @@ interface IRichTextProps {
 }
 
 function getElements(
-  emoji: Map<string, string>,
   repository: Repository | undefined,
   renderUrlsAsLinks: boolean | undefined,
   text: string | ReadonlyArray<TokenResult>
 ) {
-  const tokenizer = new Tokenizer(emoji, repository)
+  const tokenizer = new Tokenizer(repository)
   const tokens = typeof text === 'string' ? tokenizer.tokenize(text) : text
 
   return tokens.map((token, index) => {
     switch (token.kind) {
-      case TokenType.Emoji:
-        return (
-          <img
-            key={index}
-            alt={token.text}
-            className="emoji"
-            src={token.path}
-          />
-        )
       case TokenType.Link:
         if (renderUrlsAsLinks !== false) {
           return (
@@ -71,7 +58,7 @@ function getElements(
 }
 
 /**
- * A component which replaces any emoji shortcuts (e.g., :+1:) in its child text
+ * A component which replaces any shortcuts (e.g., :+1:) in its child text
  * with the appropriate image tag, and also highlights username and issue mentions
  * with hyperlink tags if it has a repository to read.
  */
@@ -82,7 +69,7 @@ export class RichText extends React.Component<IRichTextProps, {}> {
   )
 
   public render() {
-    const { emoji, repository, renderUrlsAsLinks, text } = this.props
+    const { repository, renderUrlsAsLinks, text } = this.props
 
     // If we've been given an empty string then return null so that we don't end
     // up introducing an extra empty <span>.
@@ -92,7 +79,7 @@ export class RichText extends React.Component<IRichTextProps, {}> {
 
     return (
       <div className={this.props.className} title={this.getTitle(text)}>
-        {this.getElements(emoji, repository, renderUrlsAsLinks, text)}
+        {this.getElements(repository, renderUrlsAsLinks, text)}
       </div>
     )
   }

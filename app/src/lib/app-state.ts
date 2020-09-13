@@ -131,9 +131,6 @@ export interface IAppState {
 
   readonly errors: ReadonlyArray<Error>
 
-  /** Map from the emoji shortcut (e.g., :+1:) to the image's local path. */
-  readonly emoji: Map<string, string>
-
   /**
    * The width of the repository sidebar.
    *

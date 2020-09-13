@@ -12,9 +12,6 @@ interface IUndoCommitProps {
   /** The commit to undo. */
   readonly commit: Commit
 
-  /** The emoji cache to use when rendering the commit message */
-  readonly emoji: Map<string, string>
-
   /** whether a push, pull or fetch is in progress */
   readonly isPushPullFetchInProgress: boolean
 
@@ -39,7 +36,6 @@ export class UndoCommit extends React.Component<IUndoCommitProps, {}> {
             Committed <RelativeTime date={authorDate} />
           </div>
           <RichText
-            emoji={this.props.emoji}
             className="summary"
             text={this.props.commit.summary}
             renderUrlsAsLinks={false}

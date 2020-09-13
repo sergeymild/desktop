@@ -32,7 +32,6 @@ import { SeamlessDiffSwitcher } from '../diff/seamless-diff-switcher'
 interface ISelectedCommitProps {
   readonly repository: Repository
   readonly dispatcher: Dispatcher
-  readonly emoji: Map<string, string>
   readonly selectedCommit: Commit | null
   readonly changedFiles: ReadonlyArray<CommittedFileChange>
   readonly selectedFile: CommittedFileChange | null
@@ -148,7 +147,6 @@ export class SelectedCommit extends React.Component<
       <CommitSummary
         commit={commit}
         files={this.props.changedFiles}
-        emoji={this.props.emoji}
         repository={this.props.repository}
         onExpandChanged={this.onExpandChanged}
         isExpanded={this.state.isExpanded}

@@ -3727,7 +3727,6 @@ merged
 +  >()
    public readonly gitHubUserStore: GitHubUserStore
    private readonly cloningRepositoriesStore: CloningRepositoriesStore
-   private readonly emojiStore: EmojiStore
 @@ -235,9 +270,11 @@
      | ((repository: Repository | null) => void)
      | null = null

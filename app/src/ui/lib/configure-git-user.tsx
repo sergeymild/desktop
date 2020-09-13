@@ -159,7 +159,6 @@ export class ConfigureGitUser extends React.Component<
       [],
       []
     )
-    const emoji = new Map()
 
     const error =
       this.state.existingLockFilePath !== undefined ? (
@@ -200,7 +199,6 @@ export class ConfigureGitUser extends React.Component<
 
           <CommitListItem
             commit={dummyCommit}
-            emoji={emoji}
             gitHubRepository={null}
             isLocal={false}
             showUnpushedIndicator={false}

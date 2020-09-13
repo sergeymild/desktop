@@ -25,9 +25,6 @@ interface ICommitListProps {
   /** The SHA of the selected commit */
   readonly selectedSHA: string | null
 
-  /** The emoji lookup to render images inline */
-  readonly emoji: Map<string, string>
-
   /** The list of known local commits for the current branch */
   readonly localCommitSHAs: ReadonlyArray<string>
 
@@ -120,7 +117,6 @@ export class CommitList extends React.Component<ICommitListProps, {}> {
         )}
         unpushedTags={unpushedTags}
         commit={commit}
-        emoji={this.props.emoji}
         onCreateTag={this.props.onCreateTag}
         onDeleteTag={this.props.onDeleteTag}
         onRevertCommit={this.props.onRevertCommit}

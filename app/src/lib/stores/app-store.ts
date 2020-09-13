@@ -44,7 +44,6 @@ import { ICheckoutProgress, IFetchProgress, IRebaseProgress, IRevertProgress, Pr
 import { Popup, PopupType } from '../../models/popup'
 import { IGitAccount } from '../../models/git-account'
 import { themeChangeMonitor } from '../../ui/lib/theme-change-monitor'
-import { getAppPath } from '../../ui/lib/app-proxy'
 import {
   ApplicationTheme,
   getAutoSwitchPersistedTheme,
@@ -145,7 +144,6 @@ import { BackgroundFetcher } from './helpers/background-fetcher'
 import { inferComparisonBranch } from './helpers/infer-comparison-branch'
 import { validatedRepositoryPath } from './helpers/validated-repository-path'
 import { RepositoryStateCache } from './repository-state-cache'
-import { readEmoji } from '../read-emoji'
 import { GitStoreCache } from './git-store-cache'
 import { GitErrorContext } from '../git-error-context'
 import { getBoolean, getNumber, getNumberArray, setBoolean, setNumber, setNumberArray } from '../local-storage'
@@ -277,9 +275,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     number,
     ILocalRepositoryState
   >()
-
-  /** Map from shortcut (e.g., :+1:) to on disk URL. */
-  private emoji = new Map<string, string>()
 
   /**
    * The Application menu as an AppMenu instance or null if
@@ -453,19 +448,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     this.apiRepositoriesStore.onDidError(error => this.emitError(error))
   }
 
-  /** Load the emoji from disk. */
-  public loadEmoji() {
-    const rootDir = getAppPath()
-    readEmoji(rootDir)
-      .then(emoji => {
-        this.emoji = emoji
-        this.emitUpdate()
-      })
-      .catch(err => {
-        log.warn(`Unexpected issue when trying to read emoji into memory`, err)
-      })
-  }
-
   protected emitUpdate() {
     // If the window is hidden then we won't get an animation frame, but there
     // may still be work we wanna do in response to the state change. So
@@ -564,7 +546,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
       errors: this.errors,
       showWelcomeFlow: this.showWelcomeFlow,
       focusCommitMessage: this.focusCommitMessage,
-      emoji: this.emoji,
       sidebarWidth: this.sidebarWidth,
       commitSummaryWidth: this.commitSummaryWidth,
       stashedFilesWidth: this.stashedFilesWidth,

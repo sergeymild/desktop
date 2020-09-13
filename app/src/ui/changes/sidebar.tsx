@@ -20,7 +20,6 @@ import { Commit, ICommitContext } from '../../models/commit'
 import { UndoCommit } from './undo-commit'
 import {
   IAutocompletionProvider,
-  EmojiAutocompletionProvider,
   IssuesAutocompletionProvider,
   UserAutocompletionProvider,
 } from '../autocompletion'
@@ -49,7 +48,6 @@ interface IChangesSidebarProps {
   readonly dispatcher: Dispatcher
 
   readonly branch: string | null
-  readonly emoji: Map<string, string>
   readonly mostRecentLocalCommit: Commit | null
   readonly issuesStore: IssuesStore
   readonly availableWidth: number
@@ -89,13 +87,10 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
   private receiveProps(props: IChangesSidebarProps) {
     if (
       this.autocompletionProviders === null ||
-      this.props.emoji.size === 0 ||
       props.repository.hash !== this.props.repository.hash ||
       props.accounts !== this.props.accounts
     ) {
-      const autocompletionProviders: IAutocompletionProvider<any>[] = [
-        new EmojiAutocompletionProvider(props.emoji),
-      ]
+      const autocompletionProviders: IAutocompletionProvider<any>[] = []
 
       // Issues autocompletion is only available for GitHub repositories.
       const { repository } = props
@@ -330,7 +325,6 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
             isPushPullFetchInProgress={this.props.isPushPullFetchInProgress}
             commit={commit}
             onUndo={this.onUndo}
-            emoji={this.props.emoji}
             isCommitting={this.props.isCommitting}
           />
         </CSSTransition>

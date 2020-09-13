@@ -25,7 +25,6 @@ import { dispatcher } from '../index'
 interface IRebaseFlowProps {
   readonly repository: Repository
   readonly dispatcher: Dispatcher
-  readonly emoji: Map<string, string>
 
   /** The current state of the working directory */
   readonly workingDirectory: WorkingDirectoryStatus
@@ -167,7 +166,7 @@ export class RebaseFlow extends React.Component<IRebaseFlowProps> {
         )
       }
       case RebaseStep.ShowProgress:
-        const { progress, emoji } = this.props
+        const { progress } = this.props
 
         if (progress === null) {
           log.error(
@@ -176,7 +175,7 @@ export class RebaseFlow extends React.Component<IRebaseFlowProps> {
           return null
         }
 
-        return <RebaseProgressDialog progress={progress} emoji={emoji} />
+        return <RebaseProgressDialog progress={progress} />
       case RebaseStep.ShowConflicts: {
         const {
           repository,

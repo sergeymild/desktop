@@ -33,7 +33,6 @@ interface IRepositoryViewProps {
   readonly repository: Repository
   readonly state: IRepositoryState
   readonly dispatcher: Dispatcher
-  readonly emoji: Map<string, string>
   readonly sidebarWidth: number
   readonly commitSummaryWidth: number
   readonly stashedFilesWidth: number
@@ -199,7 +198,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
         dispatcher={this.props.dispatcher}
         changes={this.props.state.changesState}
         branch={branchName}
-        emoji={this.props.emoji}
         mostRecentLocalCommit={mostRecentLocalCommit}
         issuesStore={this.props.issuesStore}
         availableWidth={availableWidth}
@@ -246,7 +244,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
         compareState={this.props.state.compareState}
         selectedCommitSha={this.props.state.commitSelection.sha}
         currentBranch={currentBranch}
-        emoji={this.props.emoji}
         commitLookup={this.props.state.commitLookup}
         localCommitSHAs={this.props.state.localCommitSHAs}
         localTags={this.props.state.localTags}
@@ -329,7 +326,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
         changedFiles={changedFiles}
         selectedFile={file}
         currentDiff={diff}
-        emoji={this.props.emoji}
         commitSummaryWidth={this.props.commitSummaryWidth}
         selectedDiffType={this.props.imageDiffType}
         externalEditorLabel={this.props.externalEditorLabel}

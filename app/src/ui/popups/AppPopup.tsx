@@ -93,8 +93,6 @@ interface IProps {
   readonly selectedTheme: ApplicationTheme
   /** Whether we should automatically change the currently selected appearance (aka theme) */
   readonly automaticallySwitchTheme: boolean
-  /** Map from the emoji shortcut (e.g., :+1:) to the image's local path. */
-  readonly emoji: Map<string, string>
   /**
    * The state of the ongoing (if any) sign in process. See SignInState
    * and SignInStore for more details. Null if no current sign in flow
@@ -158,7 +156,6 @@ export const AppPopup: React.FC<IProps> = (
     selectedTheme,
     automaticallySwitchTheme,
     repositoryStateManager,
-    emoji,
     signInState,
     selectedCloneRepositoryTab,
     apiRepositories,
@@ -335,7 +332,6 @@ export const AppPopup: React.FC<IProps> = (
           currentBranch={currentBranch}
           onDismissed={onPopupDismissedFn}
           dispatcher={dispatcher}
-          emoji={emoji}
         />
       )
     }
@@ -621,7 +617,6 @@ export const AppPopup: React.FC<IProps> = (
       return (
         <ReleaseNotes
           key="release-notes"
-          emoji={emoji}
           newRelease={popup.newRelease}
           onDismissed={onPopupDismissedFn}
         />
@@ -767,7 +762,6 @@ export const AppPopup: React.FC<IProps> = (
           resolvedExternalEditor={resolvedExternalEditor}
           openRepositoryInShell={openCurrentRepositoryInShell}
           onShowRebaseConflictsBanner={onShowRebaseConflictsBanner}
-          emoji={emoji}
         />
       )
     }

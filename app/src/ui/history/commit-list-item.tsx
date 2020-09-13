@@ -21,7 +21,6 @@ import { ResetCommitType } from '../../lib/git'
 interface ICommitProps {
   readonly gitHubRepository: GitHubRepository | null
   readonly commit: Commit
-  readonly emoji: Map<string, string>
   readonly isLocal: boolean
   readonly dispatcher?: Dispatcher
   readonly repository?: Repository
@@ -76,7 +75,6 @@ export class CommitListItem extends React.PureComponent<
         <div className="info">
           <RichText
             className="summary"
-            emoji={this.props.emoji}
             text={commit.summary}
             renderUrlsAsLinks={false}
           />

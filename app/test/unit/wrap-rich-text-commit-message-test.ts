@@ -8,7 +8,6 @@ import { gitHubRepoFixture } from '../helpers/github-repo-builder'
 import { Repository } from '../../src/models/repository'
 
 describe('wrapRichTextCommitMessage', () => {
-  const emojis = new Map<string, string>()
   const repo = new Repository(
     '.',
     -1,
@@ -18,7 +17,7 @@ describe('wrapRichTextCommitMessage', () => {
     }),
     false
   )
-  const tokenizer = new Tokenizer(emojis, repo)
+  const tokenizer = new Tokenizer(repo)
 
   /** helper */
   function wrap(summary: string, body: string = '') {

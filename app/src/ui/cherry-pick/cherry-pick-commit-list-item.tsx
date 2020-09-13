@@ -19,7 +19,6 @@ interface ICherryPickCommitListItemProps {
   readonly commit: ICommitItem,
   readonly matches: IMatches,
   readonly gitHubRepository: GitHubRepository | null
-  readonly emoji: Map<string, string>
 }
 
 export class CherryPickCommitListItem extends React.Component<ICherryPickCommitListItemProps,{}> {
@@ -39,7 +38,6 @@ export class CherryPickCommitListItem extends React.Component<ICherryPickCommitL
         <div className="info">
           <RichText
             className="summary"
-            emoji={this.props.emoji}
             text={this.props.commit.commit.summary}
             renderUrlsAsLinks={false}
           />

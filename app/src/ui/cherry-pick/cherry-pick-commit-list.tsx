@@ -15,7 +15,6 @@ interface ICherryPickCommitListProps {
   readonly currentBranch: Branch
   readonly repository: Repository
   readonly gitHubRepository: GitHubRepository | null
-  readonly emoji: Map<string, string>
   readonly dispatcher: Dispatcher
   readonly onDismissed: () => void
 }
@@ -82,7 +81,6 @@ export class CherryPickCommitList extends React.Component<ICherryPickCommitListP
         <DialogContent>
           <SimpleCommitList
             repository={this.props.repository}
-            emoji={this.props.emoji}
             gitHubRepository={this.props.gitHubRepository}
             branchName={this.props.selectedBranch!.name}
             onItemSelect={this.onSelectionChanged}

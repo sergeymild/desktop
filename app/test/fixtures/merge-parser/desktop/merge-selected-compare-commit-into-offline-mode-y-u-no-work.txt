@@ -322,7 +322,6 @@ changed in both
 +>>>>>>> .their
          gitHubUsers={this.props.gitHubUsers}
          localCommitSHAs={this.props.localCommitSHAs}
-         emoji={this.props.emoji}
 @@ -447,6 +467,11 @@
        commit.sha
      )
@@ -378,7 +377,6 @@ changed in both
 +        dispatcher={this.props.dispatcher}
 +        history={formState}
 +        gitHubUsers={this.props.state.gitHubUsers}
-+        emoji={this.props.emoji}
 +        commitLookup={this.props.state.commitLookup}
 +        localCommitSHAs={this.props.state.localCommitSHAs}
 +        onRevertCommit={this.onRevertCommit}

@@ -11,8 +11,6 @@ import { GitRebaseProgress } from '../../models/rebase'
 interface IRebaseProgressDialogProps {
   /** Progress information about the current rebase */
   readonly progress: GitRebaseProgress
-
-  readonly emoji: Map<string, string>
 }
 
 export class RebaseProgressDialog extends React.Component<
@@ -55,7 +53,6 @@ export class RebaseProgressDialog extends React.Component<
                 </div>
                 <div className="detail">
                   <RichText
-                    emoji={this.props.emoji}
                     text={currentCommitSummary || ''}
                   />
                 </div>

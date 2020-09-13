@@ -10,15 +10,7 @@ import packager, {
   ElectronOsXSignOptions,
   Options,
 } from 'electron-packager'
-import frontMatter from 'front-matter'
 import { externals } from '../app/webpack.common'
-
-interface IChooseALicense {
-  readonly title: string
-  readonly nickname?: string
-  readonly featured?: boolean
-  readonly hidden?: boolean
-}
 
 export interface ILicense {
   readonly name: string
@@ -61,14 +53,9 @@ fs.removeSync(getDistRoot())
 console.log('Copying dependencies…')
 copyDependencies()
 
-console.log('Packaging emoji…')
-copyEmoji()
 
 console.log('Copying static resources…')
 copyStaticResources()
-
-console.log('Parsing license metadata…')
-generateLicenseMetadata(outRoot)
 
 moveAnalysisFiles()
 
@@ -227,21 +214,6 @@ function packageApp() {
   return packager(options)
 }
 
-function removeAndCopy(source: string, destination: string) {
-  fs.removeSync(destination)
-  fs.copySync(source, destination)
-}
-
-function copyEmoji() {
-  const emojiImages = path.join(projectRoot, 'gemoji', 'images', 'emoji')
-  const emojiImagesDestination = path.join(outRoot, 'emoji')
-  removeAndCopy(emojiImages, emojiImagesDestination)
-
-  const emojiJSON = path.join(projectRoot, 'gemoji', 'db', 'emoji.json')
-  const emojiJSONDestination = path.join(outRoot, 'emoji.json')
-  removeAndCopy(emojiJSON, emojiJSONDestination)
-}
-
 function copyStaticResources() {
   const dirName = process.platform
   const platformSpecific = path.join(projectRoot, 'app', 'static', dirName)
@@ -371,62 +343,6 @@ function copyDependencies() {
   }
 }
 
-function generateLicenseMetadata(outRoot: string) {
-  const chooseALicense = path.join(outRoot, 'static', 'choosealicense.com')
-  const licensesDir = path.join(chooseALicense, '_licenses')
-
-  const files = fs.readdirSync(licensesDir)
-
-  const licenses = new Array<ILicense>()
-  for (const file of files) {
-    const fullPath = path.join(licensesDir, file)
-    const contents = fs.readFileSync(fullPath, 'utf8')
-    const result = frontMatter<IChooseALicense>(contents)
-
-    const licenseText = result.body.trim()
-    // ensure that any license file created in the app does not trigger the
-    // "no newline at end of file" warning when viewing diffs
-    const licenseTextWithNewLine = `${licenseText}\n`
-
-    const license: ILicense = {
-      name: result.attributes.nickname || result.attributes.title,
-      featured: result.attributes.featured || false,
-      hidden:
-        result.attributes.hidden === undefined || result.attributes.hidden,
-      body: licenseTextWithNewLine,
-    }
-
-    if (!license.hidden) {
-      licenses.push(license)
-    }
-  }
-
-  const licensePayload = path.join(outRoot, 'static', 'available-licenses.json')
-  const text = JSON.stringify(licenses)
-  fs.writeFileSync(licensePayload, text, 'utf8')
-
-  // embed the license alongside the generated license payload
-  const chooseALicenseLicense = path.join(chooseALicense, 'LICENSE.md')
-  const licenseDestination = path.join(
-    outRoot,
-    'static',
-    'LICENSE.choosealicense.md'
-  )
-
-  const licenseText = fs.readFileSync(chooseALicenseLicense, 'utf8')
-  const licenseWithHeader = `GitHub Desktop uses licensing information provided by choosealicense.com.
-
-The bundle in available-licenses.json has been generated from a source list provided at https://github.com/github/choosealicense.com, which is made available under the below license:
-
-------------
-
-${licenseText}`
-
-  fs.writeFileSync(licenseDestination, licenseWithHeader, 'utf8')
-
-  // sweep up the choosealicense directory as the important bits have been bundled in the app
-  fs.removeSync(chooseALicense)
-}
 
 function getNotarizationCredentials(): ElectronNotarizeOptions | undefined {
   const appleId = process.env.APPLE_ID

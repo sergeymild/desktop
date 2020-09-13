@@ -639,7 +639,6 @@ removed in remote
 -  AppStore,
 -  GitHubUserStore,
 -  CloningRepositoriesStore,
--  EmojiStore,
 -  IssuesStore,
 -  SignInStore,
 -  RepositoriesStore,
@@ -696,7 +695,6 @@ removed in remote
 -    return new AppStore(
 -      new GitHubUserStore(db),
 -      new CloningRepositoriesStore(),
--      new EmojiStore(),
 -      new IssuesStore(issuesDb),
 -      new StatsStore(statsDb, new TestActivityMonitor()),
 -      new SignInStore(),
@@ -1299,7 +1297,6 @@ added in remote
 +  AppStore,
 +  GitHubUserStore,
 +  CloningRepositoriesStore,
-+  EmojiStore,
 +  IssuesStore,
 +  SignInStore,
 +  RepositoriesStore,
@@ -1356,7 +1353,6 @@ added in remote
 +    return new AppStore(
 +      new GitHubUserStore(db),
 +      new CloningRepositoriesStore(),
-+      new EmojiStore(),
 +      new IssuesStore(issuesDb),
 +      new StatsStore(statsDb),
 +      new SignInStore(),

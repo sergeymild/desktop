@@ -14,7 +14,6 @@ interface ISimpleCommitListProps {
   selectedItem: ICommitItem | null
   onItemSelect: (item: ICommitItem | null) => void
   readonly gitHubRepository: GitHubRepository | null
-  readonly emoji: Map<string, string>
 }
 
 interface ISimpleCommitListState {
@@ -76,8 +75,7 @@ export class SimpleCommitList extends React.Component<ISimpleCommitListProps, IS
       <CherryPickCommitListItem
         commit={item}
         matches={matches}
-        gitHubRepository={this.props.gitHubRepository}
-        emoji={this.props.emoji}/>
+        gitHubRepository={this.props.gitHubRepository} />
     )
   }
 

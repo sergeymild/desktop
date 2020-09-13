@@ -18,7 +18,6 @@ interface ICommitSummaryProps {
   readonly repository: Repository
   readonly commit: Commit
   readonly files: ReadonlyArray<FileChange>
-  readonly emoji: Map<string, string>
 
   /**
    * Whether or not the commit body container should
@@ -84,7 +83,7 @@ function createState(
   isOverflowed: boolean,
   props: ICommitSummaryProps
 ): ICommitSummaryState {
-  const tokenizer = new Tokenizer(props.emoji, props.repository)
+  const tokenizer = new Tokenizer(props.repository)
 
   const { summary, body } = wrapRichTextCommitMessage(
     props.commit.summary,
@@ -275,7 +274,6 @@ export class CommitSummary extends React.Component<
         >
           <RichText
             className="commit-summary-description"
-            emoji={this.props.emoji}
             repository={this.props.repository}
             text={this.state.body}
           />
@@ -304,7 +302,6 @@ export class CommitSummary extends React.Component<
         <div className="commit-summary-header">
           <RichText
             className="commit-summary-title"
-            emoji={this.props.emoji}
             repository={this.props.repository}
             text={this.state.summary}
           />

@@ -60,7 +60,6 @@ const ReleaseNoteHeaderRightUri = encodePathAsUrl(
 
 interface IReleaseNotesProps {
   readonly onDismissed: () => void
-  readonly emoji: Map<string, string>
   readonly newRelease: ReleaseSummary
 }
 
@@ -83,7 +82,6 @@ export class ReleaseNotes extends React.Component<IReleaseNotesProps, {}> {
         <li key={i}>
           <RichText
             text={entry.message}
-            emoji={this.props.emoji}
             renderUrlsAsLinks={true}
             repository={repository}
           />
