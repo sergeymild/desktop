@@ -11,23 +11,15 @@ import {
 } from '../../lib/app-state'
 import {
   Repository,
-  getNonForkGitHubRepository,
-  isRepositoryWithGitHubRepository,
 } from '../../models/repository'
 import { Dispatcher } from '../dispatcher'
 import { IssuesStore, GitHubUserStore } from '../../lib/stores'
 import { Commit, ICommitContext } from '../../models/commit'
 import { UndoCommit } from './undo-commit'
-import {
-  IAutocompletionProvider,
-  IssuesAutocompletionProvider,
-  UserAutocompletionProvider,
-} from '../autocompletion'
 import { ClickSource } from '../lib/list'
 import { WorkingDirectoryFileChange } from '../../models/status'
 import { TransitionGroup, CSSTransition } from 'react-transition-group'
 import { openFile } from '../lib/open-file'
-import { Account } from '../../models/account'
 import { PopupType } from '../../models/popup'
 import { filesNotTrackedByLFS } from '../../lib/git/lfs'
 import { getLargeFilePaths } from '../../lib/large-files'
@@ -55,7 +47,6 @@ interface IChangesSidebarProps {
   readonly isPushPullFetchInProgress: boolean
   readonly gitHubUserStore: GitHubUserStore
   readonly askForConfirmationOnDiscardChanges: boolean
-  readonly accounts: ReadonlyArray<Account>
   /** The name of the currently selected external editor */
   readonly externalEditorLabel?: string
   readonly onChangesListScrolled: (scrollTop: number) => void
@@ -63,59 +54,6 @@ interface IChangesSidebarProps {
 }
 
 export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
-  private autocompletionProviders: ReadonlyArray<
-    IAutocompletionProvider<any>
-  > | null = null
-
-  public constructor(props: IChangesSidebarProps) {
-    super(props)
-
-    this.receiveProps(props)
-  }
-
-  public componentWillReceiveProps(nextProps: IChangesSidebarProps) {
-    this.receiveProps(nextProps)
-  }
-
-  private receiveProps(props: IChangesSidebarProps) {
-    if (
-      this.autocompletionProviders === null ||
-      props.repository.hash !== this.props.repository.hash ||
-      props.accounts !== this.props.accounts
-    ) {
-      const autocompletionProviders: IAutocompletionProvider<any>[] = []
-
-      // Issues autocompletion is only available for GitHub repositories.
-      const { repository } = props
-      const gitHubRepository = isRepositoryWithGitHubRepository(repository)
-        ? getNonForkGitHubRepository(repository)
-        : null
-
-      if (gitHubRepository !== null) {
-        autocompletionProviders.push(
-          new IssuesAutocompletionProvider(
-            props.issuesStore,
-            gitHubRepository,
-            props.dispatcher
-          )
-        )
-
-        const account = this.props.accounts.find(
-          a => a.endpoint === gitHubRepository.endpoint
-        )
-
-        autocompletionProviders.push(
-          new UserAutocompletionProvider(
-            props.gitHubUserStore,
-            gitHubRepository,
-            account
-          )
-        )
-      }
-
-      this.autocompletionProviders = autocompletionProviders
-    }
-  }
 
   private onCreateCommit = async (
     context: ICommitContext
@@ -379,7 +317,6 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
           onOpenItem={this.onOpenItem}
           onRowClick={this.onChangedItemClick}
           branch={this.props.branch}
-          autocompletionProviders={this.autocompletionProviders!}
           availableWidth={this.props.availableWidth}
           onIgnore={this.onIgnore}
           isCommitting={this.props.isCommitting}

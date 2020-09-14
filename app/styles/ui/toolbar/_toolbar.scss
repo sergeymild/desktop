@@ -102,8 +102,15 @@
 .toolbar-button-new {
   .button-component {
     min-width: var(--toolbar-height);
-    flex-direction: column-reverse;
-    justify-content: center;
+
+    .toolbar-icon-text {
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .ahead-behind {
+      margin-left: var(--spacing);
+    }
 
     .icon {
       margin-right: 0;

@@ -118,7 +118,6 @@ interface IProps {
    * See the ApiRepositoriesStore for more details on loading repositories
    */
   readonly apiRepositories: ReadonlyMap<Account, IAccountRepositories>
-  readonly accounts: ReadonlyArray<Account>
   readonly selectedState: PossibleSelections | null
   /**
    * A cached entry representing an external editor found on the user's machine:
@@ -149,7 +148,6 @@ export const AppPopup: React.FC<IProps> = (
     signInState,
     selectedCloneRepositoryTab,
     apiRepositories,
-    accounts,
     selectedState,
     resolvedExternalEditor,
     appStore
@@ -494,7 +492,8 @@ export const AppPopup: React.FC<IProps> = (
           key="publish"
           dispatcher={dispatcher}
           repository={popup.repository}
-          accounts={accounts}
+          dotComAccount={dotComAccount}
+          enterpriseAccount={enterpriseAccount}
           onDismissed={onPopupDismissedFn}
         />
       )
