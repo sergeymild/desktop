@@ -35,8 +35,6 @@ import { KeyEventsHandler } from './key-events-handler'
 import { ToolbarRepositoryButton } from './toolbar/toolbar-repository-button'
 import { ToolbarBranchButton } from './toolbar/toolbar-branch-button'
 import { ToolbarPushPullButton } from './toolbar/toolbar-push-pull-button'
-import { ToolbarPullButton } from './toolbar/toolbar-pull-button'
-import { ToolbarPushButton } from './toolbar/toolbar-push-button'
 import { MenuEventHandlerView } from './menu-event-handler-view'
 import { dispatcher } from './index'
 
@@ -527,38 +525,8 @@ export class App extends React.Component<IAppProps, IAppState> {
         {this.renderBranchToolbarButton()}
         {this.renderTagsToolbarButton()}
         {this.renderPushPullToolbarButton()}
-        {this.renderToolbarPullButton()}
-        {this.renderToolbarPushButton()}
       </Toolbar>
     )
-  }
-
-  private renderToolbarPullButton() {
-    let isRefreshing = false
-    const selection = this.state.selectedState
-    if (selection && selection.type === SelectionType.Repository) {
-      isRefreshing = selection.state.isPushPullFetchInProgress
-    }
-
-    return <ToolbarPullButton
-      tipKind={selection?.state?.branchesState.tip.kind}
-      repository={selection?.repository}
-      behind={this.props.appStore.aheadBehind()?.behind || 0}
-      isRefreshing={isRefreshing}/>
-  }
-
-  private renderToolbarPushButton() {
-    let isRefreshing = false
-    const selection = this.state.selectedState
-    if (selection && selection.type === SelectionType.Repository) {
-      isRefreshing = selection.state.isPushPullFetchInProgress
-    }
-
-    return <ToolbarPushButton
-      tipKind={selection?.state?.branchesState.tip.kind}
-      repository={selection?.repository}
-      ahead={this.props.appStore.aheadBehind()?.ahead || 0}
-      isRefreshing={isRefreshing}/>
   }
 
   private renderRepository() {

@@ -3108,12 +3108,10 @@ export class AppStore extends TypedBaseStore<IAppState> {
     const state = this.repositoryStateCache.get(repository)
     const { remote } = state
     if (remote === null) {
-      this._showPopup({
+      return this._showPopup({
         type: PopupType.PublishRepository,
         repository,
       })
-
-      return
     }
 
     return this.withPushPullFetch(repository, account, async () => {
