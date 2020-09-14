@@ -14,7 +14,6 @@ import { IRepositoryState, RepositorySectionTab } from '../lib/app-state'
 import { Dispatcher } from './dispatcher'
 import { GitHubUserStore, IssuesStore } from '../lib/stores'
 import { assertNever } from '../lib/fatal-error'
-import { Account } from '../models/account'
 import { FocusContainer } from './lib/focus-container'
 import { Octicon, OcticonSymbol } from './octicons'
 import { ImageDiffType } from '../models/diff'
@@ -41,7 +40,6 @@ interface IRepositoryViewProps {
   readonly imageDiffType: ImageDiffType
   readonly hideWhitespaceInDiff: boolean
   readonly askForConfirmationOnDiscardChanges: boolean
-  readonly accounts: ReadonlyArray<Account>
   readonly stashesCount: number
 
   /**
@@ -199,7 +197,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
         askForConfirmationOnDiscardChanges={
           this.props.askForConfirmationOnDiscardChanges
         }
-        accounts={this.props.accounts}
         externalEditorLabel={this.props.externalEditorLabel}
         onChangesListScrolled={this.onChangesListScrolled}
         changesListScrollTop={scrollTop}

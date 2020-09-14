@@ -8,11 +8,9 @@ import { AppStore, GitHubUserStore, IssuesStore } from '../lib/stores'
 import { assertNever } from '../lib/fatal-error'
 import { UpdateStatus, updateStore } from './lib/update-store'
 import { matchExistingRepository } from '../lib/repository-matching'
-import { getDotComAPIEndpoint } from '../lib/api'
 import { getVersion } from './lib/app-proxy'
 import { getOS } from '../lib/get-os'
 import { validatedRepositoryPath } from '../lib/stores/helpers/validated-repository-path'
-import { Account } from '../models/account'
 
 import { FullScreenInfo, TitleBar, ZoomInfo } from './window'
 
@@ -186,20 +184,6 @@ export class App extends React.Component<IAppProps, IAppState> {
     updateStore.checkForUpdates(inBackground)
   }
 
-  private getDotComAccount(): Account | null {
-    const dotComAccount = this.state.accounts.find(
-      a => a.endpoint === getDotComAPIEndpoint()
-    )
-    return dotComAccount || null
-  }
-
-  private getEnterpriseAccount(): Account | null {
-    const enterpriseAccount = this.state.accounts.find(
-      a => a.endpoint !== getDotComAPIEndpoint()
-    )
-    return enterpriseAccount || null
-  }
-
   public componentDidMount() {
     document.ondragover = e => {
       if (e.dataTransfer != null) {
@@ -359,8 +343,8 @@ export class App extends React.Component<IAppProps, IAppState> {
       askForConfirmationOnDiscardChanges={this.state.askForConfirmationOnDiscardChanges}
       askForConfirmationOnRepositoryRemoval={this.state.askForConfirmationOnRepositoryRemoval}
       askForConfirmationOnForcePush={this.state.askForConfirmationOnForcePush}
-      dotComAccount={this.getDotComAccount()}
-      enterpriseAccount={this.getEnterpriseAccount()}
+      dotComAccount={this.props.appStore.getDotComAccount()}
+      enterpriseAccount={this.props.appStore.getEnterpriseAccount()}
       uncommittedChangesStrategyKind={this.state.uncommittedChangesStrategyKind}
       selectedExternalEditor={this.state.selectedExternalEditor}
       automaticallySwitchTheme={this.state.automaticallySwitchTheme}
@@ -369,7 +353,6 @@ export class App extends React.Component<IAppProps, IAppState> {
       signInState={this.state.signInState}
       selectedCloneRepositoryTab={this.state.selectedCloneRepositoryTab}
       apiRepositories={this.state.apiRepositories}
-      accounts={this.state.accounts}
       selectedState={this.state.selectedState}
       resolvedExternalEditor={this.state.resolvedExternalEditor}
     />
@@ -560,6 +543,7 @@ export class App extends React.Component<IAppProps, IAppState> {
     return <ToolbarPullButton
       tipKind={selection?.state?.branchesState.tip.kind}
       repository={selection?.repository}
+      behind={this.props.appStore.aheadBehind()?.behind || 0}
       isRefreshing={isRefreshing}/>
   }
 
@@ -573,6 +557,7 @@ export class App extends React.Component<IAppProps, IAppState> {
     return <ToolbarPushButton
       tipKind={selection?.state?.branchesState.tip.kind}
       repository={selection?.repository}
+      ahead={this.props.appStore.aheadBehind()?.ahead || 0}
       isRefreshing={isRefreshing}/>
   }
 
@@ -581,8 +566,8 @@ export class App extends React.Component<IAppProps, IAppState> {
     if (this.inNoRepositoriesViewState()) {
       return (
         <NoRepositoriesView
-          dotComAccount={this.getDotComAccount()}
-          enterpriseAccount={this.getEnterpriseAccount()}
+          dotComAccount={this.props.appStore.getDotComAccount()}
+          enterpriseAccount={this.props.appStore.getEnterpriseAccount()}
           apiRepositories={state.apiRepositories}
         />
       )
@@ -617,7 +602,6 @@ export class App extends React.Component<IAppProps, IAppState> {
           askForConfirmationOnDiscardChanges={
             state.askForConfirmationOnDiscardChanges
           }
-          accounts={state.accounts}
           externalEditorLabel={externalEditorLabel}
           resolvedExternalEditor={state.resolvedExternalEditor}
           appMenu={state.appMenuState[0]}

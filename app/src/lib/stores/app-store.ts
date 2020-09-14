@@ -52,7 +52,14 @@ import {
   setPersistedTheme,
 } from '../../ui/lib/application-theme'
 import { getAppMenu, updatePreferredAppMenuItemLabels } from '../../ui/main-process-proxy'
-import { API, getAccountForEndpoint, getEndpointForRepository, IAPIOrganization, IAPIRepository } from '../api'
+import {
+  API,
+  getAccountForEndpoint,
+  getDotComAPIEndpoint,
+  getEndpointForRepository,
+  IAPIOrganization,
+  IAPIRepository,
+} from '../api'
 import { shell } from '../app-shell'
 import {
   ChangesSelectionKind,
@@ -491,7 +498,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     }
   }
 
-  getSelectedState(): PossibleSelections | null {
+  public getSelectedState(): PossibleSelections | null {
     const repository = this.selectedRepository
 
     if (!repository) {
@@ -4308,6 +4315,20 @@ export class AppStore extends TypedBaseStore<IAppState> {
     return this.signInStore.tryGetDotComSupportsBasicAuth()
   }
 
+  public getDotComAccount(): Account | null {
+    const dotComAccount = this.accounts.find(
+      a => a.endpoint === getDotComAPIEndpoint()
+    )
+    return dotComAccount || null
+  }
+
+  public getEnterpriseAccount(): Account | null {
+    const enterpriseAccount = this.accounts.find(
+      a => a.endpoint !== getDotComAPIEndpoint()
+    )
+    return enterpriseAccount || null
+  }
+
   public _beginDotComSignIn(): Promise<void> {
     this.signInStore.beginDotComSignIn()
     return Promise.resolve()
@@ -5359,6 +5380,15 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
   public getFocusCommitMessage(): boolean {
     return this.focusCommitMessage
+  }
+
+  public aheadBehind(): IAheadBehind | null {
+    const selection = this.getSelectedState()
+    if (!selection || selection.type !== SelectionType.Repository) {
+      return null
+    }
+
+    return selection.state.aheadBehind
   }
 }
 

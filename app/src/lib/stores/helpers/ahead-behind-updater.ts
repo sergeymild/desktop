@@ -1,7 +1,7 @@
 import queue from 'queue'
-import { revSymmetricDifference } from '../../../lib/git'
+import { revSymmetricDifference } from '../../git'
 import { Repository } from '../../../models/repository'
-import { getAheadBehind } from '../../../lib/git'
+import { getAheadBehind } from '../../git'
 import { Branch, IAheadBehind } from '../../../models/branch'
 import { ComparisonCache } from '../../comparison-cache'
 

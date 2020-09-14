@@ -11,6 +11,7 @@ interface IProps {
   readonly isRefreshing: boolean
   readonly repository: Repository | CloningRepository | undefined
   readonly tipKind: TipState | undefined
+  readonly ahead: number
 }
 
 export class ToolbarPushButton extends React.PureComponent<IProps> {
@@ -22,8 +23,21 @@ export class ToolbarPushButton extends React.PureComponent<IProps> {
     dispatcher.pushRepository(repository)
   }
 
+  private renderAhead(): JSX.Element | null {
+    console.log(`renderAhead ahead: ${this.props.ahead}`)
+    if (this.props.ahead === 0) return null
+
+    return (
+      <div className="ahead-behind">
+        <span key="ahead">{this.props.ahead}</span>
+      </div>
+    )
+  }
+
   public render() {
     const isEnabled = this.props.tipKind === TipState.Valid
+
+
 
     return <ToolbarButton
       disabled={!isEnabled}
@@ -31,8 +45,9 @@ export class ToolbarPushButton extends React.PureComponent<IProps> {
       className="toolbar-button-new"
       iconClassName={classNames({spin: this.props.isRefreshing})}
       icon={this.props.isRefreshing ? syncClockwise : OcticonSymbol.arrowUp}
-      description="Push"
+      title="Push"
     >
+      {this.renderAhead()}
     </ToolbarButton>
   }
 }

@@ -17,7 +17,6 @@ import {
   RevealInFileManagerLabel,
 } from '../lib/context-menu'
 import { ChangedFile } from './changed-file'
-import { IAutocompletionProvider } from '../autocompletion'
 import { showContextualMenu } from '../main-process-proxy'
 import { arrayEquals } from '../../lib/equality'
 import { clipboard } from 'electron'
@@ -123,9 +122,6 @@ interface IChangesListProps {
    * List Props for documentation.
    */
   readonly onRowClick?: (row: number, source: ClickSource) => void
-
-  /** The autocompletion providers available to the repository. */
-  readonly autocompletionProviders: ReadonlyArray<IAutocompletionProvider<any>>
 
   /** Called when the given pattern should be ignored. */
   readonly onIgnore: (pattern: string | string[]) => void

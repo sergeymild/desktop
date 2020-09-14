@@ -3,7 +3,7 @@ import {
   IDatabaseGitHubRepository,
   IDatabaseOwner,
   IDatabaseProtectedBranch,
-} from '../databases/repositories-database'
+} from '../databases'
 import { Owner } from '../../models/owner'
 import {
   GitHubRepository,

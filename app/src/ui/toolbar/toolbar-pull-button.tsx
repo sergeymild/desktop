@@ -11,6 +11,7 @@ interface IProps {
   readonly isRefreshing: boolean
   readonly repository: Repository | CloningRepository | undefined
   readonly tipKind: TipState | undefined
+  readonly behind: number
 }
 
 export class ToolbarPullButton extends React.PureComponent<IProps> {
@@ -21,6 +22,17 @@ export class ToolbarPullButton extends React.PureComponent<IProps> {
     if (repository instanceof CloningRepository) { return }
     if (this.props.tipKind !== TipState.Valid) { return }
     dispatcher.pullRepository(repository)
+  }
+
+  private renderBehind(): JSX.Element | null {
+    console.log(`renderBehind ahead: ${this.props.behind}`)
+    if (this.props.behind === 0) return null
+
+    return (
+      <div className="ahead-behind">
+        <span key="behind">{this.props.behind}</span>
+      </div>
+    )
   }
 
   public render() {
@@ -34,6 +46,7 @@ export class ToolbarPullButton extends React.PureComponent<IProps> {
       icon={this.props.isRefreshing ? syncClockwise : OcticonSymbol.download}
       description="Pull"
     >
+      {this.renderBehind()}
     </ToolbarButton>
   }
 }

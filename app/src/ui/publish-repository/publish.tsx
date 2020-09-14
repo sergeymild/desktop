@@ -5,7 +5,6 @@ import { Account } from '../../models/account'
 import { Repository } from '../../models/repository'
 import { Dialog, DialogFooter, DialogContent, DialogError } from '../dialog'
 import { TabBar } from '../tab-bar'
-import { getDotComAPIEndpoint } from '../../lib/api'
 import { assertNever, fatalError } from '../../lib/fatal-error'
 import { CallToAction } from '../lib/call-to-action'
 import { getGitDescription } from '../../lib/git'
@@ -15,7 +14,7 @@ import {
   RepositoryPublicationSettings,
   PublishSettingsType,
 } from '../../models/publish-settings'
-import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { OkCancelButtonGroup } from '../dialog'
 
 enum PublishTab {
   DotCom = 0,
@@ -58,8 +57,8 @@ interface IPublishProps {
   /** The repository being published. */
   readonly repository: Repository
 
-  /** The signed in accounts. */
-  readonly accounts: ReadonlyArray<Account>
+  readonly dotComAccount: Account | null
+  readonly enterpriseAccount: Account | null
 
   /** The function to call when the dialog should be dismissed. */
   readonly onDismissed: () => void
@@ -206,14 +205,9 @@ export class Publish extends React.Component<IPublishProps, IPublishState> {
   }
 
   private getAccountForTab(tab: PublishTab): Account | null {
-    const accounts = this.props.accounts
     switch (tab) {
-      case PublishTab.DotCom:
-        return accounts.find(a => a.endpoint === getDotComAPIEndpoint()) || null
-      case PublishTab.Enterprise:
-        return accounts.find(a => a.endpoint !== getDotComAPIEndpoint()) || null
-      default:
-        return assertNever(tab, `Unknown tab: ${tab}`)
+      case PublishTab.DotCom: return this.props.dotComAccount
+      case PublishTab.Enterprise: return this.props.enterpriseAccount
     }
   }
 

@@ -178,8 +178,10 @@ export class ToolbarButton extends React.PureComponent<IToolbarButtonProps, {}> 
           ariaExpanded={this.props.ariaExpanded}
         >
           {progress}
-          {icon}
-          {this.renderText()}
+          <div className="toolbar-icon-text">
+            {icon}
+            {this.renderText()}
+          </div>
           {this.props.children}
         </Button>
       </div>

@@ -31,6 +31,12 @@
       box-shadow: none;
     }
 
+    .toolbar-icon-text {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+
     &:focus {
       background-color: var(--toolbar-button-focus-background-color);
 
