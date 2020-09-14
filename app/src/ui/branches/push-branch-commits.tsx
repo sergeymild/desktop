@@ -167,7 +167,7 @@ export class PushBranchCommits extends React.Component<
     this.setState({ isPushingOrPublishing: true })
 
     try {
-      await this.props.dispatcher.push(repository)
+      await this.props.dispatcher.pushRepository(repository)
     } finally {
       this.setState({ isPushingOrPublishing: false })
     }

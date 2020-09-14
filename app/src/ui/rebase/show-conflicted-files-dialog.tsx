@@ -44,7 +44,6 @@ interface IShowConflictedFilesDialogProps {
   readonly showRebaseConflictsBanner: (step: ShowConflictsStep) => void
 
   readonly resolvedExternalEditor: string | null
-  readonly openRepositoryInShell: (repository: Repository) => void
 }
 
 interface IShowConflictedFilesDialogState {
@@ -121,7 +120,7 @@ export class ShowConflictedFilesDialog extends React.Component<
   }
 
   private openThisRepositoryInShell = () =>
-    this.props.openRepositoryInShell(this.props.repository)
+    dispatcher.openShell(this.props.repository.path)
 
   private openInExternalEditor = (path: string) => {
     dispatcher.openInExternalEditor(path)

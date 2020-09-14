@@ -64,7 +64,7 @@ export class WorkflowPushRejectedDialog extends React.Component<
 
     await this.props.dispatcher.requestBrowserAuthenticationToDotcom()
 
-    this.props.dispatcher.push(this.props.repository)
+    this.props.dispatcher.pushRepository(this.props.repository)
     this.props.onDismissed()
   }
 }

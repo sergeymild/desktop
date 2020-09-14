@@ -31,7 +31,6 @@ interface ICompareSidebarProps {
   readonly currentBranch: Branch | null
   readonly selectedCommitSha: string | null
   readonly onRevertCommit: (commit: Commit) => void
-  readonly onViewCommitOnGitHub: (sha: string) => void
   readonly onCompareListScrolled: (scrollTop: number) => void
   readonly compareListScrollTop?: number
   readonly localTags: ReadonlyArray<ITagItem> | null
@@ -163,7 +162,6 @@ export class CompareSidebar extends React.Component<ICompareSidebarProps, {}> {
         commitSHAs={commitSHAs}
         selectedSHA={this.props.selectedCommitSha}
         localCommitSHAs={this.props.localCommitSHAs}
-        onViewCommitOnGitHub={this.props.onViewCommitOnGitHub}
         onRevertCommit={
           ableToRevertCommit(this.props.compareState.formState)
             ? this.props.onRevertCommit

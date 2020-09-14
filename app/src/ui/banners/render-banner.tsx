@@ -4,7 +4,6 @@ import { assertNever } from '../../lib/fatal-error'
 
 import { Banner, BannerType } from '../../models/banner'
 
-import { Dispatcher } from '../dispatcher'
 import { MergeConflictsBanner } from './merge-conflicts-banner'
 
 import { SuccessfulMerge } from './successful-merge'
@@ -15,18 +14,13 @@ import { SuccessfulCherryPick } from './successful-cherry-pick'
 import { StashApplied } from './banner-stash-applied'
 import { StashPopped } from './banner-stash-popped'
 
-export function renderBanner(
-  banner: Banner,
-  dispatcher: Dispatcher,
-  onDismissed: () => void
-): JSX.Element {
+export function renderBanner(banner: Banner): JSX.Element {
   switch (banner.type) {
     case BannerType.SuccessfulMerge:
       return (
         <SuccessfulMerge
           ourBranch={banner.ourBranch}
           theirBranch={banner.theirBranch}
-          onDismissed={onDismissed}
           key={'successful-merge'}
         />
       )
@@ -35,17 +29,14 @@ export function renderBanner(
         <SuccessfulCherryPick
           ourBranch={banner.ourBranch}
           theirBranch={banner.theirBranch}
-          onDismissed={onDismissed}
           key={'successful-cherry-pick'}
         />
       )
     case BannerType.MergeConflictsFound:
       return (
         <MergeConflictsBanner
-          dispatcher={dispatcher}
           ourBranch={banner.ourBranch}
           popup={banner.popup}
-          onDismissed={onDismissed}
           key={'merge-conflicts'}
         />
       )
@@ -54,17 +45,14 @@ export function renderBanner(
         <SuccessfulRebase
           targetBranch={banner.targetBranch}
           baseBranch={banner.baseBranch}
-          onDismissed={onDismissed}
           key={'successful-rebase'}
         />
       )
     case BannerType.RebaseConflictsFound:
       return (
         <RebaseConflictsBanner
-          dispatcher={dispatcher}
           targetBranch={banner.targetBranch}
           onOpenDialog={banner.onOpenDialog}
-          onDismissed={onDismissed}
           key={'merge-conflicts'}
         />
       )
@@ -73,7 +61,6 @@ export function renderBanner(
         <BranchAlreadyUpToDate
           ourBranch={banner.ourBranch}
           theirBranch={banner.theirBranch}
-          onDismissed={onDismissed}
           key={'branch-already-up-to-date'}
         />
       )
@@ -81,7 +68,6 @@ export function renderBanner(
       return (
         <StashApplied
           stashName={banner.stashName}
-          onDismissed={onDismissed}
           key={'stash-applied'}
         />
       )
@@ -89,7 +75,6 @@ export function renderBanner(
       return (
         <StashPopped
           stashName={banner.stashName}
-          onDismissed={onDismissed}
           key={'stash-applied'}
         />
       )

@@ -25,7 +25,6 @@ interface ICommitProps {
   readonly dispatcher?: Dispatcher
   readonly repository?: Repository
   readonly onRevertCommit?: (commit: Commit) => void
-  readonly onViewCommitOnGitHub?: (sha: string) => void
   readonly onCreateTag?: (targetCommitSha: string) => void
   readonly onDeleteTag?: (tagName: string) => void
   readonly showUnpushedIndicator: boolean
@@ -147,9 +146,7 @@ export class CommitListItem extends React.PureComponent<
   }
 
   private onViewOnGitHub = () => {
-    if (this.props.onViewCommitOnGitHub) {
-      this.props.onViewCommitOnGitHub(this.props.commit.sha)
-    }
+    dispatcher.onViewCommitOnGitHub(this.props.commit.sha)
   }
 
   private onCreateTag = () => {

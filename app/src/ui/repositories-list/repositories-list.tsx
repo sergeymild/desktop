@@ -20,6 +20,8 @@ import { IMenuItem } from '../../lib/menu-item'
 import { PopupType } from '../../models/popup'
 import { encodePathAsUrl } from '../../lib/path'
 import memoizeOne from 'memoize-one'
+import { FoldoutType } from '../../lib/app-state'
+import { dispatcher } from '../index'
 
 const BlankSlateImage = encodePathAsUrl(__dirname, 'static/empty-no-repo.svg')
 
@@ -36,32 +38,14 @@ interface IRepositoriesListProps {
     ILocalRepositoryState
   >
 
-  /** Called when a repository has been selected. */
-  readonly onSelectionChanged: (repository: Repositoryish) => void
-
   /** Whether the user has enabled the setting to confirm removing a repository from the app */
   readonly askForConfirmationOnRemoveRepository: boolean
-
-  /** Called when the repository should be removed. */
-  readonly onRemoveRepository: (repository: Repositoryish) => void
-
-  /** Called when the repository should be shown in Finder/Explorer/File Manager. */
-  readonly onShowRepository: (repository: Repositoryish) => void
-
-  /** Called when the repository should be shown in the shell. */
-  readonly onOpenInShell: (repository: Repositoryish) => void
-
-  /** Called when the repository should be opened in an external editor */
-  readonly onOpenInExternalEditor: (repository: Repositoryish) => void
 
   /** The current external editor selected by the user */
   readonly externalEditorLabel?: string
 
   /** The label for the user's preferred shell. */
   readonly shellLabel: string
-
-  /** The callback to fire when the filter text has changed */
-  readonly onFilterTextChanged: (text: string) => void
 
   /** The text entered by the user to filter their repository list */
   readonly filterText: string
@@ -128,16 +112,13 @@ export class RepositoriesList extends React.Component<
     const repository = item.repository
     return (
       <RepositoryListItem
+
         key={repository.id}
         repository={repository}
         needsDisambiguation={item.needsDisambiguation}
         askForConfirmationOnRemoveRepository={
           this.props.askForConfirmationOnRemoveRepository
         }
-        onRemoveRepository={this.props.onRemoveRepository}
-        onShowRepository={this.props.onShowRepository}
-        onOpenInShell={this.props.onOpenInShell}
-        onOpenInExternalEditor={this.props.onOpenInExternalEditor}
         externalEditorLabel={this.props.externalEditorLabel}
         shellLabel={this.props.shellLabel}
         matches={matches}
@@ -169,7 +150,8 @@ export class RepositoriesList extends React.Component<
   }
 
   private onItemClick = (item: IRepositoryListItem) => {
-    this.props.onSelectionChanged(item.repository)
+    dispatcher.selectRepository(item.repository)
+    dispatcher.closeFoldout(FoldoutType.Repository)
   }
 
   public render() {
@@ -201,7 +183,6 @@ export class RepositoriesList extends React.Component<
           rowHeight={RowHeight}
           selectedItem={selectedItem}
           filterText={this.props.filterText}
-          onFilterTextChanged={this.props.onFilterTextChanged}
           renderItem={this.renderItem}
           renderGroupHeader={this.renderGroupHeader}
           onItemClick={this.onItemClick}

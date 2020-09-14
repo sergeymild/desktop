@@ -1,33 +1,21 @@
 import * as React from 'react'
 
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DefaultDialogFooter,
-} from './dialog'
+import { DefaultDialogFooter, Dialog, DialogContent, DialogFooter } from './dialog'
 import { dialogTransitionTimeout } from './app'
 import { GitError, isAuthFailureError } from '../lib/git/core'
-import { Popup, PopupType } from '../models/popup'
-import { TransitionGroup, CSSTransition } from 'react-transition-group'
+import { PopupType } from '../models/popup'
+import { CSSTransition, TransitionGroup } from 'react-transition-group'
 import { OkCancelButtonGroup } from './dialog/ok-cancel-button-group'
 import { ErrorWithMetadata } from '../lib/error-with-metadata'
-import { RetryActionType, RetryAction } from '../models/retry-actions'
+import { RetryActionType } from '../models/retry-actions'
 import { Ref } from './lib/ref'
 import memoizeOne from 'memoize-one'
 import { parseCarriageReturn } from '../lib/parse-carriage-return'
+import { dispatcher } from './index'
 
 interface IAppErrorProps {
   /** The list of queued, app-wide, errors  */
   readonly errors: ReadonlyArray<Error>
-
-  /**
-   * A callback which is used whenever a particular error
-   * has been shown to, and been dismissed by, the user.
-   */
-  readonly onClearError: (error: Error) => void
-  readonly onShowPopup: (popupType: Popup) => void | undefined
-  readonly onRetryAction: (retryAction: RetryAction) => void
 }
 
 interface IAppErrorState {
@@ -78,7 +66,7 @@ export class AppError extends React.Component<IAppErrorProps, IAppErrorState> {
       // out before we clear the error and, potentially, deal
       // with the next error in the queue.
       window.setTimeout(() => {
-        this.props.onClearError(currentError)
+        dispatcher.clearError(currentError)
       }, dialogTransitionTimeout.exit)
     }
   }
@@ -89,7 +77,7 @@ export class AppError extends React.Component<IAppErrorProps, IAppErrorState> {
     //This is a hacky solution to resolve multiple dialog windows
     //being open at the same time.
     window.setTimeout(() => {
-      this.props.onShowPopup({ type: PopupType.Preferences })
+      dispatcher.showPopup({ type: PopupType.Preferences })
     }, dialogTransitionTimeout.exit)
   }
 
@@ -102,7 +90,7 @@ export class AppError extends React.Component<IAppErrorProps, IAppErrorState> {
     if (error !== null && isErrorWithMetaData(error)) {
       const { retryAction } = error.metadata
       if (retryAction !== undefined) {
-        this.props.onRetryAction(retryAction)
+        dispatcher.performRetry(retryAction)
       }
     }
   }

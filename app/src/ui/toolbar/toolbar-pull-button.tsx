@@ -20,7 +20,7 @@ export class ToolbarPullButton extends React.PureComponent<IProps> {
     if (repository === undefined) { return }
     if (repository instanceof CloningRepository) { return }
     if (this.props.tipKind !== TipState.Valid) { return }
-    dispatcher.pull(repository)
+    dispatcher.pullRepository(repository)
   }
 
   public render() {

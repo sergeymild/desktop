@@ -2,10 +2,7 @@ import * as React from 'react'
 import { UiView } from '../ui-view'
 import { Button } from '../lib/button'
 import { Octicon, OcticonSymbol } from '../octicons'
-import {
-  WelcomeLeftTopImageUri,
-  WelcomeLeftBottomImageUri,
-} from '../welcome/welcome'
+import { WelcomeLeftBottomImageUri, WelcomeLeftTopImageUri } from '../welcome/welcome'
 import { IAccountRepositories } from '../../lib/stores/api-repositories-store'
 import { Account } from '../../models/account'
 import { TabBar } from '../tab-bar'
@@ -13,16 +10,10 @@ import { CloneableRepositoryFilterList } from '../clone-repository/cloneable-rep
 import { IAPIRepository } from '../../lib/api'
 import { assertNever } from '../../lib/fatal-error'
 import { ClickSource } from '../lib/list'
+import { PopupType } from '../../models/popup'
+import { dispatcher } from '../index'
 
 interface INoRepositoriesProps {
-  /** A function to call when the user chooses to create a repository. */
-  readonly onCreate: () => void
-
-  /** A function to call when the user chooses to clone a repository. */
-  readonly onClone: (cloneURL?: string) => void
-
-  /** A function to call when the user chooses to add a local repository. */
-  readonly onAdd: () => void
 
   /** The logged in account for GitHub.com. */
   readonly dotComAccount: Account | null
@@ -45,12 +36,6 @@ interface INoRepositoriesProps {
    * See the ApiRepositoriesStore for more details on loading repositories
    */
   readonly apiRepositories: ReadonlyMap<Account, IAccountRepositories>
-
-  /**
-   * Called when the user requests a refresh of the repositories
-   * available for cloning.
-   */
-  readonly onRefreshRepositories: (account: Account) => void
 }
 
 /**
@@ -163,7 +148,7 @@ export class NoRepositoriesView extends React.Component<
       const accountState = this.props.apiRepositories.get(account)
 
       if (accountState === undefined) {
-        this.props.onRefreshRepositories(account)
+        dispatcher.refreshApiRepositories(account)
       }
     }
   }
@@ -275,7 +260,7 @@ export class NoRepositoriesView extends React.Component<
       return
     }
 
-    this.props.onClone(selectedItem.clone_url)
+    dispatcher.showCloneRepo(selectedItem.clone_url)
   }
 
   private onSelectionChanged = (selectedItem: IAPIRepository | null) => {
@@ -327,7 +312,7 @@ export class NoRepositoriesView extends React.Component<
   // `onClone` does not get passed a click event
   // and accidentally interpret that as a url
   // See https://github.com/desktop/desktop/issues/8394
-  private onShowClone = () => this.props.onClone()
+  private onShowClone = () => dispatcher.showCloneRepo()
 
   private renderButtonGroupButton(
     symbol: OcticonSymbol,
@@ -361,8 +346,18 @@ export class NoRepositoriesView extends React.Component<
       __DARWIN__
         ? 'Create a New Repository on your Hard Drive…'
         : 'Create a New Repository on your hard drive…',
-      this.props.onCreate
+      this.onCreate
     )
+  }
+
+  private onCreate() {
+    dispatcher.showPopup({
+      type: PopupType.CreateRepository,
+    })
+  }
+
+  private onAdd() {
+    dispatcher.showPopup({ type: PopupType.AddRepository })
   }
 
   private renderAddExistingRepositoryButton() {
@@ -371,7 +366,7 @@ export class NoRepositoriesView extends React.Component<
       __DARWIN__
         ? 'Add an Existing Repository from your Hard Drive…'
         : 'Add an Existing Repository from your hard drive…',
-      this.props.onAdd
+      this.onAdd
     )
   }
 

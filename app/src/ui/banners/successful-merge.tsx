@@ -1,15 +1,14 @@
 import * as React from 'react'
 import { Octicon, OcticonSymbol } from '../octicons'
 import { Banner } from './banner'
+import { dispatcher } from '../index'
 
 export function SuccessfulMerge({
   ourBranch,
   theirBranch,
-  onDismissed,
 }: {
   readonly ourBranch: string
   readonly theirBranch?: string
-  readonly onDismissed: () => void
 }) {
   const message =
     theirBranch !== undefined ? (
@@ -27,7 +26,7 @@ export function SuccessfulMerge({
     )
 
   return (
-    <Banner id="successful-merge" timeout={5000} onDismissed={onDismissed}>
+    <Banner id="successful-merge" timeout={5000} onDismissed={dispatcher.clearBanner}>
       <div className="green-circle">
         <Octicon className="check-icon" symbol={OcticonSymbol.check} />
       </div>

@@ -12,6 +12,7 @@ import { TextBox } from '../lib/text-box'
 import { Row } from '../lib/row'
 
 import { match, IMatch, IMatches } from '../../lib/fuzzy-find'
+import { dispatcher } from '../index'
 
 /** An item in the filter list. */
 export interface IFilterListItem {
@@ -355,8 +356,9 @@ export class FilterList<T extends IFilterListItem> extends React.Component<
 
   private onFilterValueChanged = (text: string) => {
     if (this.props.onFilterTextChanged) {
-      this.props.onFilterTextChanged(text)
+      return this.props.onFilterTextChanged(text)
     }
+    dispatcher.setRepositoryFilterText(text)
   }
 
   private onSelectedRowChanged = (index: number, source: SelectionSource) => {

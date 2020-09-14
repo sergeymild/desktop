@@ -96,6 +96,7 @@ rules:
   # Babel
   babel/no-invalid-this: error
 
+
   # React
   react/jsx-boolean-value:
     - error
@@ -125,7 +126,7 @@ rules:
   ###########
   # BUILTIN #
   ###########
-  curly: error
+  curly: off
   no-new-wrappers: error
   no-redeclare:
     - error

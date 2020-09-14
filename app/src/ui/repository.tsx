@@ -38,7 +38,6 @@ interface IRepositoryViewProps {
   readonly stashedFilesWidth: number
   readonly issuesStore: IssuesStore
   readonly gitHubUserStore: GitHubUserStore
-  readonly onViewCommitOnGitHub: (SHA: string) => void
   readonly imageDiffType: ImageDiffType
   readonly hideWhitespaceInDiff: boolean
   readonly askForConfirmationOnDiscardChanges: boolean
@@ -62,13 +61,6 @@ interface IRepositoryViewProps {
 
   /** A cached entry representing an external editor found on the user's machine */
   readonly resolvedExternalEditor: ExternalEditor | null
-
-  /**
-   * Callback to open a selected file using the configured external editor
-   *
-   * @param fullPath The full path to the file on disk
-   */
-  readonly onOpenInExternalEditor: (fullPath: string) => void
 
   /**
    * The top-level application menu item.
@@ -209,7 +201,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
         }
         accounts={this.props.accounts}
         externalEditorLabel={this.props.externalEditorLabel}
-        onOpenInExternalEditor={this.props.onOpenInExternalEditor}
         onChangesListScrolled={this.onChangesListScrolled}
         changesListScrollTop={scrollTop}
       />
@@ -249,7 +240,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
         localTags={this.props.state.localTags}
         dispatcher={this.props.dispatcher}
         onRevertCommit={this.onRevertCommit}
-        onViewCommitOnGitHub={this.props.onViewCommitOnGitHub}
         onCompareListScrolled={this.onCompareListScrolled}
         compareListScrollTop={scrollTop}
         tagsToPush={this.props.state.tagsToPush}
@@ -329,7 +319,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
         commitSummaryWidth={this.props.commitSummaryWidth}
         selectedDiffType={this.props.imageDiffType}
         externalEditorLabel={this.props.externalEditorLabel}
-        onOpenInExternalEditor={this.props.onOpenInExternalEditor}
         hideWhitespaceInDiff={this.props.hideWhitespaceInDiff}
         onOpenBinaryFile={this.onOpenBinaryFile}
         onChangeImageDiffType={this.onChangeImageDiffType}

@@ -30,6 +30,7 @@ import { ChangesListHeader } from './changes-list-header'
 import { PopupType } from '../../models/popup'
 import { Button } from '../lib/button'
 import { Row } from '../lib/row'
+import { dispatcher } from '../index'
 
 const RowHeight = 29
 
@@ -146,13 +147,6 @@ interface IChangesListProps {
 
   /** The name of the currently selected external editor */
   readonly externalEditorLabel?: string
-
-  /**
-   * Callback to open a selected file using the configured external editor
-   *
-   * @param fullPath The full path to the file on disk
-   */
-  readonly onOpenInExternalEditor: (fullPath: string) => void
 
 }
 
@@ -379,7 +373,7 @@ export class ChangesList extends React.Component<IChangesListProps,
       label: openInExternalEditor,
       action: () => {
         const fullPath = Path.join(repository.path, file.path)
-        this.props.onOpenInExternalEditor(fullPath)
+        dispatcher.openInExternalEditor(fullPath)
       },
       enabled,
     }

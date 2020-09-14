@@ -11,24 +11,14 @@ import {
   RevealInFileManagerLabel,
   DefaultEditorLabel,
 } from '../lib/context-menu'
+import { shell } from '../../lib/app-shell'
+import { dispatcher } from '../index'
 
 interface IRepositoryListItemProps {
   readonly repository: Repositoryish
 
   /** Whether the user has enabled the setting to confirm removing a repository from the app */
   readonly askForConfirmationOnRemoveRepository: boolean
-
-  /** Called when the repository should be removed. */
-  readonly onRemoveRepository: (repository: Repositoryish) => void
-
-  /** Called when the repository should be shown in Finder/Explorer/File Manager. */
-  readonly onShowRepository: (repository: Repositoryish) => void
-
-  /** Called when the repository should be shown in the shell. */
-  readonly onOpenInShell: (repository: Repositoryish) => void
-
-  /** Called when the repository should be opened in an external editor */
-  readonly onOpenInExternalEditor: (repository: Repositoryish) => void
 
   /** The current external editor selected by the user */
   readonly externalEditorLabel?: string
@@ -148,19 +138,19 @@ export class RepositoryListItem extends React.Component<
   }
 
   private removeRepository = () => {
-    this.props.onRemoveRepository(this.props.repository)
+    dispatcher.removeRepository(this.props.repository)
   }
 
   private showRepository = () => {
-    this.props.onShowRepository(this.props.repository)
+    shell.showFolderContents(this.props.repository.path)
   }
 
   private openInShell = () => {
-    this.props.onOpenInShell(this.props.repository)
+    dispatcher.openShell(this.props.repository.path)
   }
 
   private openInExternalEditor = () => {
-    this.props.onOpenInExternalEditor(this.props.repository)
+    dispatcher.openInExternalEditor(this.props.repository.path)
   }
 }
 

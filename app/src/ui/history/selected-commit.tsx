@@ -28,6 +28,7 @@ import { showContextualMenu } from '../main-process-proxy'
 import { CommitSummary } from './commit-summary'
 import { FileList } from './file-list'
 import { SeamlessDiffSwitcher } from '../diff/seamless-diff-switcher'
+import { dispatcher } from '../index'
 
 interface ISelectedCommitProps {
   readonly repository: Repository
@@ -41,12 +42,6 @@ interface ISelectedCommitProps {
   /** The name of the currently selected external editor */
   readonly externalEditorLabel?: string
 
-  /**
-   * Called to open a file using the user's configured applications
-   *
-   * @param path The path of the file relative to the root of the repository
-   */
-  readonly onOpenInExternalEditor: (path: string) => void
   readonly hideWhitespaceInDiff: boolean
 
   /**
@@ -284,7 +279,7 @@ export class SelectedCommit extends React.Component<
       },
       {
         label: openInExternalEditor,
-        action: () => this.props.onOpenInExternalEditor(fullPath),
+        action: () => dispatcher.openInExternalEditor(fullPath),
         enabled: isSafeExtension && fileExistsOnDisk,
       },
       {

@@ -8,6 +8,7 @@ import {
 import { AppMenuBarButton } from './app-menu-bar-button'
 import { Dispatcher } from '../dispatcher'
 import { AppMenuFoldout, FoldoutType } from '../../lib/app-state'
+import { dispatcher } from '../index'
 
 interface IAppMenuBarProps {
   readonly appMenu: ReadonlyArray<IMenu>
@@ -28,15 +29,6 @@ interface IAppMenuBarProps {
    * app menu foldout is not currently open.
    */
   readonly foldoutState: AppMenuFoldout | null
-
-  /**
-   * An optional function that's called when the menubar loses focus.
-   *
-   * Note that this function will only be called once no descendant element
-   * of the menu bar has keyboard focus. In other words this differs
-   * from the traditional onBlur event.
-   */
-  readonly onLostFocus?: () => void
 }
 
 interface IAppMenuBarState {
@@ -267,9 +259,8 @@ export class AppMenuBar extends React.Component<
     this.hasFocus = false
     this.focusOutTimeout = null
 
-    if (this.props.onLostFocus) {
-      this.props.onLostFocus()
-    }
+    dispatcher.closeFoldout(FoldoutType.AppMenu)
+    dispatcher.setAppMenuState(menu => menu.withReset())
 
     // It's possible that the element which we are referencing here is no longer
     // part of the DOM so it's important that we clear out our handle to prevent

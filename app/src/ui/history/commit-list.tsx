@@ -40,9 +40,6 @@ interface ICommitListProps {
   /** Callback to fire to revert a given commit in the current repository */
   readonly onRevertCommit: ((commit: Commit) => void) | undefined
 
-  /** Callback to fire to open a given commit on GitHub */
-  readonly onViewCommitOnGitHub: (sha: string) => void
-
   /** Callback to fire to open the dialog to create a new tag on the given commit */
   readonly onCreateTag: (targetCommitSha: string) => void
 
@@ -120,7 +117,6 @@ export class CommitList extends React.Component<ICommitListProps, {}> {
         onCreateTag={this.props.onCreateTag}
         onDeleteTag={this.props.onDeleteTag}
         onRevertCommit={this.props.onRevertCommit}
-        onViewCommitOnGitHub={this.props.onViewCommitOnGitHub}
       />
     )
   }

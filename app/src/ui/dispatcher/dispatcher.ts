@@ -6,11 +6,11 @@ import { shell } from '../../lib/app-shell'
 import {
   CompareAction,
   Foldout,
-  FoldoutType,
+  FoldoutType, HistoryTabMode,
   ICompareFormUpdate,
   isMergeConflictState,
   RebaseConflictState,
-  RepositorySectionTab,
+  RepositorySectionTab, SelectionType,
 } from '../../lib/app-state'
 import { ExternalEditor } from '../../lib/editors'
 import { assertNever, fatalError } from '../../lib/fatal-error'
@@ -33,7 +33,7 @@ import { AppStore } from '../../lib/stores'
 import { validatedRepositoryPath } from '../../lib/stores/helpers/validated-repository-path'
 import { RepositoryStateCache } from '../../lib/stores/repository-state-cache'
 import { getTipSha } from '../../lib/tip'
-import { initializeRebaseFlowForConflictedRepository } from '../../lib/rebase'
+import { initializeNewRebaseFlow, initializeRebaseFlowForConflictedRepository } from '../../lib/rebase'
 
 import { Account } from '../../models/account'
 import { AppMenu, ExecutableMenuItem } from '../../models/app-menu'
@@ -63,7 +63,7 @@ import { Banner, BannerType } from '../../models/banner'
 
 import { ApplicationTheme } from '../lib/application-theme'
 import { installCLI } from '../lib/install-cli'
-import { executeMenuItem } from '../main-process-proxy'
+import { executeMenuItem, showCertificateTrustDialog } from '../main-process-proxy'
 import { CommitStatusStore, ICombinedRefCheck, StatusCallBack } from '../../lib/stores/commit-status-store'
 import { UncommittedChangesStrategy, UncommittedChangesStrategyKind } from '../../models/uncommitted-changes-strategy'
 import { RebaseFlowStep, RebaseStep } from '../../models/rebase-flow-step'
@@ -71,6 +71,7 @@ import { IStashEntry } from '../../models/stash-entry'
 import { WorkflowPreferences } from '../../models/workflow-preferences'
 import { enableForkSettings } from '../../lib/feature-flag'
 import { resolveWithin } from '../../lib/path'
+import { dispatcher } from '../index'
 
 /**
  * An error handler function.
@@ -110,6 +111,58 @@ export class Dispatcher {
   ): Promise<ReadonlyArray<Repository>> {
     return this.appStore._addRepositories(paths)
   }
+
+  public removeRepository = (
+    repository: Repository | CloningRepository | null
+  ) => {
+    if (!repository) {
+      return
+    }
+
+    if (repository instanceof CloningRepository || repository.missing) {
+      this.removeRepositories([repository], false)
+      return
+    }
+
+    if (this.appStore.askForConfirmationOnRepositoryRemoval) {
+      this.showPopup({
+        type: PopupType.RemoveRepository,
+        repository,
+      })
+    } else {
+      this.removeRepositories([repository], false)
+    }
+  }
+
+  public onShowRebaseConflictsBanner = (
+    repository: Repository,
+    targetBranch: string,
+  ) => {
+    this.setBanner({
+      type: BannerType.RebaseConflictsFound,
+      targetBranch,
+      onOpenDialog: async () => {
+        const { changesState } = this.repositoryStateManager.get(
+          repository,
+        )
+        const { conflictState } = changesState
+
+        if (conflictState === null || conflictState.kind === 'merge') {
+          log.debug(`[App.onShowRebasConflictsBanner] no conflict state found, ignoring...`,)
+          return
+        }
+
+        await this.setRebaseProgressFromState(repository)
+        const initialStep = initializeRebaseFlowForConflictedRepository(conflictState)
+        this.setRebaseFlowStep(repository, initialStep)
+        this.showPopup({
+          type: PopupType.RebaseFlow,
+          repository,
+        })
+      },
+    })
+  }
+
 
   /** Remove the repositories represented by the given IDs from local storage. */
   public async removeRepositories(
@@ -536,9 +589,20 @@ export class Dispatcher {
     )
   }
 
+  public pushRepository(repository: Repository) {
+    this.appStore._push(repository)
+  }
+
   /** Push the current branch. */
-  public push(repository: Repository): Promise<void> {
-    return this.appStore._push(repository)
+  public push(options?: { forceWithLease: boolean }) {
+    const state = this.appStore.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) return
+
+    if (options && options.forceWithLease) {
+      this.confirmOrForcePush(state.repository)
+    } else {
+      this.appStore._push(state.repository)
+    }
   }
 
   private pushWithOptions(repository: Repository, options?: PushOptions) {
@@ -549,10 +613,410 @@ export class Dispatcher {
     return this.appStore._push(repository, options)
   }
 
-  /** Pull the current branch. */
-  public pull(repository: Repository): Promise<void> {
+  public pullRepository(repository: Repository) {
     return this.appStore._pull(repository)
   }
+
+  /** Pull the current branch. */
+  public pull(): Promise<void> {
+    const state = this.appStore.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) {
+      return Promise.resolve()
+    }
+
+    return this.appStore._pull(state.repository)
+  }
+
+  public async showChanges() {
+    const state = this.appStore.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) {
+      return
+    }
+
+    await this.closeCurrentFoldout()
+    return this.changeRepositorySection(
+      state.repository,
+      RepositorySectionTab.Changes
+    )
+  }
+
+  public async showStashes() {
+    const state = this.appStore.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) {
+      return
+    }
+
+    await this.closeCurrentFoldout()
+    return this.changeRepositorySection(
+      state.repository,
+      RepositorySectionTab.Stash
+    )
+  }
+
+  public async showHistory(showBranchList: boolean = false) {
+    const state = this.appStore.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) {
+      return
+    }
+
+    await this.closeCurrentFoldout()
+    await this.initializeCompare(state.repository, {
+      kind: HistoryTabMode.History,
+    })
+
+    await this.changeRepositorySection(
+      state.repository,
+      RepositorySectionTab.History
+    )
+
+    await this.updateCompareForm(state.repository, {
+      filterText: '',
+      showBranchList,
+    })
+  }
+
+  public chooseRepository() {
+    if (
+      this.appStore.currentFoldout &&
+      this.appStore.currentFoldout.type === FoldoutType.Repository
+    ) {
+      return this.closeFoldout(FoldoutType.Repository)
+    }
+
+    return this.showFoldout({ type: FoldoutType.Repository })
+  }
+
+  public showCreateBranch = () => {
+    const state = this.appStore.getSelectedState()
+    if (!state || state.type !== SelectionType.Repository) return
+
+    // We explicitly disable the menu item in this scenario so this
+    // should never happen.
+    if (state.state.branchesState.tip.kind === TipState.Unknown) return
+
+    const repository = state.repository
+
+    const manager = this.repositoryStateManager.get(repository)
+    const currentBranchProtected = manager.changesState.currentBranchProtected
+
+    return this.showPopup({
+      type: PopupType.CreateBranch,
+      repository,
+      currentBranchProtected,
+    })
+  }
+
+  public showBranches() {
+    const state = this.appStore.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) {
+      return
+    }
+
+    if (
+      this.appStore.currentFoldout &&
+      this.appStore.currentFoldout.type === FoldoutType.Branch
+    ) {
+      return this.closeFoldout(FoldoutType.Branch)
+    }
+
+    return this.showFoldout({ type: FoldoutType.Branch })
+  }
+
+  public showTags() {
+    const state = this.appStore.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) {
+      return
+    }
+
+    if (
+      this.appStore.currentFoldout &&
+      this.appStore.currentFoldout.type === FoldoutType.Tags
+    ) {
+      return this.closeFoldout(FoldoutType.Tags)
+    }
+
+    return this.showFoldout({ type: FoldoutType.Tags })
+  }
+
+  public removeCurrentRepository(): any {
+    const state = this.appStore.getSelectedState()
+    if (state == null) return null
+    if (!state.repository) return
+
+    if (state.repository instanceof CloningRepository || state.repository.missing) {
+      this.removeRepositories([state.repository], false)
+      return
+    }
+
+    if (this.appStore.askForConfirmationOnRepositoryRemoval) {
+      this.showPopup({
+        type: PopupType.RemoveRepository,
+        repository: state.repository,
+      })
+    } else {
+      this.removeRepositories([state.repository], false)
+    }
+  }
+
+  public renameDialogBranch() {
+    const state = this.appStore.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) {
+      return
+    }
+
+    const tip = state.state.branchesState.tip
+    if (tip.kind === TipState.Valid) {
+      this.showPopup({
+        type: PopupType.RenameBranch,
+        repository: state.repository,
+        branch: tip.branch,
+      })
+    }
+  }
+
+  public deleteDialogBranch() {
+    const state = this.appStore.getSelectedState()
+    if (state === null || state.type !== SelectionType.Repository) {
+      return
+    }
+
+    const tip = state.state.branchesState.tip
+
+    if (tip.kind === TipState.Valid) {
+      const currentPullRequest = state.state.branchesState.currentPullRequest
+      if (currentPullRequest !== null) {
+        this.showPopup({
+          type: PopupType.DeletePullRequest,
+          repository: state.repository,
+          branch: tip.branch,
+          pullRequest: currentPullRequest,
+        })
+      } else {
+        const existsOnRemote = state.state.aheadBehind !== null
+
+        this.showPopup({
+          type: PopupType.DeleteBranch,
+          repository: state.repository,
+          branch: tip.branch,
+          existsOnRemote: existsOnRemote,
+        })
+      }
+    }
+  }
+
+  public discardAllChanges() {
+    const state = this.appStore.getSelectedState()
+
+    if (state == null || state.type !== SelectionType.Repository) {
+      return
+    }
+
+    const { workingDirectory } = state.state.changesState
+
+    this.showPopup({
+      type: PopupType.ConfirmDiscardChanges,
+      repository: state.repository,
+      files: workingDirectory.files,
+      showDiscardChangesSetting: false,
+      discardingAllChanges: true,
+    })
+  }
+
+  public openCurrentRepositoryWorkingDirectory() {
+    const state = this.appStore.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) {
+      return
+    }
+
+    shell.showFolderContents(state.repository.path)
+  }
+
+  public updateBranch() {
+    const selectedState = this.appStore.getSelectedState()
+    if (
+      selectedState == null ||
+      selectedState.type !== SelectionType.Repository
+    ) {
+      return
+    }
+
+    const { state } = selectedState
+    const defaultBranch = state.branchesState.defaultBranch
+    if (!defaultBranch) {
+      return
+    }
+
+    this.mergeBranch(
+      selectedState.repository,
+      defaultBranch.name,
+    )
+  }
+
+  public commitMessageDialog() {
+    const repository = this.appStore.getSelectedState()?.repository
+    if (!repository || repository instanceof CloningRepository) return
+    return dispatcher.showPopup({
+      type: PopupType.Commit,
+      repository
+    })
+  }
+
+  public mergeBranchDialog() {
+    const state = this.appStore.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) {
+      return
+    }
+
+    this.showPopup({
+      type: PopupType.MergeBranch,
+      repository: state.repository,
+    })
+  }
+
+  public showRebaseDialog() {
+    const state = this.appStore.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) return
+    const repository = state.repository
+
+    const repositoryState = this.repositoryStateManager.get(repository)
+
+    const initialStep = initializeNewRebaseFlow(repositoryState)
+
+    this.setRebaseFlowStep(repository, initialStep)
+
+    this.showPopup({
+      type: PopupType.RebaseFlow,
+      repository,
+    })
+  }
+
+  public showRepositorySettings() {
+    const state = this.appStore.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) return
+    const repository = state.repository
+
+    this.showPopup({
+      type: PopupType.RepositorySettings,
+      repository,
+    })
+  }
+
+  public viewRepositoryOnGitHub() {
+    const state = this.appStore.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) return
+    const repository = state.repository
+
+    const url = getGitHubHtmlUrl(repository)
+
+    if (url) this.openInBrowser(url)
+  }
+
+  public openIssueCreationOnGitHub() {
+    const state = this.appStore.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) return
+    const repository = state.repository
+    this.openIssueCreationPage(repository)
+  }
+
+  public openCurrentRepositoryInShell = () => {
+    const state = this.appStore.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) return
+    const repository = state.repository
+
+    this.openShell(repository.path)
+  }
+
+  public showCloneRepo = (cloneUrl?: string) => {
+    let initialURL: string | null = null
+
+    if (cloneUrl !== undefined) {
+      this.changeCloneRepositoriesTab(
+        CloneRepositoryTab.Generic
+      )
+      initialURL = cloneUrl
+    }
+
+    return this.showPopup({
+      type: PopupType.CloneRepository,
+      initialURL,
+    })
+  }
+
+  public openPullRequest = () => {
+    const state = this.appStore.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) return
+
+    const currentPullRequest = state.state.branchesState.currentPullRequest
+
+    if (currentPullRequest == null) {
+      this.createPullRequest(state.repository)
+    } else {
+      this.showPullRequest(state.repository)
+    }
+  }
+
+  public openCurrentRepositoryInExternalEditor() {
+    const state = this.appStore.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) return
+    const repository = state.repository
+
+    this.openInExternalEditor(repository.path)
+  }
+
+  public selectAll() {
+    const event = new CustomEvent('select-all', {
+      bubbles: true,
+      cancelable: true,
+    })
+
+    if (
+      document.activeElement != null &&
+      document.activeElement.dispatchEvent(event)
+    ) {
+      remote.getCurrentWebContents().selectAll()
+    }
+  }
+
+  public findText() {
+    const event = new CustomEvent('find-text', {
+      bubbles: true,
+      cancelable: true,
+    })
+
+    if (document.activeElement != null) {
+      document.activeElement.dispatchEvent(event)
+    } else {
+      document.dispatchEvent(event)
+    }
+  }
+
+  public onContinueWithUntrustedCertificate = (certificate: Electron.Certificate) => {
+    showCertificateTrustDialog(
+      certificate,
+      'Could not securely connect to the server, because its certificate is not trusted. Attackers might be trying to steal your information.\n\nTo connect unsafely, which may put your data at risk, you can “Always trust” the certificate and try again.'
+    )
+  }
+
+  public onViewCommitOnGitHub = async (SHA: string) => {
+    const state = this.appStore.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) return
+    const repository = state.repository
+
+    if (
+      !repository ||
+      repository instanceof CloningRepository ||
+      !repository.gitHubRepository
+    ) {
+      return
+    }
+
+    const baseURL = repository.gitHubRepository.htmlURL
+
+    if (baseURL) {
+      this.openInBrowser(`${baseURL}/commit/${SHA}`)
+    }
+  }
+
 
   /** Fetch a specific refspec for the repository. */
   public fetchRefspec(
@@ -1870,10 +2334,10 @@ export class Dispatcher {
   public async performRetry(retryAction: RetryAction): Promise<void> {
     switch (retryAction.type) {
       case RetryActionType.Push:
-        return this.push(retryAction.repository)
+        return this.appStore._push(retryAction.repository)
 
       case RetryActionType.Pull:
-        return this.pull(retryAction.repository)
+        return this.appStore._pull(retryAction.repository)
 
       case RetryActionType.Fetch:
         return this.fetch(retryAction.repository, FetchType.UserInitiatedTask)

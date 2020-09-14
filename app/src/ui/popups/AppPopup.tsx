@@ -17,7 +17,7 @@ import { CloneRepository } from '../clone-repository'
 import { GitHubRepository } from '../../models/github-repository'
 import { Branch } from '../../models/branch'
 import { enableForkyCreateBranchUI } from '../../lib/feature-flag'
-import { getNonForkGitHubRepository, isRepositoryWithGitHubRepository, Repository } from '../../models/repository'
+import { getNonForkGitHubRepository, isRepositoryWithGitHubRepository } from '../../models/repository'
 import { findDefaultUpstreamBranch } from '../../lib/branch'
 import { CreateBranch } from '../create-branch'
 import {
@@ -119,7 +119,6 @@ interface IProps {
    */
   readonly apiRepositories: ReadonlyMap<Account, IAccountRepositories>
   readonly accounts: ReadonlyArray<Account>
-  readonly onContinueWithUntrustedCertificate: (certificate: Electron.Certificate) => void
   readonly selectedState: PossibleSelections | null
   /**
    * A cached entry representing an external editor found on the user's machine:
@@ -130,15 +129,6 @@ interface IProps {
    *  - If no editors found, this will remain `null`
    */
   readonly resolvedExternalEditor: ExternalEditor | null
-  /**
-   * Callback to hide the rebase flow and show a banner about the current state
-   * of conflicts, because this component will be unmounted by the runtime.
-   */
-  readonly onShowRebaseConflictsBanner: (
-    repository: Repository,
-    targetBranch: string,
-  ) => void
-  readonly openCurrentRepositoryInShell: () => void
 }
 
 export const AppPopup: React.FC<IProps> = (
@@ -160,11 +150,8 @@ export const AppPopup: React.FC<IProps> = (
     selectedCloneRepositoryTab,
     apiRepositories,
     accounts,
-    onContinueWithUntrustedCertificate,
     selectedState,
     resolvedExternalEditor,
-    onShowRebaseConflictsBanner,
-    openCurrentRepositoryInShell,
     appStore
   }) => {
 
@@ -518,7 +505,6 @@ export const AppPopup: React.FC<IProps> = (
           certificate={popup.certificate}
           url={popup.url}
           onDismissed={onPopupDismissedFn}
-          onContinue={onContinueWithUntrustedCertificate}
         />
       )
     case PopupType.Acknowledgements:
@@ -760,8 +746,6 @@ export const AppPopup: React.FC<IProps> = (
           userHasResolvedConflicts={userHasResolvedConflicts}
           askForConfirmationOnForcePush={askForConfirmationOnForcePush}
           resolvedExternalEditor={resolvedExternalEditor}
-          openRepositoryInShell={openCurrentRepositoryInShell}
-          onShowRebaseConflictsBanner={onShowRebaseConflictsBanner}
         />
       )
     }

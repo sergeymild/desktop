@@ -2,6 +2,7 @@ import * as React from 'react'
 import * as URL from 'url'
 import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { dispatcher } from '../index'
 
 interface IUntrustedCertificateProps {
   /** The untrusted certificate. */
@@ -12,12 +13,6 @@ interface IUntrustedCertificateProps {
 
   /** The function to call when the user chooses to dismiss the dialog. */
   readonly onDismissed: () => void
-
-  /**
-   * The function to call when the user chooses to continue in the process of
-   * trusting the certificate.
-   */
-  readonly onContinue: (certificate: Electron.Certificate) => void
 }
 
 /**
@@ -75,6 +70,6 @@ export class UntrustedCertificate extends React.Component<
 
   private onContinue = () => {
     this.props.onDismissed()
-    this.props.onContinue(this.props.certificate)
+    dispatcher.onContinueWithUntrustedCertificate(this.props.certificate)
   }
 }

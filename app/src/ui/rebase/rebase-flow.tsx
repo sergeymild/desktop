@@ -47,17 +47,7 @@ interface IRebaseFlowProps {
 
   readonly askForConfirmationOnForcePush: boolean
 
-  /**
-   * Callback to hide the rebase flow and show a banner about the current state
-   * of conflicts, because this component will be unmounted by the runtime.
-   */
-  readonly onShowRebaseConflictsBanner: (
-    repository: Repository,
-    targetBranch: string
-  ) => void
-
   readonly resolvedExternalEditor: string | null
-  readonly openRepositoryInShell: (repository: Repository) => void
   readonly onDismissed: () => void
 }
 
@@ -94,8 +84,7 @@ export class RebaseFlow extends React.Component<IRebaseFlowProps> {
     })
 
     const { targetBranch } = step.conflictState
-
-    this.props.onShowRebaseConflictsBanner(this.props.repository, targetBranch)
+    dispatcher.onShowRebaseConflictsBanner(this.props.repository, targetBranch)
   }
 
   private onConfirmAbortRebase = (step: ShowConflictsStep) => {
@@ -180,7 +169,6 @@ export class RebaseFlow extends React.Component<IRebaseFlowProps> {
         const {
           repository,
           resolvedExternalEditor,
-          openRepositoryInShell,
           dispatcher,
           workingDirectory,
           userHasResolvedConflicts,
@@ -196,7 +184,6 @@ export class RebaseFlow extends React.Component<IRebaseFlowProps> {
             workingDirectory={workingDirectory}
             userHasResolvedConflicts={userHasResolvedConflicts}
             resolvedExternalEditor={resolvedExternalEditor}
-            openRepositoryInShell={openRepositoryInShell}
             onAbortRebase={this.onConfirmAbortRebase}
             onDismissed={this.onFlowEnded}
             onContinueRebase={this.onContinueRebase}

@@ -1,25 +1,19 @@
 import * as React from 'react'
 import { Octicon, OcticonSymbol } from '../octicons'
 import { Banner } from './banner'
-import { Dispatcher } from '../dispatcher'
 import { LinkButton } from '../lib/link-button'
+import { dispatcher } from '../index'
 
-interface IRebaseConflictsBannerProps {
-  readonly dispatcher: Dispatcher
+interface IProps {
   /** branch the user is rebasing into */
   readonly targetBranch: string
   /** callback to fire when the dialog should be reopened */
   readonly onOpenDialog: () => void
-  /** callback to fire to dismiss the banner */
-  readonly onDismissed: () => void
 }
 
-export class RebaseConflictsBanner extends React.Component<
-  IRebaseConflictsBannerProps,
-  {}
-> {
+export class RebaseConflictsBanner extends React.Component<IProps, {}> {
   private openDialog = async () => {
-    this.props.onDismissed()
+    dispatcher.clearBanner()
     this.props.onOpenDialog()
   }
 

@@ -290,7 +290,7 @@ function forcePushButton(
  */
 export class PushPullButton extends React.PureComponent<IPushPullButtonProps, {}> {
   private push = () => {
-    dispatcher.push(this.props.repository)
+    dispatcher.pushRepository(this.props.repository)
   }
 
   private forcePushWithLease = () => {
@@ -298,7 +298,7 @@ export class PushPullButton extends React.PureComponent<IPushPullButtonProps, {}
   }
 
   private pull = () => {
-    dispatcher.pull(this.props.repository)
+    dispatcher.pullRepository(this.props.repository)
   }
 
   private fetch = () => {

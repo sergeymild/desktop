@@ -266,7 +266,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private showWelcomeFlow = false
   private focusCommitMessage = false
   private currentPopup: Popup | null = null
-  private currentFoldout: Foldout | null = null
+  public currentFoldout: Foldout | null = null
   private currentBanner: Banner | null = null
   private errors: ReadonlyArray<Error> = new Array<Error>()
   private emitQueued = false
@@ -303,7 +303,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private isUpdateAvailableBannerVisible: boolean = false
   private localStashesCount: number = 0
 
-  private askForConfirmationOnRepositoryRemoval: boolean = confirmRepoRemovalDefault
+  public askForConfirmationOnRepositoryRemoval: boolean = confirmRepoRemovalDefault
   private confirmDiscardChanges: boolean = confirmDiscardChangesDefault
   private askForConfirmationOnForcePush = askForConfirmationOnForcePushDefault
   private imageDiffType: ImageDiffType = imageDiffTypeDefault
@@ -491,7 +491,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     }
   }
 
-  private getSelectedState(): PossibleSelections | null {
+  getSelectedState(): PossibleSelections | null {
     const repository = this.selectedRepository
 
     if (!repository) {

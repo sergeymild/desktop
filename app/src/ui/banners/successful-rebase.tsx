@@ -1,15 +1,14 @@
 import * as React from 'react'
 import { Octicon, OcticonSymbol } from '../octicons'
 import { Banner } from './banner'
+import { dispatcher } from '../index'
 
 export function SuccessfulRebase({
   baseBranch,
   targetBranch,
-  onDismissed,
 }: {
   readonly baseBranch?: string
   readonly targetBranch: string
-  readonly onDismissed: () => void
 }) {
   const message =
     baseBranch !== undefined ? (
@@ -27,7 +26,7 @@ export function SuccessfulRebase({
     )
 
   return (
-    <Banner id="successful-rebase" timeout={5000} onDismissed={onDismissed}>
+    <Banner id="successful-rebase" timeout={5000} onDismissed={dispatcher.clearBanner}>
       <div className="green-circle">
         <Octicon className="check-icon" symbol={OcticonSymbol.check} />
       </div>

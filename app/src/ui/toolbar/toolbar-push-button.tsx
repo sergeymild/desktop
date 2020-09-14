@@ -19,7 +19,7 @@ export class ToolbarPushButton extends React.PureComponent<IProps> {
     if (repository === undefined) { return }
     if (repository instanceof CloningRepository) { return }
     if (this.props.tipKind !== TipState.Valid) { return }
-    dispatcher.push(repository)
+    dispatcher.pushRepository(repository)
   }
 
   public render() {
