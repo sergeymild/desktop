@@ -359,7 +359,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     this.onWindowZoomFactorChanged(browserWindow.webContents.zoomFactor)
 
-    this.wireupIpcEventHandlers(browserWindow)
+    this.wireUpIpcEventHandlers(browserWindow)
     this.wireupStoreEventHandlers()
     getAppMenu()
     this.repositoryIndicatorUpdater = new RepositoryIndicatorUpdater(
@@ -382,7 +382,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     }
   }
 
-  private wireupIpcEventHandlers(window: Electron.BrowserWindow) {
+  private wireUpIpcEventHandlers(window: Electron.BrowserWindow) {
     ipcRenderer.on(
       windowStateChannelName,
       (event: Electron.IpcRendererEvent, windowState: WindowState) => {

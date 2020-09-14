@@ -84,6 +84,7 @@ rules:
 
   # It'd be nice to be able to turn this on eventually
   '@typescript-eslint/no-var-requires': off
+  '@typescript-eslint/ban-ts-comment': off
 
   # Don't particularly care about these
   '@typescript-eslint/triple-slash-reference': off
