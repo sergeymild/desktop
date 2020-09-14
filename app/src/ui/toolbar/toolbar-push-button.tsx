@@ -37,8 +37,6 @@ export class ToolbarPushButton extends React.PureComponent<IProps> {
   public render() {
     const isEnabled = this.props.tipKind === TipState.Valid
 
-
-
     return <ToolbarButton
       disabled={!isEnabled}
       onClick={this.push}
