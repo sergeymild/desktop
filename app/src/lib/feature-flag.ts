@@ -95,6 +95,10 @@ export function enableNDDBBanner(): boolean {
   return false
 }
 
+export function enableScanForSubmodules(): boolean {
+  return false
+}
+
 /**
  * Should we show the git tag information in the app UI?
  */

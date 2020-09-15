@@ -27,7 +27,7 @@ const BlankSlateImage = encodePathAsUrl(__dirname, 'static/empty-no-repo.svg')
 
 const recentRepositoriesThreshold = 7
 
-interface IRepositoriesListProps {
+interface IProps {
   readonly selectedRepository: Repositoryish | null
   readonly repositories: ReadonlyArray<Repositoryish>
   readonly recentRepositories: ReadonlyArray<number>
@@ -77,10 +77,7 @@ function findMatchingListItem(
 }
 
 /** The list of user-added repositories. */
-export class RepositoriesList extends React.Component<
-  IRepositoriesListProps,
-  {}
-> {
+export class RepositoriesList extends React.Component<IProps, {}> {
   /**
    * A memoized function for grouping repositories for display
    * in the FilterList. The group will not be recomputed as long

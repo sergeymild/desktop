@@ -34,6 +34,8 @@ export class Repository {
    */
   private readonly mainWorkTree: WorkingTree
 
+  submodules: Array<Repository> = []
+
   /**
    * @param path The working directory of this repository
    * @param missing Was the repository missing on disk last we checked?

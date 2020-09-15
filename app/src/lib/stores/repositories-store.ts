@@ -1,17 +1,14 @@
 import {
-  RepositoriesDatabase,
   IDatabaseGitHubRepository,
   IDatabaseOwner,
   IDatabaseProtectedBranch,
+  RepositoriesDatabase,
 } from '../databases'
 import { Owner } from '../../models/owner'
-import {
-  GitHubRepository,
-  GitHubRepositoryPermission,
-} from '../../models/github-repository'
+import { GitHubRepository, GitHubRepositoryPermission } from '../../models/github-repository'
 import { Repository } from '../../models/repository'
 import { fatalError } from '../fatal-error'
-import { IAPIRepository, IAPIBranch, IAPIRepositoryPermissions } from '../api'
+import { IAPIBranch, IAPIRepository, IAPIRepositoryPermissions } from '../api'
 import { TypedBaseStore } from './base-store'
 import { WorkflowPreferences } from '../../models/workflow-preferences'
 import { clearTagsToPush } from './helpers/tags-to-push-storage'

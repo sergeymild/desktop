@@ -159,7 +159,7 @@ import { ApiRepositoriesStore } from './api-repositories-store'
 import { selectWorkingDirectoryFiles, updateChangedFiles, updateConflictState } from './updates/changes-state'
 import { ManualConflictResolution, ManualConflictResolutionKind } from '../../models/manual-conflict-resolution'
 import { BranchPruner } from './helpers/branch-pruner'
-import { enableProgressBarOnIcon, enableUpdateRemoteUrl } from '../feature-flag'
+import { enableProgressBarOnIcon, enableScanForSubmodules, enableUpdateRemoteUrl } from '../feature-flag'
 import { Banner, BannerType } from '../../models/banner'
 import { isDarkModeEnabled } from '../../ui/lib/dark-theme'
 import { ComputedAction } from '../../models/computed-action'
@@ -200,6 +200,9 @@ import { WorkflowPreferences } from '../../models/workflow-preferences'
 import { RepositoryIndicatorUpdater } from './helpers/repository-indicator-updater'
 import { CherryPickResult } from '../git/cherry-pick'
 import { CommitIdentity } from '../../models/commit-identity'
+import Fs from "fs"
+import * as Path from 'path'
+import { parseGitModules } from './submodules-file-parser'
 
 const LastSelectedRepositoryIDKey = 'last-selected-repository-id'
 
@@ -4451,9 +4454,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     )
   }
 
-  public async _addRepositories(
-    paths: ReadonlyArray<string>
-  ): Promise<ReadonlyArray<Repository>> {
+  public async _addRepositories(paths: ReadonlyArray<string>): Promise<ReadonlyArray<Repository>> {
     const addedRepositories = new Array<Repository>()
     const lfsRepositories = new Array<Repository>()
     const invalidPaths: Array<string> = []
@@ -4466,6 +4467,15 @@ export class AppStore extends TypedBaseStore<IAppState> {
         const addedRepo = await this.repositoriesStore.addRepository(
           validatedPath
         )
+
+        if (enableScanForSubmodules()) {
+          const gitmodules = Path.join(addedRepo.path, ".gitmodules")
+          // eslint-disable-next-line no-sync
+          if (!Fs.existsSync(gitmodules)) continue
+          // eslint-disable-next-line no-sync
+          const modules = parseGitModules(Fs.readFileSync(gitmodules).toString("utf-8"))
+          await this._addRepositories(modules.map(p => Path.join(addedRepo.path, p.path)))
+        }
 
         // initialize the remotes for this new repository to ensure it can fetch
         // it's GitHub-related details using the GitHub API (if applicable)

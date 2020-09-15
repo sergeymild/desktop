@@ -46,8 +46,9 @@ export function groupRepositories(
   const grouped = new Map<RepositoryGroupIdentifier, Repositoryish[]>()
   const gitHubOwners = new Set<string>()
   for (const repository of repositories) {
-    const gitHubRepository =
-      repository instanceof Repository ? repository.gitHubRepository : null
+    const gitHubRepository = repository instanceof Repository
+      ? repository.gitHubRepository
+      : null
     let group: RepositoryGroupIdentifier = KnownRepositoryGroup.NonGitHub
     if (gitHubRepository) {
       if (gitHubRepository.endpoint === getDotComAPIEndpoint()) {
