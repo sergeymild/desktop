@@ -1211,8 +1211,8 @@ export class Dispatcher {
    *
    * @param bannerType only close the banner if it matches this `BannerType`
    */
-  public clearBanner(bannerType?: BannerType) {
-    return this.appStore._clearBanner(bannerType)
+  public clearBanner() {
+    return this.appStore._clearBanner()
   }
 
   /**

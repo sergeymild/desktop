@@ -327,9 +327,6 @@ export class App extends React.Component<IAppProps, IAppState> {
     )
   }
 
-  private onUpdateAvailableDismissed = () =>
-    this.props.dispatcher.setUpdateBannerVisibility(false)
-
   private currentPopupContent(): JSX.Element | null {
     // Hide any dialogs while we're displaying an error
     if (this.state.errors.length) { return null }
@@ -500,7 +497,6 @@ export class App extends React.Component<IAppProps, IAppState> {
       <UpdateAvailable
         dispatcher={this.props.dispatcher}
         newRelease={updateStore.state.newRelease}
-        onDismissed={this.onUpdateAvailableDismissed}
         key={'update-available'}
       />
     )

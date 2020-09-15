@@ -1,11 +1,12 @@
 import * as React from 'react'
 import { Octicon, OcticonSymbol } from '../octicons'
+import { dispatcher } from '../index'
 
 interface IBannerProps {
   readonly id?: string
   readonly timeout?: number
   readonly dismissable?: boolean
-  readonly onDismissed: () => void
+  readonly onDismissed?: () => void
 }
 
 export class Banner extends React.Component<IBannerProps, {}> {
@@ -20,6 +21,14 @@ export class Banner extends React.Component<IBannerProps, {}> {
     )
   }
 
+  private dismiss = () => {
+    if (this.props.dismissable === false) return
+    if (this.props.onDismissed) {
+      return this.props.onDismissed()
+    }
+    dispatcher.clearBanner()
+  }
+
   private renderCloseButton() {
     const { dismissable } = this.props
     if (dismissable === undefined || dismissable === false) {
@@ -28,7 +37,7 @@ export class Banner extends React.Component<IBannerProps, {}> {
 
     return (
       <div className="close">
-        <a onClick={this.props.onDismissed}>
+        <a onClick={this.dismiss}>
           <Octicon symbol={OcticonSymbol.x} />
         </a>
       </div>
@@ -38,7 +47,7 @@ export class Banner extends React.Component<IBannerProps, {}> {
   public componentDidMount = () => {
     if (this.props.timeout !== undefined) {
       this.timeoutId = window.setTimeout(() => {
-        this.props.onDismissed()
+        this.dismiss()
       }, this.props.timeout)
     }
   }

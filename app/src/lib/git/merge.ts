@@ -30,7 +30,7 @@ export async function merge(
   branch: string
 ): Promise<MergeResult> {
   const { exitCode, stdout } = await git(
-    ['merge', branch],
+    ['merge', branch, '--no-ff'],
     repository.path,
     'merge',
     {

@@ -22,7 +22,6 @@ export class MergeConflictsBanner extends React.Component<IProps, {}> {
       <Banner
         id="merge-conflicts-banner"
         dismissable={false}
-        onDismissed={dispatcher.clearBanner}
       >
         <Octicon className="alert-icon" symbol={OcticonSymbol.alert} />
         <div className="banner-message">

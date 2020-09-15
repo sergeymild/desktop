@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Dispatcher } from '../dispatcher/index'
+import { Dispatcher } from '../dispatcher'
 import { LinkButton } from '../lib/link-button'
 import { updateStore } from '../lib/update-store'
 import { Octicon, OcticonSymbol } from '../octicons'
@@ -9,11 +9,11 @@ import { shell } from '../../lib/app-shell'
 import { ReleaseSummary } from '../../models/release-notes'
 import { Banner } from './banner'
 import { ReleaseNotesUri } from '../lib/releases'
+import { dispatcher } from '../index'
 
 interface IUpdateAvailableProps {
   readonly dispatcher: Dispatcher
   readonly newRelease: ReleaseSummary | null
-  readonly onDismissed: () => void
 }
 
 /**
@@ -24,9 +24,13 @@ export class UpdateAvailable extends React.Component<
   IUpdateAvailableProps,
   {}
 > {
+  private dismiss = () => {
+    dispatcher.setUpdateBannerVisibility(false)
+  }
+
   public render() {
     return (
-      <Banner id="update-available" onDismissed={this.props.onDismissed}>
+      <Banner id="update-available" onDismissed={this.dismiss}>
         <Octicon
           className="download-icon"
           symbol={OcticonSymbol.desktopDownload}
