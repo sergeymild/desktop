@@ -337,12 +337,8 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
       return (
         <NoChanges
           key={this.props.repository.id}
-          appMenu={this.props.appMenu}
           repository={this.props.repository}
           repositoryState={this.props.state}
-          isExternalEditorAvailable={
-            this.props.externalEditorLabel !== undefined
-          }
         />
       )
     } else {
@@ -359,7 +355,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
       return (
         <Changes
           repository={this.props.repository}
-          dispatcher={this.props.dispatcher}
           file={selectedFile}
           diff={diff}
           isCommitting={this.props.state.isCommitting}

@@ -1,23 +1,19 @@
 import * as React from 'react'
 
 import { UiView } from './ui-view'
-import { Dispatcher } from './dispatcher'
 import { Repository } from '../models/repository'
 
 import { Button } from './lib/button'
 import { Row } from './lib/row'
 import { LinkButton } from './lib/link-button'
+import { dispatcher } from './index'
 
-interface IMissingRepositoryProps {
-  readonly dispatcher: Dispatcher
+interface IProps {
   readonly repository: Repository
 }
 
 /** The view displayed when a repository is missing. */
-export class MissingRepository extends React.Component<
-  IMissingRepositoryProps,
-  {}
-> {
+export class MissingRepository extends React.Component<IProps, {}> {
   public render() {
     const buttons = new Array<JSX.Element>()
     buttons.push(
@@ -62,15 +58,15 @@ export class MissingRepository extends React.Component<
   }
 
   private checkAgain = () => {
-    this.props.dispatcher.refreshRepository(this.props.repository)
+    dispatcher.refreshRepository(this.props.repository)
   }
 
   private remove = () => {
-    this.props.dispatcher.removeRepositories([this.props.repository], false)
+    dispatcher.removeRepositories([this.props.repository], false)
   }
 
   private locate = () => {
-    this.props.dispatcher.relocateRepository(this.props.repository)
+    dispatcher.relocateRepository(this.props.repository)
   }
 
   private cloneAgain = async () => {
@@ -85,12 +81,12 @@ export class MissingRepository extends React.Component<
     }
 
     try {
-      await this.props.dispatcher.cloneAgain(
+      await dispatcher.cloneAgain(
         cloneURL,
         this.props.repository.path
       )
     } catch (error) {
-      this.props.dispatcher.postError(error)
+      dispatcher.postError(error)
     }
   }
 }

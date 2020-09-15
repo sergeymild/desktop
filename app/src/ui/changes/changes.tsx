@@ -3,15 +3,14 @@ import { ChangedFileDetails } from './changed-file-details'
 import { DiffSelection, DiffType, IDiff, ImageDiffType, ITextDiff } from '../../models/diff'
 import { WorkingDirectoryFileChange } from '../../models/status'
 import { Repository } from '../../models/repository'
-import { Dispatcher } from '../dispatcher'
 import { SeamlessDiffSwitcher } from '../diff/seamless-diff-switcher'
 import { PopupType } from '../../models/popup'
+import { dispatcher } from '../index'
 
 interface IProps {
   readonly repository: Repository
   readonly file: WorkingDirectoryFileChange
   readonly diff: IDiff | null
-  readonly dispatcher: Dispatcher
   readonly imageDiffType: ImageDiffType
 
   /** Whether a commit is in progress */
@@ -40,7 +39,7 @@ interface IProps {
 export class Changes extends React.Component<IProps, {}> {
   private onDiffLineIncludeChanged = (diffSelection: DiffSelection) => {
     const file = this.props.file
-    this.props.dispatcher.changeFileLineSelection(
+    dispatcher.changeFileLineSelection(
       this.props.repository,
       file,
       diffSelection
@@ -52,7 +51,7 @@ export class Changes extends React.Component<IProps, {}> {
     diffSelection: DiffSelection
   ) => {
     if (this.props.askForConfirmationOnDiscardChanges) {
-      this.props.dispatcher.showPopup({
+      dispatcher.showPopup({
         type: PopupType.ConfirmDiscardSelection,
         repository: this.props.repository,
         file: this.props.file,
@@ -60,7 +59,7 @@ export class Changes extends React.Component<IProps, {}> {
         selection: diffSelection,
       })
     } else {
-      this.props.dispatcher.discardChangesFromSelection(
+      dispatcher.discardChangesFromSelection(
         this.props.repository,
         this.props.file.path,
         diff,
