@@ -19,7 +19,7 @@ describe('git/merge', () => {
       let repository: Repository
       beforeEach(async () => {
         const path = await setupFixtureRepository('merge-base-test')
-        repository = new Repository(path, -1, null, false)
+        repository = new Repository(path, -1, null, false, false)
       })
       it('returns MergeResult.Success', async () => {
         expect(await merge(repository, 'dev')).toBe(MergeResult.Success)
@@ -29,7 +29,7 @@ describe('git/merge', () => {
       let repository: Repository
       beforeEach(async () => {
         const path = await setupFixtureRepository('merge-base-test')
-        repository = new Repository(path, -1, null, false)
+        repository = new Repository(path, -1, null, false, false)
         await merge(repository, 'dev')
       })
       it('returns MergeResult.AlreadyUpToDate', async () => {
@@ -41,7 +41,7 @@ describe('git/merge', () => {
   describe('getMergeBase', () => {
     it('returns the common ancestor of two branches', async () => {
       const path = await setupFixtureRepository('merge-base-test')
-      const repository = new Repository(path, -1, null, false)
+      const repository = new Repository(path, -1, null, false, false)
 
       const allBranches = await getBranches(repository)
       const first = allBranches.find(f => f.nameWithoutRemote === 'master')

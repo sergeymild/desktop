@@ -10,7 +10,7 @@ import { FilesChangedBadge } from './changes/files-changed-badge'
 import { CompareSidebar, SelectedCommit } from './history'
 import { Resizable } from './resizable'
 import { TabBar } from './tab-bar'
-import { IRepositoryState, RepositorySectionTab } from '../lib/app-state'
+import { Foldout, IRepositoryState, RepositorySectionTab } from '../lib/app-state'
 import { Dispatcher } from './dispatcher'
 import { GitHubUserStore, IssuesStore } from '../lib/stores'
 import { assertNever } from '../lib/fatal-error'
@@ -24,6 +24,7 @@ import { ExternalEditor } from '../lib/editors'
 import { openFile } from './lib/open-file'
 import { StashesSidebarContentView } from './stashes-view/stashes-sidebar-content-view'
 import { StashesSidebarListView } from './stashes-view/stashes-sidebar-list-view'
+import { SubmodulesButton } from './submodules-button'
 
 /** The widest the sidebar can be with the minimum window size. */
 const MaxSidebarWidth = 700
@@ -41,6 +42,7 @@ interface IRepositoryViewProps {
   readonly hideWhitespaceInDiff: boolean
   readonly askForConfirmationOnDiscardChanges: boolean
   readonly stashesCount: number
+  readonly currentFoldout: Foldout | null
 
   /**
    * A value indicating whether or not the application is currently presenting
@@ -266,6 +268,13 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
     this.props.dispatcher.setSidebarWidth(width)
   }
 
+  private renderSubmodules(): JSX.Element | null {
+    return <SubmodulesButton
+      currentFoldout={this.props.currentFoldout}
+      submodules={this.props.repository.submodules}
+    />
+  }
+
   private renderSidebar(): JSX.Element {
     return (
       <FocusContainer onFocusWithinChanged={this.onSidebarFocusWithinChanged}>
@@ -276,6 +285,7 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
           onResize={this.handleSidebarResize}
           maximumWidth={MaxSidebarWidth}
         >
+          {this.renderSubmodules()}
           {this.renderTabs()}
           {this.renderSidebarContents()}
         </Resizable>

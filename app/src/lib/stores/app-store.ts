@@ -1299,6 +1299,12 @@ export class AppStore extends TypedBaseStore<IAppState> {
     this._clearBanner()
     this.stopBackgroundPruner()
 
+    console.log("=========", repository)
+    try {
+      throw new Error(repository?.name || "repo")
+    } catch (e) {
+      console.error(e)
+    }
     if (repository == null) {
       return Promise.resolve(null)
     }
@@ -1764,6 +1770,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       newSelectedRepository = r
     }
 
+    console.log("updateRepositorySelectionAfterRepositoriesChanged", newSelectedRepository)
     if (newSelectedRepository === null && this.repositories.length > 0) {
       const lastSelectedID = getNumber(LastSelectedRepositoryIDKey, 0)
       if (lastSelectedID > 0) {
@@ -2891,6 +2898,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       repository.id,
       skeletonGitHubRepository,
       repository.missing,
+      repository.isSubmodule,
       {},
     )
 
@@ -4454,7 +4462,11 @@ export class AppStore extends TypedBaseStore<IAppState> {
     )
   }
 
-  public async _addRepositories(paths: ReadonlyArray<string>): Promise<ReadonlyArray<Repository>> {
+  public async _addRepositories(
+    paths: ReadonlyArray<string>,
+    isSubmodules: boolean = false,
+    parent: number | null = null
+  ): Promise<ReadonlyArray<Repository>> {
     const addedRepositories = new Array<Repository>()
     const lfsRepositories = new Array<Repository>()
     const invalidPaths: Array<string> = []
@@ -4465,7 +4477,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
         log.info(`[AppStore] adding repository at ${validatedPath} to store`)
 
         const addedRepo = await this.repositoriesStore.addRepository(
-          validatedPath
+          validatedPath,
+          isSubmodules,
+          parent
         )
 
         if (enableScanForSubmodules()) {
@@ -4474,7 +4488,11 @@ export class AppStore extends TypedBaseStore<IAppState> {
           if (!Fs.existsSync(gitmodules)) continue
           // eslint-disable-next-line no-sync
           const modules = parseGitModules(Fs.readFileSync(gitmodules).toString("utf-8"))
-          await this._addRepositories(modules.map(p => Path.join(addedRepo.path, p.path)))
+          await this._addRepositories(
+            modules.map(p => Path.join(addedRepo.path, p.path)),
+            true,
+            addedRepo.id
+          )
         }
 
         // initialize the remotes for this new repository to ensure it can fetch

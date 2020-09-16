@@ -45,6 +45,8 @@ export interface IDatabaseRepository {
   readonly gitHubRepositoryID: number | null
   readonly path: string
   readonly missing: boolean
+  readonly isSubmodule: boolean
+  readonly parent: number | null
 
   /** The last time the stash entries were checked for the repository */
   readonly lastStashCheckDate: number | null
@@ -91,7 +93,7 @@ export class RepositoriesDatabase extends BaseDatabase {
     super(name, schemaVersion)
 
     this.conditionalVersion(1, {
-      repositories: '++id, &path',
+      repositories: '++id, &path, isSubmodule, parent',
       gitHubRepositories: '++id, name',
       owners: '++id, login',
     })
@@ -116,6 +118,10 @@ export class RepositoriesDatabase extends BaseDatabase {
 
     this.conditionalVersion(6, {
       protectedBranches: '[repoId+name], repoId',
+    })
+
+    this.conditionalVersion(7, {
+      repositories: '++id, &path, isSubmodule, parent'
     })
   }
 }

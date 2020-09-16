@@ -34,7 +34,7 @@ export class Repository {
    */
   private readonly mainWorkTree: WorkingTree
 
-  submodules: Array<Repository> = []
+  public submodules: Array<Repository> = []
 
   /**
    * @param path The working directory of this repository
@@ -45,6 +45,7 @@ export class Repository {
     public readonly id: number,
     public readonly gitHubRepository: GitHubRepository | null,
     public readonly missing: boolean,
+    public readonly isSubmodule: boolean = false,
     public readonly workflowPreferences: WorkflowPreferences = {},
   ) {
     this.mainWorkTree = { path }

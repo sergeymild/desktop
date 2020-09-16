@@ -13,7 +13,7 @@ describe('git/submodule', () => {
   describe('listSubmodules', () => {
     it('returns the submodule entry', async () => {
       const testRepoPath = await setupFixtureRepository('submodule-basic-setup')
-      const repository = new Repository(testRepoPath, -1, null, false)
+      const repository = new Repository(testRepoPath, -1, null, false, false)
       const result = await listSubmodules(repository)
       expect(result).toHaveLength(1)
       expect(result[0].sha).toBe('c59617b65080863c4ca72c1f191fa1b423b92223')
@@ -23,10 +23,10 @@ describe('git/submodule', () => {
 
     it('returns the expected tag', async () => {
       const testRepoPath = await setupFixtureRepository('submodule-basic-setup')
-      const repository = new Repository(testRepoPath, -1, null, false)
+      const repository = new Repository(testRepoPath, -1, null, false, false)
 
       const submodulePath = path.join(testRepoPath, 'foo', 'submodule')
-      const submoduleRepository = new Repository(submodulePath, -1, null, false)
+      const submoduleRepository = new Repository(submodulePath, -1, null, false, false)
 
       const branches = await getBranches(
         submoduleRepository,
@@ -50,10 +50,10 @@ describe('git/submodule', () => {
   describe('resetSubmodulePaths', () => {
     it('update submodule to original commit', async () => {
       const testRepoPath = await setupFixtureRepository('submodule-basic-setup')
-      const repository = new Repository(testRepoPath, -1, null, false)
+      const repository = new Repository(testRepoPath, -1, null, false, false)
 
       const submodulePath = path.join(testRepoPath, 'foo', 'submodule')
-      const submoduleRepository = new Repository(submodulePath, -1, null, false)
+      const submoduleRepository = new Repository(submodulePath, -1, null, false, false)
 
       const branches = await getBranches(
         submoduleRepository,
@@ -77,7 +77,7 @@ describe('git/submodule', () => {
 
     it('eliminate submodule dirty state', async () => {
       const testRepoPath = await setupFixtureRepository('submodule-basic-setup')
-      const repository = new Repository(testRepoPath, -1, null, false)
+      const repository = new Repository(testRepoPath, -1, null, false, false)
 
       const submodulePath = path.join(testRepoPath, 'foo', 'submodule')
 

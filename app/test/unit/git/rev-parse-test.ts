@@ -21,7 +21,7 @@ describe('git/rev-parse', () => {
 
   beforeEach(async () => {
     const testRepoPath = await setupFixtureRepository('test-repo')
-    repository = new Repository(testRepoPath, -1, null, false)
+    repository = new Repository(testRepoPath, -1, null, false, false)
   })
 
   describe('isGitRepository', () => {

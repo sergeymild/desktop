@@ -19,7 +19,7 @@ describe('git/remote', () => {
       const testRepoPath = await setupFixtureRepository(
         'repo-with-multiple-remotes'
       )
-      const repository = new Repository(testRepoPath, -1, null, false)
+      const repository = new Repository(testRepoPath, -1, null, false, false)
 
       // NB: We don't check for exact URL equality because CircleCI's git config
       // rewrites HTTPS URLs to SSH.
@@ -73,7 +73,7 @@ describe('git/remote', () => {
       const testRepoPath = await setupFixtureRepository(
         'repo-with-multiple-remotes'
       )
-      const repository = new Repository(testRepoPath, -1, null, false)
+      const repository = new Repository(testRepoPath, -1, null, false, false)
 
       const remotes = await getRemotes(repository)
       const result = await findDefaultRemote(remotes)
@@ -85,7 +85,7 @@ describe('git/remote', () => {
       const testRepoPath = await setupFixtureRepository(
         'repo-with-multiple-remotes'
       )
-      const repository = new Repository(testRepoPath, -1, null, false)
+      const repository = new Repository(testRepoPath, -1, null, false, false)
       await removeRemote(repository, 'origin')
 
       const remotes = await getRemotes(repository)

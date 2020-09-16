@@ -96,7 +96,7 @@ export function enableNDDBBanner(): boolean {
 }
 
 export function enableScanForSubmodules(): boolean {
-  return false
+  return true
 }
 
 /**

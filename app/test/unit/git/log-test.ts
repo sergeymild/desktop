@@ -9,7 +9,7 @@ describe('git/log', () => {
 
   beforeEach(async () => {
     const testRepoPath = await setupFixtureRepository('test-repo-with-tags')
-    repository = new Repository(testRepoPath, -1, null, false)
+    repository = new Repository(testRepoPath, -1, null, false, false)
   })
 
   describe('getCommits', () => {
@@ -25,14 +25,14 @@ describe('git/log', () => {
 
     it('handles repository with HEAD file on disk', async () => {
       const path = await setupFixtureRepository('repository-with-HEAD-file')
-      const repo = new Repository(path, 1, null, false)
+      const repo = new Repository(path, 1, null, false, false)
       const commits = await getCommits(repo, 'HEAD', 100)
       expect(commits).toHaveLength(2)
     })
 
     it('handles repository with signed commit and log.showSignature set', async () => {
       const path = await setupFixtureRepository('just-doing-some-signing')
-      const repository = new Repository(path, 1, null, false)
+      const repository = new Repository(path, 1, null, false, false)
 
       // ensure the default config is to try and show signatures
       // this should be overriden by the `getCommits` function as it may not
@@ -74,7 +74,7 @@ describe('git/log', () => {
       const testRepoPath = await setupFixtureRepository(
         'rename-history-detection'
       )
-      repository = new Repository(testRepoPath, -1, null, false)
+      repository = new Repository(testRepoPath, -1, null, false, false)
 
       const first = await getChangedFiles(repository, '55bdecb')
       expect(first).toHaveLength(1)
@@ -99,7 +99,7 @@ describe('git/log', () => {
       const testRepoPath = await setupFixtureRepository(
         'copies-history-detection'
       )
-      repository = new Repository(testRepoPath, -1, null, false)
+      repository = new Repository(testRepoPath, -1, null, false, false)
 
       // ensure the test repository is configured to detect copies
       await setupLocalConfig(repository, [['diff.renames', 'copies']])

@@ -42,7 +42,7 @@ describe('git/diff', () => {
 
   beforeEach(async () => {
     const testRepoPath = await setupFixtureRepository('repo-with-image-changes')
-    repository = new Repository(testRepoPath, -1, null, false)
+    repository = new Repository(testRepoPath, -1, null, false, false)
   })
 
   describe('getWorkingDirectoryImage', () => {
@@ -133,7 +133,7 @@ describe('git/diff', () => {
 
     it('changes for text are not set', async () => {
       const testRepoPath = await setupFixtureRepository('repo-with-changes')
-      repository = new Repository(testRepoPath, -1, null, false)
+      repository = new Repository(testRepoPath, -1, null, false, false)
 
       const diffSelection = DiffSelection.fromInitialSelection(
         DiffSelectionType.All
@@ -152,7 +152,7 @@ describe('git/diff', () => {
   describe('getWorkingDirectoryDiff', () => {
     beforeEach(async () => {
       const testRepoPath = await setupFixtureRepository('repo-with-changes')
-      repository = new Repository(testRepoPath, -1, null, false)
+      repository = new Repository(testRepoPath, -1, null, false, false)
     })
 
     it('counts lines for new file', async () => {
@@ -242,7 +242,7 @@ describe('git/diff', () => {
 
     it('displays a binary diff for a docx file', async () => {
       const repositoryPath = await setupFixtureRepository('diff-rendering-docx')
-      const repo = new Repository(repositoryPath, -1, null, false)
+      const repo = new Repository(repositoryPath, -1, null, false, false)
 
       const status = await getStatusOrThrow(repo)
       const files = status.workingDirectory.files
@@ -401,7 +401,7 @@ describe('git/diff', () => {
       let repo: Repository
       beforeEach(async () => {
         const testRepoPath = await setupFixtureRepository('repo-with-changes')
-        repo = new Repository(testRepoPath, -1, null, false)
+        repo = new Repository(testRepoPath, -1, null, false, false)
       })
       it('returns an empty array', async () => {
         expect(await getBinaryPaths(repo, 'HEAD')).toHaveLength(0)
@@ -413,7 +413,7 @@ describe('git/diff', () => {
         const testRepoPath = await setupFixtureRepository(
           'repo-with-image-changes'
         )
-        repo = new Repository(testRepoPath, -1, null, false)
+        repo = new Repository(testRepoPath, -1, null, false, false)
       })
       it('returns all changed image files', async () => {
         expect(await getBinaryPaths(repo, 'HEAD')).toEqual([
@@ -429,7 +429,7 @@ describe('git/diff', () => {
         const testRepoPath = await setupFixtureRepository(
           'detect-conflict-in-binary-file'
         )
-        repo = new Repository(testRepoPath, -1, null, false)
+        repo = new Repository(testRepoPath, -1, null, false, false)
         await GitProcess.exec(['checkout', 'make-a-change'], repo.path)
         await GitProcess.exec(['merge', 'master'], repo.path)
       })

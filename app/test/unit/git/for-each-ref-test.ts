@@ -12,7 +12,7 @@ describe('git/for-each-ref', () => {
 
   beforeEach(async () => {
     const testRepoPath = await setupFixtureRepository('repo-with-many-refs')
-    repository = new Repository(testRepoPath, -1, null, false)
+    repository = new Repository(testRepoPath, -1, null, false, false)
   })
 
   describe('getBranches', () => {

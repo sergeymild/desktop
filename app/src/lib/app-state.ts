@@ -230,6 +230,7 @@ export enum FoldoutType {
   AppMenu,
   AddMenu,
   Tags,
+  Submodules,
 }
 
 export type AppMenuFoldout = {
@@ -260,12 +261,17 @@ export type TagsFoldout = {
   type: FoldoutType.Tags
 }
 
+export type SubmodulesFoldout = {
+  type: FoldoutType.Submodules
+}
+
 export type Foldout =
   | { type: FoldoutType.Repository }
   | { type: FoldoutType.AddMenu }
   | BranchFoldout
   | AppMenuFoldout
   | TagsFoldout
+  | SubmodulesFoldout
 
 export enum RepositorySectionTab {
   Changes,

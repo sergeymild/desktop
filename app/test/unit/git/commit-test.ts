@@ -50,7 +50,7 @@ describe('git/commit', () => {
 
   beforeEach(async () => {
     const testRepoPath = await setupFixtureRepository('test-repo')
-    repository = new Repository(testRepoPath, -1, null, false)
+    repository = new Repository(testRepoPath, -1, null, false, false)
   })
 
   describe('createCommit normal', () => {
@@ -157,7 +157,7 @@ describe('git/commit', () => {
   describe('createCommit partials', () => {
     beforeEach(async () => {
       const testRepoPath = await setupFixtureRepository('repo-with-changes')
-      repository = new Repository(testRepoPath, -1, null, false)
+      repository = new Repository(testRepoPath, -1, null, false, false)
     })
 
     it('can commit some lines from new file', async () => {
@@ -586,7 +586,7 @@ describe('git/commit', () => {
           const repoPath = await setupFixtureRepository(
             'detect-conflict-in-binary-file'
           )
-          repository = new Repository(repoPath, -1, null, false)
+          repository = new Repository(repoPath, -1, null, false, false)
           fileName = 'my-cool-image.png'
 
           await GitProcess.exec(['checkout', 'master'], repoPath)
@@ -678,6 +678,7 @@ describe('git/commit', () => {
           await setupFixtureRepository('test-repo'),
           -1,
           null,
+          false,
           false
         )
       })

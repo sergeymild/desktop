@@ -30,7 +30,7 @@ describe('git/tag', () => {
 
   beforeEach(async () => {
     const testRepoPath = await setupFixtureRepository('test-repo')
-    repository = new Repository(testRepoPath, -1, null, false)
+    repository = new Repository(testRepoPath, -1, null, false, false)
 
     account = new Account(
       'monalisa',
@@ -118,7 +118,7 @@ describe('git/tag', () => {
 
     beforeEach(async () => {
       const path = await setupFixtureRepository('test-repo-with-tags')
-      remoteRepository = new Repository(path, -1, null, false)
+      remoteRepository = new Repository(path, -1, null, false, false)
       repository = await setupLocalForkOfRepository(remoteRepository)
 
       const remotes = await getRemotes(repository)

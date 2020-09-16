@@ -38,7 +38,7 @@ describe('Update remote url', () => {
     const repositoriesStore = new RepositoriesStore(db)
 
     const repoPath = await setupFixtureRepository('test-repo')
-    const blankRepo = await repositoriesStore.addRepository(repoPath)
+    const blankRepo = await repositoriesStore.addRepository(repoPath, false)
     const repository = await repositoriesStore.updateGitHubRepository(
       blankRepo,
       '',

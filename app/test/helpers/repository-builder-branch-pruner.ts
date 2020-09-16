@@ -63,7 +63,7 @@ export async function setupRepository(
   defaultBranchName: string,
   lastPruneDate?: Date
 ) {
-  let repository = await repositoriesStore.addRepository(path)
+  let repository = await repositoriesStore.addRepository(path, false)
   if (includesGhRepo) {
     const ghAPIResult: IAPIRepository = {
       clone_url: 'string',

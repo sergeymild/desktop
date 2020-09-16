@@ -15,7 +15,7 @@ describe('RepositoriesStore', () => {
   describe('adding a new repository', () => {
     it('contains the added repository', async () => {
       const repoPath = '/some/cool/path'
-      await repositoriesStore.addRepository(repoPath)
+      await repositoriesStore.addRepository(repoPath, false)
 
       const repositories = await repositoriesStore.getAll()
       expect(repositories[0].path).toBe(repoPath)
@@ -24,8 +24,8 @@ describe('RepositoriesStore', () => {
 
   describe('getting all repositories', () => {
     it('returns multiple repositories', async () => {
-      await repositoriesStore.addRepository('/some/cool/path')
-      await repositoriesStore.addRepository('/some/other/path')
+      await repositoriesStore.addRepository('/some/cool/path', false)
+      await repositoriesStore.addRepository('/some/other/path', false)
 
       const repositories = await repositoriesStore.getAll()
       expect(repositories).toHaveLength(2)
@@ -60,7 +60,7 @@ describe('RepositoriesStore', () => {
 
     it('adds a new GitHub repository', async () => {
       const addedRepo = await repositoriesStore!.addRepository(
-        '/some/cool/path'
+        '/some/cool/path', false
       )
 
       await repositoriesStore!.updateGitHubRepository(
@@ -80,7 +80,7 @@ describe('RepositoriesStore', () => {
 
     it('reuses an existing GitHub repository', async () => {
       const firstRepo = await repositoriesStore!.addRepository(
-        '/some/cool/path'
+        '/some/cool/path', false
       )
       const updatedFirstRepo = await repositoriesStore!.updateGitHubRepository(
         firstRepo,
@@ -89,7 +89,7 @@ describe('RepositoriesStore', () => {
       )
 
       const secondRepo = await repositoriesStore!.addRepository(
-        '/some/other/path'
+        '/some/other/path', false
       )
       const updatedSecondRepo = await repositoriesStore!.updateGitHubRepository(
         secondRepo,

@@ -46,6 +46,7 @@ export function groupRepositories(
   const grouped = new Map<RepositoryGroupIdentifier, Repositoryish[]>()
   const gitHubOwners = new Set<string>()
   for (const repository of repositories) {
+    if (repository.isSubmodule) continue
     const gitHubRepository = repository instanceof Repository
       ? repository.gitHubRepository
       : null

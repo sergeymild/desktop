@@ -553,6 +553,7 @@ export class App extends React.Component<IAppProps, IAppState> {
           // When switching repositories we want to remount the RepositoryView
           // component to reset the scroll positions.
           key={selectedState.repository.hash}
+          currentFoldout={this.state.currentFoldout}
           repository={selectedState.repository}
           state={selectedState.state}
           dispatcher={this.props.dispatcher}

@@ -14,9 +14,7 @@ import { WorkflowPreferences } from '../../models/workflow-preferences'
 import { clearTagsToPush } from './helpers/tags-to-push-storage'
 
 /** The store for local repositories. */
-export class RepositoriesStore extends TypedBaseStore<
-  ReadonlyArray<Repository>
-> {
+export class RepositoriesStore extends TypedBaseStore<ReadonlyArray<Repository>> {
   private db: RepositoriesDatabase
 
   // Key-repo ID, Value-date
@@ -43,7 +41,7 @@ export class RepositoriesStore extends TypedBaseStore<
   /** Find the matching GitHub repository or add it if it doesn't exist. */
   public async upsertGitHubRepository(
     endpoint: string,
-    apiRepository: IAPIRepository
+    apiRepository: IAPIRepository,
   ): Promise<GitHubRepository> {
     return this.db.transaction(
       'rw',
@@ -62,12 +60,12 @@ export class RepositoriesStore extends TypedBaseStore<
         } else {
           return this.buildGitHubRepository(gitHubRepository)
         }
-      }
+      },
     )
   }
 
   private async buildGitHubRepository(
-    dbRepo: IDatabaseGitHubRepository
+    dbRepo: IDatabaseGitHubRepository,
   ): Promise<GitHubRepository> {
     const owner = await this.db.owners.get(dbRepo.ownerID)
 
@@ -91,13 +89,13 @@ export class RepositoriesStore extends TypedBaseStore<
       dbRepo.issuesEnabled,
       dbRepo.isArchived,
       dbRepo.permissions,
-      parent
+      parent,
     )
   }
 
   /** Find a GitHub repository by its DB ID. */
   public async findGitHubRepositoryByID(
-    id: number
+    id: number,
   ): Promise<GitHubRepository | null> {
     const gitHubRepository = await this.db.gitHubRepositories.get(id)
     if (!gitHubRepository) {
@@ -115,6 +113,7 @@ export class RepositoriesStore extends TypedBaseStore<
       this.db.gitHubRepositories,
       this.db.owners,
       async () => {
+        const submodules = new Map<number, Array<Repository>>()
         const inflatedRepos = new Array<Repository>()
         const repos = await this.db.repositories.toArray()
         for (const repo of repos) {
@@ -122,7 +121,7 @@ export class RepositoriesStore extends TypedBaseStore<
           let gitHubRepository: GitHubRepository | null = null
           if (repo.gitHubRepositoryID) {
             gitHubRepository = await this.findGitHubRepositoryByID(
-              repo.gitHubRepositoryID
+              repo.gitHubRepositoryID,
             )
           }
 
@@ -131,13 +130,25 @@ export class RepositoriesStore extends TypedBaseStore<
             repo.id!,
             gitHubRepository,
             repo.missing,
+            repo.isSubmodule,
             repo.workflowPreferences,
           )
+          if (repo.isSubmodule) {
+            const parent = repo.parent
+            if (!parent) continue
+            const modules = submodules.get(parent) || []
+            modules.push(inflatedRepo)
+            submodules.set(parent, modules)
+          }
           inflatedRepos.push(inflatedRepo)
         }
 
+        for (const repo of inflatedRepos) {
+          repo.submodules = submodules.get(repo.id) || []
+        }
+
         return inflatedRepos
-      }
+      },
     )
   }
 
@@ -146,7 +157,11 @@ export class RepositoriesStore extends TypedBaseStore<
    *
    * If a repository already exists with that path, it will be returned instead.
    */
-  public async addRepository(path: string): Promise<Repository> {
+  public async addRepository(
+    path: string,
+    isSubmodule: boolean,
+    parent: number | null = null,
+  ): Promise<Repository> {
     const repository = await this.db.transaction(
       'rw',
       this.db.repositories,
@@ -163,7 +178,7 @@ export class RepositoriesStore extends TypedBaseStore<
 
           if (record.gitHubRepositoryID != null) {
             gitHubRepo = await this.findGitHubRepositoryByID(
-              record.gitHubRepositoryID
+              record.gitHubRepositoryID,
             )
           }
         } else {
@@ -172,11 +187,13 @@ export class RepositoriesStore extends TypedBaseStore<
             gitHubRepositoryID: null,
             missing: false,
             lastStashCheckDate: null,
+            isSubmodule: isSubmodule,
+            parent,
           })
         }
 
-        return new Repository(path, recordId, gitHubRepo, false)
-      }
+        return new Repository(path, recordId, gitHubRepo, false, isSubmodule)
+      },
     )
 
     this.emitUpdatedRepositories()
@@ -195,12 +212,12 @@ export class RepositoriesStore extends TypedBaseStore<
   /** Update the repository's `missing` flag. */
   public async updateRepositoryMissing(
     repository: Repository,
-    missing: boolean
+    missing: boolean,
   ): Promise<Repository> {
     const repoID = repository.id
     if (!repoID) {
       return fatalError(
-        '`updateRepositoryMissing` can only update `missing` for a repository which has been added to the database.'
+        '`updateRepositoryMissing` can only update `missing` for a repository which has been added to the database.',
       )
     }
 
@@ -213,6 +230,7 @@ export class RepositoriesStore extends TypedBaseStore<
       repository.id,
       repository.gitHubRepository,
       missing,
+      repository.isSubmodule,
       repository.workflowPreferences,
     )
   }
@@ -225,13 +243,13 @@ export class RepositoriesStore extends TypedBaseStore<
    */
   public async updateRepositoryWorkflowPreferences(
     repository: Repository,
-    workflowPreferences: WorkflowPreferences
+    workflowPreferences: WorkflowPreferences,
   ): Promise<void> {
     const repoID = repository.id
 
     if (!repoID) {
       return fatalError(
-        '`updateRepositoryWorkflowPreferences` can only update `workflowPreferences` for a repository which has been added to the database.'
+        '`updateRepositoryWorkflowPreferences` can only update `workflowPreferences` for a repository which has been added to the database.',
       )
     }
 
@@ -243,12 +261,12 @@ export class RepositoriesStore extends TypedBaseStore<
   /** Update the repository's path. */
   public async updateRepositoryPath(
     repository: Repository,
-    path: string
+    path: string,
   ): Promise<Repository> {
     const repoID = repository.id
     if (!repoID) {
       return fatalError(
-        '`updateRepositoryPath` can only update the path for a repository which has been added to the database.'
+        '`updateRepositoryPath` can only update the path for a repository which has been added to the database.',
       )
     }
 
@@ -264,6 +282,7 @@ export class RepositoriesStore extends TypedBaseStore<
       repository.id,
       repository.gitHubRepository,
       false,
+      repository.isSubmodule,
       repository.workflowPreferences,
     )
   }
@@ -277,12 +296,12 @@ export class RepositoriesStore extends TypedBaseStore<
    */
   public async updateLastStashCheckDate(
     repository: Repository,
-    date: number = Date.now()
+    date: number = Date.now(),
   ): Promise<void> {
     const repoID = repository.id
     if (repoID === 0) {
       return fatalError(
-        '`updateLastStashCheckDate` can only update the last stash check date for a repository which has been added to the database.'
+        '`updateLastStashCheckDate` can only update the last stash check date for a repository which has been added to the database.',
       )
     }
 
@@ -301,12 +320,12 @@ export class RepositoriesStore extends TypedBaseStore<
    * @param repository The repository in which to update the last stash check date for
    */
   public async getLastStashCheckDate(
-    repository: Repository
+    repository: Repository,
   ): Promise<number | null> {
     const repoID = repository.id
     if (!repoID) {
       return fatalError(
-        '`getLastStashCheckDate` - can only retrieve the last stash check date for a repositories that have been stored in the database.'
+        '`getLastStashCheckDate` - can only retrieve the last stash check date for a repositories that have been stored in the database.',
       )
     }
 
@@ -319,7 +338,7 @@ export class RepositoriesStore extends TypedBaseStore<
 
     if (record === undefined) {
       return fatalError(
-        `'getLastStashCheckDate' - unable to find repository with ID: ${repoID}`
+        `'getLastStashCheckDate' - unable to find repository with ID: ${repoID}`,
       )
     }
 
@@ -352,7 +371,7 @@ export class RepositoriesStore extends TypedBaseStore<
 
   private async putGitHubRepository(
     endpoint: string,
-    gitHubRepository: IAPIRepository
+    gitHubRepository: IAPIRepository,
   ): Promise<GitHubRepository> {
     let parent: GitHubRepository | null = null
     if (gitHubRepository.parent) {
@@ -411,7 +430,7 @@ export class RepositoriesStore extends TypedBaseStore<
       updatedGitHubRepo.issuesEnabled,
       updatedGitHubRepo.isArchived,
       updatedGitHubRepo.permissions,
-      parent
+      parent,
     )
   }
 
@@ -419,12 +438,12 @@ export class RepositoriesStore extends TypedBaseStore<
   public async updateGitHubRepository(
     repository: Repository,
     endpoint: string,
-    gitHubRepository: IAPIRepository
+    gitHubRepository: IAPIRepository,
   ): Promise<Repository> {
     const repoID = repository.id
     if (!repoID) {
       return fatalError(
-        '`updateGitHubRepository` can only update a GitHub repository for a repository which has been added to the database.'
+        '`updateGitHubRepository` can only update a GitHub repository for a repository which has been added to the database.',
       )
     }
 
@@ -437,7 +456,7 @@ export class RepositoriesStore extends TypedBaseStore<
         const localRepo = (await this.db.repositories.get(repoID))!
         const updatedGitHubRepo = await this.putGitHubRepository(
           endpoint,
-          gitHubRepository
+          gitHubRepository,
         )
 
         await this.db.repositories.update(localRepo.id!, {
@@ -445,7 +464,7 @@ export class RepositoriesStore extends TypedBaseStore<
         })
 
         return updatedGitHubRepo
-      }
+      },
     )
 
     this.emitUpdatedRepositories()
@@ -455,6 +474,7 @@ export class RepositoriesStore extends TypedBaseStore<
       repository.id,
       updatedGitHubRepo,
       repository.missing,
+      repository.isSubmodule,
       repository.workflowPreferences,
     )
   }
@@ -462,12 +482,12 @@ export class RepositoriesStore extends TypedBaseStore<
   /** Add or update the branch protections associated with a GitHub repository. */
   public async updateBranchProtections(
     gitHubRepository: GitHubRepository,
-    protectedBranches: ReadonlyArray<IAPIBranch>
+    protectedBranches: ReadonlyArray<IAPIBranch>,
   ): Promise<void> {
     const dbID = gitHubRepository.dbID
     if (!dbID) {
       return fatalError(
-        '`updateBranchProtections` can only update a GitHub repository for a repository which has been added to the database.'
+        '`updateBranchProtections` can only update a GitHub repository for a repository which has been added to the database.',
       )
     }
 
@@ -493,7 +513,7 @@ export class RepositoriesStore extends TypedBaseStore<
         b => ({
           repoId: dbID,
           name: b.name,
-        })
+        }),
       )
 
       // update cached values to avoid database lookup
@@ -523,26 +543,26 @@ export class RepositoriesStore extends TypedBaseStore<
    */
   public async updateLastPruneDate(
     repository: Repository,
-    date: number
+    date: number,
   ): Promise<void> {
     const repoID = repository.id
     if (repoID === 0) {
       return fatalError(
-        '`updateLastPruneDate` can only update the last prune date for a repository which has been added to the database.'
+        '`updateLastPruneDate` can only update the last prune date for a repository which has been added to the database.',
       )
     }
 
     const githubRepo = repository.gitHubRepository
     if (githubRepo === null) {
       return fatalError(
-        `'updateLastPruneDate' can only update GitHub repositories`
+        `'updateLastPruneDate' can only update GitHub repositories`,
       )
     }
 
     const gitHubRepositoryID = githubRepo.dbID
     if (gitHubRepositoryID === null) {
       return fatalError(
-        `'updateLastPruneDate' can only update GitHub repositories with a valid ID: received ID of ${gitHubRepositoryID}`
+        `'updateLastPruneDate' can only update GitHub repositories with a valid ID: received ID of ${gitHubRepositoryID}`,
       )
     }
 
@@ -554,26 +574,26 @@ export class RepositoriesStore extends TypedBaseStore<
   }
 
   public async getLastPruneDate(
-    repository: Repository
+    repository: Repository,
   ): Promise<number | null> {
     const repoID = repository.id
     if (!repoID) {
       return fatalError(
-        '`getLastPruneDate` - can only retrieve the last prune date for a repositories that have been stored in the database.'
+        '`getLastPruneDate` - can only retrieve the last prune date for a repositories that have been stored in the database.',
       )
     }
 
     const githubRepo = repository.gitHubRepository
     if (githubRepo === null) {
       return fatalError(
-        `'getLastPruneDate' - can only retrieve the last prune date for GitHub repositories.`
+        `'getLastPruneDate' - can only retrieve the last prune date for GitHub repositories.`,
       )
     }
 
     const gitHubRepositoryID = githubRepo.dbID
     if (gitHubRepositoryID === null) {
       return fatalError(
-        `'getLastPruneDate' - can only retrieve the last prune date for GitHub repositories that have been stored in the database.`
+        `'getLastPruneDate' - can only retrieve the last prune date for GitHub repositories that have been stored in the database.`,
       )
     }
 
@@ -581,7 +601,7 @@ export class RepositoriesStore extends TypedBaseStore<
 
     if (record === undefined) {
       return fatalError(
-        `'getLastPruneDate' - unable to find GitHub repository with ID: ${gitHubRepositoryID}`
+        `'getLastPruneDate' - unable to find GitHub repository with ID: ${gitHubRepositoryID}`,
       )
     }
 
@@ -616,17 +636,17 @@ export class RepositoriesStore extends TypedBaseStore<
    * through the GitHub API.
    */
   public async hasBranchProtectionsConfigured(
-    gitHubRepository: GitHubRepository
+    gitHubRepository: GitHubRepository,
   ): Promise<boolean> {
     if (gitHubRepository.dbID === null) {
       return fatalError(
-        'unable to get protected branches, GitHub repository has a null dbID'
+        'unable to get protected branches, GitHub repository has a null dbID',
       )
     }
 
     const { dbID } = gitHubRepository
     const branchProtectionsFound = this.branchProtectionSettingsFoundCache.get(
-      dbID
+      dbID,
     )
 
     if (branchProtectionsFound === undefined) {
@@ -656,7 +676,7 @@ function getKeyPrefix(dbID: number) {
 }
 
 function getPermissionsString(
-  permissions: IAPIRepositoryPermissions | undefined
+  permissions: IAPIRepositoryPermissions | undefined,
 ): GitHubRepositoryPermission {
   if (!permissions) {
     return null
