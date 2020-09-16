@@ -614,7 +614,6 @@ export class TextDiff extends React.Component<ITextDiffProps, {}> {
         {
           label: this.getDiscardLabel(range.type, 1),
           action: () => this.onDiscardChanges(file, lineNumber),
-          enabled: range.type !== DiffRangeType.Mixed,
         },
       ]
     }

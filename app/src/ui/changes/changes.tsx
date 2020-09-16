@@ -41,7 +41,7 @@ export class Changes extends React.Component<IProps, {}> {
     const file = this.props.file
     dispatcher.changeFileLineSelection(
       this.props.repository,
-      file,
+      file.id,
       diffSelection
     )
   }
@@ -63,7 +63,7 @@ export class Changes extends React.Component<IProps, {}> {
         this.props.repository,
         this.props.file.path,
         diff,
-        diffSelection
+        diffSelection,
       )
     }
   }

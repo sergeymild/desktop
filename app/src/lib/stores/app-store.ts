@@ -2177,17 +2177,17 @@ export class AppStore extends TypedBaseStore<IAppState> {
     const selection = include
       ? file.selection.withSelectAll()
       : file.selection.withSelectNone()
-    this.updateWorkingDirectoryFileSelection(repository, file, selection)
+    this.updateWorkingDirectoryFileSelection(repository, file.id, selection)
     return Promise.resolve()
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */
   public _changeFileLineSelection(
     repository: Repository,
-    file: WorkingDirectoryFileChange,
+    fileId: string,
     diffSelection: DiffSelection
   ): Promise<void> {
-    this.updateWorkingDirectoryFileSelection(repository, file, diffSelection)
+    this.updateWorkingDirectoryFileSelection(repository, fileId, diffSelection)
     return Promise.resolve()
   }
 
@@ -2197,12 +2197,12 @@ export class AppStore extends TypedBaseStore<IAppState> {
    */
   private updateWorkingDirectoryFileSelection(
     repository: Repository,
-    file: WorkingDirectoryFileChange,
+    fileId: string,
     selection: DiffSelection
   ) {
     this.repositoryStateCache.updateChangesState(repository, state => {
       const newFiles = state.workingDirectory.files.map(f =>
-        f.id === file.id ? f.withSelection(selection) : f
+        f.id === fileId ? f.withSelection(selection) : f
       )
 
       const workingDirectory = WorkingDirectoryStatus.fromFiles(newFiles)

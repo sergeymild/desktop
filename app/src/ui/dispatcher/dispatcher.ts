@@ -293,12 +293,12 @@ export class Dispatcher {
   /** Change the file's line selection state. */
   public changeFileLineSelection(
     repository: Repository,
-    file: WorkingDirectoryFileChange,
+    fileId: string,
     diffSelection: DiffSelection
   ): Promise<void> {
     return this.appStore._changeFileLineSelection(
       repository,
-      file,
+      fileId,
       diffSelection
     )
   }
