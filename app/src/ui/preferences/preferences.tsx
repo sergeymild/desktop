@@ -13,14 +13,14 @@ import {
   getGlobalConfigValue,
   setGlobalConfigValue,
   getGlobalBooleanConfigValue,
-} from '../../lib/git/config'
+} from '../../lib/git'
 import { lookupPreferredEmail } from '../../lib/email'
 import { Shell, getAvailableShells } from '../../lib/shells'
-import { getAvailableEditors } from '../../lib/editors/lookup'
+import { getAvailableEditors } from '../../lib/editors'
 import { gitAuthorNameIsValid } from './identifier-rules'
 import { Appearance } from './appearance'
 import { ApplicationTheme } from '../lib/application-theme'
-import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { OkCancelButtonGroup } from '../dialog'
 import { Integrations } from './integrations'
 import {
   UncommittedChangesStrategyKind,

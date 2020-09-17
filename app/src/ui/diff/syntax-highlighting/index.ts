@@ -18,6 +18,7 @@ import { getOldPathOrDefault } from '../../../lib/get-old-path'
 
 /** The maximum number of bytes we'll process for highlighting. */
 const MaxHighlightContentLength = 256 * 1024
+const emptyBuffer = Buffer.alloc(0)
 
 type ChangedFile = WorkingDirectoryFileChange | CommittedFileChange
 
@@ -103,20 +104,20 @@ export async function getFileContents(
 ): Promise<IFileContents> {
   const oldContentsPromise = lineFilters.oldLineFilter.length
     ? getOldFileContent(repo, file)
-    : Promise.resolve(Buffer.alloc(0))
+    : Promise.resolve(emptyBuffer)
 
   const newContentsPromise = lineFilters.newLineFilter.length
     ? getNewFileContent(repo, file)
-    : Promise.resolve(Buffer.alloc(0))
+    : Promise.resolve(emptyBuffer)
 
   const [oldContents, newContents] = await Promise.all([
     oldContentsPromise.catch(e => {
       log.error('Could not load old contents for syntax highlighting', e)
-      return Buffer.alloc(0)
+      return emptyBuffer
     }),
     newContentsPromise.catch(e => {
       log.error('Could not load new contents for syntax highlighting', e)
-      return Buffer.alloc(0)
+      return emptyBuffer
     }),
   ])
 

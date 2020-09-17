@@ -26,6 +26,7 @@ import { spawnAndComplete } from './spawn'
 import { DiffParser } from '../diff-parser'
 import { getOldPathOrDefault } from '../get-old-path'
 import { getCaptures } from '../helpers/regex'
+import { defaultUnifiedCount } from '../stores'
 
 /**
  * V8 has a limit on the size of string it can create (~256MB), and unless we want to
@@ -138,14 +139,14 @@ export async function getCommitDiff(
  */
 export async function getWorkingDirectoryDiff(
   repository: Repository,
-  file: WorkingDirectoryFileChange
+  file: WorkingDirectoryFileChange,
+  unified: number = defaultUnifiedCount
 ): Promise<IDiff> {
   let successExitCodes: Set<number> | undefined
   let args: Array<string>
 
   // `--no-ext-diff` should be provided wherever we invoke `git diff` so that any
   // diff.external program configured by the user is ignored
-
   if (
     file.status.kind === AppFileStatusKind.New ||
     file.status.kind === AppFileStatusKind.Untracked
@@ -168,6 +169,7 @@ export async function getWorkingDirectoryDiff(
       '--patch-with-raw',
       '-z',
       '--no-color',
+      `--unified=${unified}`,
       '--',
       '/dev/null',
       file.path,
@@ -186,6 +188,7 @@ export async function getWorkingDirectoryDiff(
       '--patch-with-raw',
       '-z',
       '--no-color',
+      `--unified=${unified}`,
       '--',
       file.path,
     ]
@@ -197,6 +200,7 @@ export async function getWorkingDirectoryDiff(
       '--patch-with-raw',
       '-z',
       '--no-color',
+      `--unified=${unified}`,
       '--',
       file.path,
     ]

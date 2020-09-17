@@ -41,6 +41,20 @@
     .open-merge-tool {
       margin-right: var(--spacing-half);
     }
+
+    .select-component {
+      flex-direction: row;
+      flex-grow: unset;
+      align-items: center;
+      margin-right: var(--spacing-double);
+      select {
+        min-width: 42px;
+      }
+      label {
+        margin-right: var(--spacing);
+        margin-bottom: 0;
+      }
+    }
   }
 
   .panel {

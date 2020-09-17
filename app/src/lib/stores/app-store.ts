@@ -253,6 +253,7 @@ const BackgroundFetchMinimumInterval = 30 * 60 * 1000
 const InitialRepositoryIndicatorTimeout = 2 * 60 * 1000
 
 const MaxInvalidFoldersToDisplay = 3
+export const defaultUnifiedCount = 2
 
 export class AppStore extends TypedBaseStore<IAppState> {
   private readonly gitStoreCache: GitStoreCache
@@ -280,6 +281,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private currentBanner: Banner | null = null
   private errors: ReadonlyArray<Error> = new Array<Error>()
   private emitQueued = false
+  private unified: number = defaultUnifiedCount
 
   private readonly localRepositoryStateLookup = new Map<
     number,
@@ -1828,6 +1830,13 @@ export class AppStore extends TypedBaseStore<IAppState> {
     return status
   }
 
+  public updateUnifiedCount(newCount: number) {
+    this.unified = newCount
+    const state = this.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) return
+    this._selectWorkingDirectoryFiles(state.repository)
+  }
+
   /**
    * Push changes from latest conflicts into current rebase flow step, if needed
    */
@@ -2064,7 +2073,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     const diff = await getWorkingDirectoryDiff(
       repository,
-      selectedFileBeforeLoad
+      selectedFileBeforeLoad,
+      this.unified
     )
 
     const stateAfterLoad = this.repositoryStateCache.get(repository)

@@ -3,27 +3,20 @@ import * as React from 'react'
 
 import { ChangesList } from './changes-list'
 import { DiffSelectionType } from '../../models/diff'
-import {
-  IChangesState,
-  RebaseConflictState,
-  isRebaseConflictState,
-  ChangesSelectionKind,
-} from '../../lib/app-state'
-import {
-  Repository,
-} from '../../models/repository'
+import { ChangesSelectionKind, IChangesState, isRebaseConflictState, RebaseConflictState } from '../../lib/app-state'
+import { Repository } from '../../models/repository'
 import { Dispatcher } from '../dispatcher'
-import { IssuesStore, GitHubUserStore } from '../../lib/stores'
+import { GitHubUserStore, IssuesStore } from '../../lib/stores'
 import { Commit, ICommitContext } from '../../models/commit'
 import { UndoCommit } from './undo-commit'
 import { ClickSource } from '../lib/list'
 import { WorkingDirectoryFileChange } from '../../models/status'
-import { TransitionGroup, CSSTransition } from 'react-transition-group'
+import { CSSTransition, TransitionGroup } from 'react-transition-group'
 import { openFile } from '../lib/open-file'
 import { PopupType } from '../../models/popup'
 import { filesNotTrackedByLFS } from '../../lib/git/lfs'
 import { getLargeFilePaths } from '../../lib/large-files'
-import { isConflictedFile, hasUnresolvedConflicts } from '../../lib/status'
+import { hasUnresolvedConflicts, isConflictedFile } from '../../lib/status'
 import { dispatcher } from '../index'
 
 /**
@@ -120,7 +113,7 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
     const files = rows.map(i => this.props.changes.workingDirectory.files[i])
     this.props.dispatcher.selectWorkingDirectoryFiles(
       this.props.repository,
-      files
+      files,
     )
   }
 

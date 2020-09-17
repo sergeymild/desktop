@@ -2,8 +2,10 @@ import * as React from 'react'
 import { PathLabel } from '../lib/path-label'
 import { AppFileStatus } from '../../models/status'
 import { DiffType, LineEndingsChange } from '../../models/diff'
-import { Octicon, OcticonSymbol, iconForStatus } from '../octicons'
+import { iconForStatus, Octicon, OcticonSymbol } from '../octicons'
 import { mapStatus } from '../../lib/status'
+import { dispatcher } from '../index'
+import { Select } from '../lib/select'
 
 interface IProps {
   readonly path: string
@@ -14,24 +16,6 @@ interface IProps {
 
 /** Displays information about a file */
 export class ChangedFileDetails extends React.Component<IProps, {}> {
-  public render() {
-    const status = this.props.status
-    const fileStatus = mapStatus(status)
-
-    return (
-      <div className="header">
-        <PathLabel path={this.props.path} status={this.props.status} />
-        {this.renderDecorator()}
-
-        <Octicon
-          symbol={iconForStatus(status)}
-          className={`status status-${fileStatus.toLowerCase()}`}
-          title={fileStatus}
-        />
-      </div>
-    )
-  }
-
   private renderDecorator() {
     const {diffKing, lineEndingsChange} = this.props
 
@@ -49,5 +33,35 @@ export class ChangedFileDetails extends React.Component<IProps, {}> {
     } else {
       return null
     }
+  }
+
+  private updateUnifiedCount(event: React.FormEvent<HTMLSelectElement>) {
+    dispatcher.updateUnifiedCount(30)
+  }
+
+  private renderSelectUnifiedCount() {
+    return <Select label={"Context"} onChange={this.updateUnifiedCount}>
+      {[1, 2, 3, 4, 5].map(n => (
+        <option key={n} value={n}>{n}</option>
+      ))}
+    </Select>
+  }
+
+  public render() {
+    const status = this.props.status
+    const fileStatus = mapStatus(status)
+
+    return (
+      <div className="header">
+        <PathLabel path={this.props.path} status={this.props.status} />
+        {this.renderDecorator()}
+        {this.renderSelectUnifiedCount()}
+        <Octicon
+          symbol={iconForStatus(status)}
+          className={`status status-${fileStatus.toLowerCase()}`}
+          title={fileStatus}
+        />
+      </div>
+    )
   }
 }

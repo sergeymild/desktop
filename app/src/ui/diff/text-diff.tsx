@@ -1066,6 +1066,10 @@ export class TextDiff extends React.Component<ITextDiffProps, {}> {
   }
 
   public render() {
+    console.log("==================")
+    console.log(this.props.diff.text)
+    console.log(this.props.diff.hunks)
+    console.log("==================")
     const doc = this.getCodeMirrorDocument(
       this.props.diff.text,
       this.getNoNewlineIndicatorLines(this.props.diff.hunks)

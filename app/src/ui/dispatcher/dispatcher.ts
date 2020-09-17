@@ -269,6 +269,11 @@ export class Dispatcher {
     return this.appStore._selectWorkingDirectoryFiles(repository, selectedFiles)
   }
 
+  public updateUnifiedCount(newCount: number) {
+
+    this.appStore.updateUnifiedCount(newCount)
+  }
+
   /**
    * Commit the changes which were marked for inclusion, using the given commit
    * summary and description and optionally any number of commit message trailers
