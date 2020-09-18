@@ -951,9 +951,14 @@ export class GitStore extends BaseStore {
           currentBranch.upstream
         )
         this._aheadBehind = await getAheadBehind(this.repository, range)
-        this.emitUpdate()
+      } else {
+        this._aheadBehind = null
       }
+    } else {
+      this._aheadBehind = null
     }
+
+    this.emitUpdate()
   }
 
   /**

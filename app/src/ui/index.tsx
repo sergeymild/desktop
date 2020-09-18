@@ -29,7 +29,6 @@ import {
   refusedWorkflowUpdate,
   samlReauthRequired,
   insufficientGitHubRepoPermissions,
-  schannelUnableToCheckRevocationForCertificate,
 } from './dispatcher'
 import {
   AppStore,
@@ -283,7 +282,6 @@ dispatcher.registerErrorHandler(openShellErrorHandler)
 dispatcher.registerErrorHandler(mergeConflictHandler)
 dispatcher.registerErrorHandler(lfsAttributeMismatchHandler)
 dispatcher.registerErrorHandler(insufficientGitHubRepoPermissions)
-dispatcher.registerErrorHandler(schannelUnableToCheckRevocationForCertificate)
 dispatcher.registerErrorHandler(gitAuthenticationErrorHandler)
 dispatcher.registerErrorHandler(pushNeedsPullHandler)
 dispatcher.registerErrorHandler(samlReauthRequired)

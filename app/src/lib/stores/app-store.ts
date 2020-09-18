@@ -2444,6 +2444,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
       return
     }
 
+    this.updateSidebarIndicator(repository, status)
+    this.emitUpdate()
+
     const lastPush = await inferLastPushForRepository(
       this.accounts,
       gitStore,
@@ -2451,15 +2454,17 @@ export class AppStore extends TypedBaseStore<IAppState> {
     )
 
     if (await this.shouldBackgroundFetch(repository, lastPush)) {
-      await this._fetch(repository, FetchType.BackgroundTask)
+      const aheadBehind = await this.fetchForRepositoryIndicator(repository)
+
+      const existing = lookup.get(repository.id)
+      lookup.set(repository.id, {
+        aheadBehind: aheadBehind,
+        // We don't need to update changedFilesCount here since it was already
+        // set when calling `updateSidebarIndicator()` with the status object.
+        changedFilesCount: existing?.changedFilesCount ?? 0,
+      })
+      this.emitUpdate()
     }
-
-    lookup.set(repository.id, {
-      aheadBehind: gitStore.aheadBehind,
-      changedFilesCount: status.workingDirectory.files.length,
-    })
-
-    this.emitUpdate()
   }
 
   private getRepositoriesForIndicatorRefresh = () => {
@@ -2472,6 +2477,32 @@ export class AppStore extends TypedBaseStore<IAppState> {
     // instance since that's a mutable array. We should always return
     // a copy.
     return this.repositories.filter(x => x !== this._selectedRepository)
+  }
+
+  /**
+   * A slimmed down version of performFetch which is only used when fetching
+   * the repository in order to compute the repository indicator status.
+   *
+   * As opposed to `performFetch` this method will not perform a full refresh
+   * of the repository after fetching, nor will it refresh issues, branch
+   * protection information etc. It's intention is to only do the bare minimum
+   * amount of work required to calculate an up-to-date ahead/behind status
+   * of the current branch to its upstream tracking branch.
+   */
+  private fetchForRepositoryIndicator(repo: Repository) {
+    return this.withAuthenticatingUser(repo, async (repo, account) => {
+      const isBackgroundTask = true
+      const gitStore = this.gitStoreCache.get(repo)
+
+      await this.withPushPullFetch(repo, () =>
+        gitStore.fetch(account, isBackgroundTask, progress =>
+          this.updatePushPullFetchProgress(repo, progress)
+        )
+      )
+      this.updatePushPullFetchProgress(repo, null)
+
+      return gitStore.aheadBehind
+    })
   }
 
   /**
@@ -3191,7 +3222,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       })
     }
 
-    return this.withPushPullFetch(repository, account, async () => {
+    return this.withPushPullFetch(repository, async () => {
       const { tip } = state.branchesState
 
       if (tip.kind === TipState.Unborn) {
@@ -3373,7 +3404,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
   private async withPushPullFetch(
     repository: Repository,
-    account: IGitAccount | null,
     fn: () => Promise<void>
   ): Promise<void> {
     const state = this.repositoryStateCache.get(repository)
@@ -3408,7 +3438,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     repository: Repository,
     account: IGitAccount | null
   ): Promise<void> {
-    return this.withPushPullFetch(repository, account, async () => {
+    return this.withPushPullFetch(repository, async () => {
       const gitStore = this.gitStoreCache.get(repository)
       const remote = gitStore.currentRemote
 
@@ -3752,7 +3782,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     fetchType: FetchType,
     remotes?: IRemote[]
   ): Promise<void> {
-    await this.withPushPullFetch(repository, account, async () => {
+    await this.withPushPullFetch(repository, async () => {
       const gitStore = this.gitStoreCache.get(repository)
 
       try {

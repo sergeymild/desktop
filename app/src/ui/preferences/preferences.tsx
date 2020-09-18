@@ -12,7 +12,6 @@ import { Dialog, DialogFooter, DialogError } from '../dialog'
 import {
   getGlobalConfigValue,
   setGlobalConfigValue,
-  getGlobalBooleanConfigValue,
 } from '../../lib/git'
 import { lookupPreferredEmail } from '../../lib/email'
 import { Shell, getAvailableShells } from '../../lib/shells'
@@ -78,8 +77,6 @@ interface IPreferencesState {
    * choice to delete the lock file.
    */
   readonly existingLockFilePath?: string
-  readonly initialSchannelCheckRevoke: boolean | null
-  readonly schannelCheckRevoke: boolean | null
 }
 
 /** The app-level preferences component. */
@@ -107,8 +104,6 @@ export class Preferences extends React.Component<
       selectedExternalEditor: this.props.selectedExternalEditor,
       availableShells: [],
       selectedShell: this.props.selectedShell,
-      initialSchannelCheckRevoke: null,
-      schannelCheckRevoke: null,
     }
   }
 
@@ -116,14 +111,6 @@ export class Preferences extends React.Component<
     const initialCommitterName = await getGlobalConfigValue('user.name')
     const initialCommitterEmail = await getGlobalConfigValue('user.email')
     const initialDefaultBranch = await getDefaultBranch()
-
-    // There's no point in us reading http.schannelCheckRevoke on macOS, it's
-    // just a wasted Git process since the option only affects Windows. Besides,
-    // the checkbox will not be visible unless running on Windows so we'll just
-    // default to the default value for lack of anything better.
-    const initialSchannelCheckRevoke = __WIN32__
-      ? await getGlobalBooleanConfigValue('http.schannelCheckRevoke')
-      : null
 
     let committerName = initialCommitterName
     let committerEmail = initialCommitterEmail
@@ -166,8 +153,6 @@ export class Preferences extends React.Component<
       uncommittedChangesStrategyKind: this.props.uncommittedChangesStrategyKind,
       availableShells,
       availableEditors,
-      initialSchannelCheckRevoke,
-      schannelCheckRevoke: initialSchannelCheckRevoke,
     })
   }
 
@@ -323,8 +308,6 @@ export class Preferences extends React.Component<
             onUncommittedChangesStrategyKindChanged={
               this.onUncommittedChangesStrategyKindChanged
             }
-            schannelCheckRevoke={this.state.schannelCheckRevoke}
-            onSchannelCheckRevokeChanged={this.onSchannelCheckRevokeChanged}
           />
         )
         break
@@ -399,10 +382,6 @@ export class Preferences extends React.Component<
     )
   }
 
-  private onSchannelCheckRevokeChanged = (value: boolean) => {
-    this.setState({ schannelCheckRevoke: value })
-  }
-
   private renderFooter() {
     const hasDisabledError = this.state.disallowedCharactersMessage != null
 
@@ -450,18 +429,6 @@ export class Preferences extends React.Component<
         this.state.defaultBranch !== this.state.initialDefaultBranch
       ) {
         await setDefaultBranch(this.state.defaultBranch)
-      }
-
-      if (
-        this.state.schannelCheckRevoke !==
-          this.state.initialSchannelCheckRevoke &&
-        this.state.schannelCheckRevoke !== null &&
-        __WIN32__
-      ) {
-        await setGlobalConfigValue(
-          'http.schannelCheckRevoke',
-          this.state.schannelCheckRevoke.toString()
-        )
       }
     } catch (e) {
       if (isConfigFileLockError(e)) {
