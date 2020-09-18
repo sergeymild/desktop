@@ -46,6 +46,14 @@
           justify-content: center;
         }
       }
+
+      .toolbar-button > button {
+        color: var(--text-color);
+
+        &:hover {
+          background: var(--list-item-hover-background-color);
+        }
+      }
     }
   }
 }

@@ -52,7 +52,6 @@ import { StashAndSwitchBranch } from '../stash-changes/stash-and-switch-branch-d
 import { WorkflowPushRejectedDialog } from '../workflow-push-rejected/workflow-push-rejected'
 import { SAMLReauthRequiredDialog } from '../saml-reauth-required/saml-reauth-required'
 import { CreateForkDialog } from '../forks/create-fork-dialog'
-import { SChannelNoRevocationCheckDialog } from '../schannel-no-revocation-check/schannel-no-revocation-check'
 import { CreateTag } from '../create-tag'
 import { DeleteTag } from '../delete-tag'
 import { ChooseForkSettings } from '../choose-fork-settings'
@@ -813,13 +812,6 @@ export const AppPopup: React.FC<IProps> = (
           account={popup.account}
         />
       )
-    case PopupType.SChannelNoRevocationCheck:
-      return (
-        <SChannelNoRevocationCheckDialog
-          onDismissed={onPopupDismissedFn}
-          url={popup.url}
-        />
-      )
     case PopupType.CreateTag: {
       return (
         <CreateTag
@@ -860,6 +852,7 @@ export const AppPopup: React.FC<IProps> = (
           dispatcher={dispatcher}
           retryAction={popup.retryAction}
           onDismissed={onPopupDismissedFn}
+          files={popup.files}
         />
       )
     case PopupType.CheckoutToTag:

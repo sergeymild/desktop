@@ -9,14 +9,12 @@ interface IAdvancedPreferencesProps {
   readonly confirmDiscardChanges: boolean
   readonly confirmForcePush: boolean
   readonly uncommittedChangesStrategyKind: UncommittedChangesStrategyKind
-  readonly schannelCheckRevoke: boolean | null
   readonly onConfirmDiscardChangesChanged: (checked: boolean) => void
   readonly onConfirmRepositoryRemovalChanged: (checked: boolean) => void
   readonly onConfirmForcePushChanged: (checked: boolean) => void
   readonly onUncommittedChangesStrategyKindChanged: (
     value: UncommittedChangesStrategyKind
   ) => void
-  readonly onSchannelCheckRevokeChanged: (checked: boolean) => void
 }
 
 interface IAdvancedPreferencesState {
@@ -73,13 +71,6 @@ export class Advanced extends React.Component<
   ) => {
     this.setState({ uncommittedChangesStrategyKind: value })
     this.props.onUncommittedChangesStrategyKindChanged(value)
-  }
-
-  private onSchannelCheckRevokeChanged = (
-    event: React.FormEvent<HTMLInputElement>
-  ) => {
-    const value = event.currentTarget.checked
-    this.props.onSchannelCheckRevokeChanged(value === false)
   }
 
   public render() {
@@ -146,35 +137,7 @@ export class Advanced extends React.Component<
             onChange={this.onConfirmForcePushChanged}
           />
         </div>
-        {this.renderGitAdvancedSection()}
       </DialogContent>
-    )
-  }
-
-  private renderGitAdvancedSection() {
-    if (!__WIN32__) {
-      return
-    }
-
-    // If the user hasn't set `http.schannelCheckRevoke` before we don't
-    // have to show them the preference.
-    if (this.props.schannelCheckRevoke === null) {
-      return
-    }
-
-    return (
-      <div className="git-advanced-section">
-        <h2>Git</h2>
-        <Checkbox
-          label="Disable certificate revocation checks"
-          value={
-            this.props.schannelCheckRevoke
-              ? CheckboxValue.Off
-              : CheckboxValue.On
-          }
-          onChange={this.onSchannelCheckRevokeChanged}
-        />
-      </div>
     )
   }
 }
