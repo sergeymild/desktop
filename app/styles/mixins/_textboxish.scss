@@ -6,7 +6,7 @@
 // and select components.
 @mixin textboxish {
   border: 1px solid var(--box-border-color);
-  border-radius: var(--border-radius);
+  border-radius: 6px;
   background: var(--box-background-color);
   color: currentColor;
   font-size: var(--font-size);
