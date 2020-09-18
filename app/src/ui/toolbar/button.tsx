@@ -129,7 +129,7 @@ export class ToolbarButton extends React.PureComponent<IToolbarButtonProps, {}> 
    * Get the client bounding box for the button element.
    * Returns undefined if the button hasn't been mounted yet.
    */
-  public getButtonBoundingClientRect = (): ClientRect | undefined => {
+  public getButtonBoundingClientRect = (): DOMRect | undefined => {
     return this.innerButton
       ? this.innerButton.getBoundingClientRect()
       : undefined
