@@ -5,12 +5,6 @@
 // Primer colors, see https://github.com/primer/primer-css/blob/master/modules/primer-support/lib/variables/color-system.scss
 @import '~primer-support/lib/variables/color-system.scss';
 
-// Extracted as a SCSS variable so that we can define the --overlay-background-color
-// on both the :root and the ::backdrop scope. The ::backdrop pseudo-element
-// doesn't inherit :root, see
-// https://bugs.chromium.org/p/chromium/issues/detail?id=594096
-$overlay-background-color: rgba(0, 0, 0, 0.4);
-
 :root {
   --color-new: #{$green};
   --color-deleted: #{$red};
@@ -201,10 +195,10 @@ $overlay-background-color: rgba(0, 0, 0, 0.4);
   // When we use the regular border radius (6px) the outline
   // leaves a tiny gap in the corners so we drop down to a
   // similar value than Chrome's default outline border radius.
-  --outlined-border-radius: 3px;
+  --outlined-border-radius: 1rem;
   --base-border: 1px solid var(--box-border-color);
 
-  --base-box-shadow: 0 0 0 1px rgba( 29,28,29 ,0.13),0 18px 48px 0 rgba(0,0,0,0.35);
+  --base-box-shadow: 0 0 0 1px rgba(232,232,232 ,0.13),0 18px 48px 0 rgba(0,0,0,0.35);
 
   --toolbar-height: 50px;
 
@@ -411,7 +405,7 @@ $overlay-background-color: rgba(0, 0, 0, 0.4);
   --form-error-text-color: #{$red-800};
 
   /** Overlay is used as a background for both modals and foldouts */
-  --overlay-background-color: #{$overlay-background-color};
+  --overlay-background-color: rgba(0, 0, 0, 0.6);
 
   /** Dialog */
   --dialog-warning-color: #{$yellow-600};
@@ -449,5 +443,5 @@ $overlay-background-color: rgba(0, 0, 0, 0.4);
 }
 
 ::backdrop {
-  --overlay-background-color: #{$overlay-background-color};
+  --overlay-background-color: rgba(0, 0, 0, 0.6);
 }

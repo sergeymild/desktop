@@ -151,8 +151,7 @@ button {
 
 // http://stackoverflow.com/questions/7538771/what-is-webkit-focus-ring-color
 :focus {
-  outline: auto;
-  outline-color: var(--focus-color);
+  outline: none;
 }
 .more-dropdown {
   color: var(--text-color) !important;

@@ -139,7 +139,7 @@ body.theme-dark {
 
   --base-border: 1px solid var(--box-border-color);
 
-  --base-box-shadow: 0 0 0 1px rgba( 29,28,29 ,0.13),0 18px 48px 0 rgba(0,0,0,0.35);
+  --base-box-shadow: 0 0 0 1px rgba(232,232,232 ,0.13),0 18px 48px 0 rgba(0,0,0,0.35);
 
   --toolbar-background-color: rgb(41, 44, 52);
   --toolbar-border-color: var(--box-border-color);
@@ -312,7 +312,7 @@ body.theme-dark {
   --form-error-text-color: var(--text-color);
 
   /** Overlay is used as a background for both modals and foldouts */
-  --overlay-background-color: rgba(0, 0, 0, 0.2);
+  --overlay-background-color: rgba(0, 0, 0, 0.6);
 
   /** Dialog */
   --dialog-warning-color: #{$yellow-600};
