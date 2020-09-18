@@ -12,6 +12,7 @@ interface IProps {
   readonly status: AppFileStatus
   readonly diffKing?: DiffType
   readonly lineEndingsChange?: LineEndingsChange
+  readonly unified: number
 }
 
 /** Displays information about a file */
@@ -36,11 +37,15 @@ export class ChangedFileDetails extends React.Component<IProps, {}> {
   }
 
   private updateUnifiedCount(event: React.FormEvent<HTMLSelectElement>) {
-    dispatcher.updateUnifiedCount(30)
+    dispatcher.updateUnifiedCount(parseInt(event.currentTarget.value, 10))
   }
 
   private renderSelectUnifiedCount() {
-    return <Select label={"Context"} onChange={this.updateUnifiedCount}>
+    return <Select
+      label={"Context"}
+      value={`${this.props.unified}`}
+      onChange={this.updateUnifiedCount}
+    >
       {[1, 2, 3, 4, 5].map(n => (
         <option key={n} value={n}>{n}</option>
       ))}
@@ -49,15 +54,15 @@ export class ChangedFileDetails extends React.Component<IProps, {}> {
 
   public render() {
     const status = this.props.status
-    const fileStatus = mapStatus(status)
+    const fileStatus = mapStatus(status!)
 
     return (
       <div className="header">
-        <PathLabel path={this.props.path} status={this.props.status} />
+        <PathLabel path={this.props.path} status={this.props.status!} />
         {this.renderDecorator()}
         {this.renderSelectUnifiedCount()}
         <Octicon
-          symbol={iconForStatus(status)}
+          symbol={iconForStatus(status!)}
           className={`status status-${fileStatus.toLowerCase()}`}
           title={fileStatus}
         />

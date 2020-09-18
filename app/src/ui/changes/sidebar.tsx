@@ -3,7 +3,12 @@ import * as React from 'react'
 
 import { ChangesList } from './changes-list'
 import { DiffSelectionType } from '../../models/diff'
-import { ChangesSelectionKind, IChangesState, isRebaseConflictState, RebaseConflictState } from '../../lib/app-state'
+import {
+  ChangesSelectionKind,
+  IChangesState,
+  isRebaseConflictState,
+  RebaseConflictState,
+} from '../../lib/app-state'
 import { Repository } from '../../models/repository'
 import { Dispatcher } from '../dispatcher'
 import { GitHubUserStore, IssuesStore } from '../../lib/stores'
@@ -17,7 +22,7 @@ import { PopupType } from '../../models/popup'
 import { filesNotTrackedByLFS } from '../../lib/git/lfs'
 import { getLargeFilePaths } from '../../lib/large-files'
 import { hasUnresolvedConflicts, isConflictedFile } from '../../lib/status'
-import { dispatcher } from '../index'
+import { connect, dispatcher, IGlobalState } from '../index'
 
 /**
  * The timeout for the animation of the enter/leave animation for Undo.
@@ -27,7 +32,7 @@ import { dispatcher } from '../index'
  */
 const UndoCommitAnimationTimeout = 500
 
-interface IChangesSidebarProps {
+interface IProps {
   readonly repository: Repository
   readonly changes: IChangesState
   readonly dispatcher: Dispatcher
@@ -42,11 +47,32 @@ interface IChangesSidebarProps {
   readonly askForConfirmationOnDiscardChanges: boolean
   /** The name of the currently selected external editor */
   readonly externalEditorLabel?: string
+}
+
+interface IExternalProps {
   readonly onChangesListScrolled: (scrollTop: number) => void
   readonly changesListScrollTop?: number
 }
 
-export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
+const mapStateToProps = (state: IGlobalState): IProps => {
+  const repository = state.appStore.selectedRepository as Repository
+  return {
+    issuesStore: state.issuesStore,
+    gitHubUserStore: state.gitHubUserStore,
+    askForConfirmationOnDiscardChanges: state.appStore.confirmDiscardChanges,
+    repository: repository,
+    externalEditorLabel: state.appStore.selectedExternalEditor || undefined,
+    dispatcher: state.dispatcher,
+    availableWidth: state.appStore.sidebarWidth - 1,
+    branch: state.appStore.getBranchName(),
+    changes: state.appStore.possibleSelectedState!.state!.changesState!,
+    isCommitting: state.appStore.possibleSelectedState?.state?.isCommitting || false,
+    isPushPullFetchInProgress: state.appStore.possibleSelectedState?.state?.isPushPullFetchInProgress || false,
+    mostRecentLocalCommit: state.appStore.getMostRecentCommit(repository)
+  }
+}
+
+class LocalChangesSidebar extends React.Component<IProps & IExternalProps, {}> {
 
   private onCreateCommit = async (
     context: ICommitContext
@@ -325,3 +351,5 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
     )
   }
 }
+
+export const ChangesSidebar = connect<IProps, {}, IExternalProps>(mapStateToProps)(LocalChangesSidebar)

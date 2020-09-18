@@ -4,12 +4,17 @@ import { TipState } from '../../models/tip'
 import { isCurrentBranchForcePush } from '../../lib/rebase'
 import { PossibleSelections, SelectionType } from '../../lib/app-state'
 import { RevertProgress } from './revert-progress'
+import { connect, IGlobalState } from '../index'
 
 interface IProps {
   readonly selectedState: PossibleSelections | null
 }
 
-export class ToolbarPushPullButton extends React.Component<IProps, {}> {
+const mapStateToProps = (state: IGlobalState): IProps => ({
+  selectedState: state.appStore.possibleSelectedState
+})
+
+class LocalToolbarPushPullButton extends React.Component<IProps, {}> {
 
   public render() {
     const selection = this.props.selectedState
@@ -58,3 +63,6 @@ export class ToolbarPushPullButton extends React.Component<IProps, {}> {
     )
   }
 }
+
+export const ToolbarPushPullButton =
+  connect(mapStateToProps)(LocalToolbarPushPullButton)

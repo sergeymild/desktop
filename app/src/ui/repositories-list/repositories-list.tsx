@@ -21,7 +21,7 @@ import { PopupType } from '../../models/popup'
 import { encodePathAsUrl } from '../../lib/path'
 import memoizeOne from 'memoize-one'
 import { FoldoutType } from '../../lib/app-state'
-import { dispatcher } from '../index'
+import { connect, dispatcher, IGlobalState } from '../index'
 
 const BlankSlateImage = encodePathAsUrl(__dirname, 'static/empty-no-repo.svg')
 
@@ -76,8 +76,33 @@ function findMatchingListItem(
   return null
 }
 
+const mapStateToProps = (state: IGlobalState): IProps => {
+  const selectedRepository = state.appStore.possibleSelectedState
+    ? state.appStore.possibleSelectedState.repository
+    : null
+
+  const externalEditorLabel = state.appStore.selectedExternalEditor
+    ? state.appStore.selectedExternalEditor
+    : undefined
+
+  const shellLabel = state.appStore.selectedShell
+  const filterText = state.appStore.repositoryFilterText
+
+  return {
+    dispatcher: state.dispatcher,
+    askForConfirmationOnRemoveRepository: state.appStore.askForConfirmationOnRepositoryRemoval,
+    externalEditorLabel: externalEditorLabel,
+    filterText: filterText,
+    localRepositoryStateLookup: state.appStore.localRepositoryStateLookup,
+    recentRepositories: state.appStore.recentRepositories,
+    repositories: state.appStore.repositories,
+    selectedRepository: selectedRepository,
+    shellLabel: shellLabel
+  }
+}
+
 /** The list of user-added repositories. */
-export class RepositoriesList extends React.Component<IProps, {}> {
+class LocalRepositoriesList extends React.Component<IProps, {}> {
   /**
    * A memoized function for grouping repositories for display
    * in the FilterList. The group will not be recomputed as long
@@ -293,3 +318,5 @@ export class RepositoriesList extends React.Component<IProps, {}> {
     this.props.dispatcher.showPopup({ type: PopupType.CreateRepository })
   }
 }
+
+export const RepositoriesList = connect(mapStateToProps)(LocalRepositoriesList)

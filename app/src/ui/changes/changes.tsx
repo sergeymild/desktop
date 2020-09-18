@@ -5,38 +5,40 @@ import { WorkingDirectoryFileChange } from '../../models/status'
 import { Repository } from '../../models/repository'
 import { SeamlessDiffSwitcher } from '../diff/seamless-diff-switcher'
 import { PopupType } from '../../models/popup'
-import { dispatcher } from '../index'
+import { connect, dispatcher, IGlobalState } from '../index'
+import { Dispatcher } from '../dispatcher'
 
 interface IProps {
+  readonly dispatcher: Dispatcher
   readonly repository: Repository
-  readonly file: WorkingDirectoryFileChange
-  readonly diff: IDiff | null
   readonly imageDiffType: ImageDiffType
 
   /** Whether a commit is in progress */
   readonly isCommitting: boolean
   readonly hideWhitespaceInDiff: boolean
-
-  /**
-   * Called when the user requests to open a binary file in an the
-   * system-assigned application for said file type.
-   */
-  readonly onOpenBinaryFile: (fullPath: string) => void
-
-  /**
-   * Called when the user is viewing an image diff and requests
-   * to change the diff presentation mode.
-   */
-  readonly onChangeImageDiffType: (type: ImageDiffType) => void
-
-  /**
-   * Whether we should show a confirmation dialog when the user
-   * discards changes
-   */
   readonly askForConfirmationOnDiscardChanges: boolean
 }
 
-export class Changes extends React.Component<IProps, {}> {
+interface IExProps {
+  readonly file: WorkingDirectoryFileChange
+  readonly diff: IDiff | null
+}
+
+const mapStateToProps = (state: IGlobalState): IProps => {
+
+  return {
+    hideWhitespaceInDiff: state.appStore.hideWhitespaceInDiff,
+    dispatcher: state.dispatcher,
+    repository: state.appStore.selectedRepository as Repository,
+    isCommitting: state.appStore.possibleSelectedState?.state?.isCommitting || false,
+    askForConfirmationOnDiscardChanges: state.appStore.confirmDiscardChanges,
+    imageDiffType: state.appStore.imageDiffType,
+
+  }
+}
+
+class LocalChanges extends React.Component<IProps & IExProps, {}> {
+
   private onDiffLineIncludeChanged = (diffSelection: DiffSelection) => {
     const file = this.props.file
     dispatcher.changeFileLineSelection(
@@ -78,7 +80,8 @@ export class Changes extends React.Component<IProps, {}> {
           path={file.path}
           status={file.status}
           diffKing={diff?.kind}
-          lineEndingsChange={(diff?.kind === DiffType.Text) ? diff.lineEndingsChange : undefined}/>
+          lineEndingsChange={(diff?.kind === DiffType.Text) ? diff.lineEndingsChange : undefined}
+          unified={2}/>
         <SeamlessDiffSwitcher
           repository={this.props.repository}
           imageDiffType={this.props.imageDiffType}
@@ -91,10 +94,10 @@ export class Changes extends React.Component<IProps, {}> {
           askForConfirmationOnDiscardChanges={
             this.props.askForConfirmationOnDiscardChanges
           }
-          onOpenBinaryFile={this.props.onOpenBinaryFile}
-          onChangeImageDiffType={this.props.onChangeImageDiffType}
         />
       </div>
     )
   }
 }
+
+export const Changes = connect<IProps, {}, IExProps>(mapStateToProps)(LocalChanges)

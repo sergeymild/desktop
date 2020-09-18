@@ -8,7 +8,9 @@ import * as moment from 'moment'
 
 import {  ipcRenderer, remote } from 'electron'
 
-import { App } from './app'
+import {App} from './app'
+
+
 import {
   Dispatcher,
   gitAuthenticationErrorHandler,
@@ -328,14 +330,39 @@ ipcRenderer.on(
 
 export { dispatcher }
 
+export interface IGlobalState {
+  readonly appStore: AppStore
+  readonly dispatcher: Dispatcher
+  readonly gitHubUserStore: GitHubUserStore
+  readonly issuesStore: IssuesStore
+  readonly repositoryStateManager: RepositoryStateCache
+}
+
+let globalState: IGlobalState = {
+  appStore,
+  dispatcher,
+  gitHubUserStore,
+  issuesStore,
+  repositoryStateManager
+}
+
+export function setGlobalState(state: IGlobalState) {
+  globalState = state
+}
+
+export function connect<P, S, AP>(mapStateToProps: (state: IGlobalState) => P) {
+  return (Wrapped: React.ComponentClass<P & AP, S>): React.ComponentClass<AP, S> => {
+    return class extends React.Component<AP, S> {
+      public render() {
+        // @ts-ignore
+        return <Wrapped {...mapStateToProps(globalState)} {...this.props} />
+      }
+    }
+  }
+}
+
+
 ReactDOM.render(
-  <App
-    dispatcher={dispatcher}
-    appStore={appStore}
-    repositoryStateManager={repositoryStateManager}
-    issuesStore={issuesStore}
-    gitHubUserStore={gitHubUserStore}
-    startTime={startTime}
-  />,
+  <App startTime={startTime} />,
   document.getElementById('desktop-app-container')!
 )

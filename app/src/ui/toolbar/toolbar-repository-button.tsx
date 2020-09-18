@@ -3,27 +3,41 @@ import { Repository } from '../../models/repository'
 import { DropdownState, ToolbarDropdown } from './dropdown'
 import { iconForRepository, OcticonSymbol } from '../octicons'
 import { Foldout, FoldoutType } from '../../lib/app-state'
-import { dispatcher } from '../index'
+import { connect, IGlobalState } from '../index'
 import { CloningRepository } from '../../models/cloning-repository'
+import { RepositoriesList } from '../repositories-list'
+import { Dispatcher } from '../dispatcher'
 
 interface IProps {
   readonly repository: Repository | CloningRepository | undefined
   readonly repositoriesCount: number
   readonly currentFoldout: Foldout | null
-  readonly renderRepositoryList: () => JSX.Element
+  readonly dispatcher: Dispatcher
 }
 
-export class ToolbarRepositoryButton extends React.PureComponent<IProps, {}> {
+const mapStateToProps = (state: IGlobalState): IProps => {
+  return {
+    repository: state.appStore.possibleSelectedState?.repository,
+    currentFoldout: state.appStore.currentFoldout,
+    repositoriesCount: state.appStore.getStateRepositoriesCount(),
+    dispatcher: state.dispatcher
+  }
+}
+
+class LocalToolbarRepositoryButton extends React.PureComponent<IProps, {}> {
   private onDropdownStateChanged = (newState: DropdownState) => {
     if (newState === 'open') {
-      dispatcher.showFoldout({ type: FoldoutType.Repository })
+      this.props.dispatcher.showFoldout({ type: FoldoutType.Repository })
     } else {
-      dispatcher.closeFoldout(FoldoutType.Repository)
+      this.props.dispatcher.closeFoldout(FoldoutType.Repository)
     }
   }
 
+  private renderRepositoryList = (): JSX.Element => {
+    return <RepositoriesList/>
+  }
+
   public render() {
-    console.log("ToolbarRepositoryButton")
     const repository = this.props.repository
 
     let icon: OcticonSymbol
@@ -54,8 +68,11 @@ export class ToolbarRepositoryButton extends React.PureComponent<IProps, {}> {
       description={__DARWIN__ ? 'Current Repository' : 'Current repository'}
       tooltip={tooltip}
       onDropdownStateChanged={this.onDropdownStateChanged}
-      dropdownContentRenderer={this.props.renderRepositoryList}
+      dropdownContentRenderer={this.renderRepositoryList}
       dropdownState={currentState}
     />
   }
 }
+
+export const ToolbarRepositoryButton =
+  connect(mapStateToProps)(LocalToolbarRepositoryButton)

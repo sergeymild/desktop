@@ -13,8 +13,6 @@ import { getOS } from '../lib/get-os'
 import { validatedRepositoryPath } from '../lib/stores/helpers/validated-repository-path'
 
 import { FullScreenInfo, TitleBar, ZoomInfo } from './window'
-
-import { RepositoriesList } from './repositories-list'
 import { RepositoryView } from './repository'
 import { CloningRepositoryView } from './cloning-repository'
 import { Toolbar } from './toolbar'
@@ -36,7 +34,7 @@ import { ToolbarRepositoryButton } from './toolbar/toolbar-repository-button'
 import { ToolbarBranchButton } from './toolbar/toolbar-branch-button'
 import { ToolbarPushPullButton } from './toolbar/toolbar-push-pull-button'
 import { MenuEventHandlerView } from './menu-event-handler-view'
-import { dispatcher } from './index'
+import { connect, IGlobalState } from './index'
 
 const MinuteInMilliseconds = 1000 * 60
 const HourInMilliseconds = MinuteInMilliseconds * 60
@@ -52,6 +50,9 @@ interface IAppProps {
   readonly appStore: AppStore
   readonly issuesStore: IssuesStore
   readonly gitHubUserStore: GitHubUserStore
+}
+
+interface IProps {
   readonly startTime: number
 }
 
@@ -69,7 +70,17 @@ export const bannerTransitionTimeout = { enter: 500, exit: 400 }
  */
 const ReadyDelay = 100
 
-export class App extends React.Component<IAppProps, IAppState> {
+const mapStateToProps = (state: IGlobalState): IAppProps => {
+  return {
+    dispatcher: state.dispatcher,
+    appStore: state.appStore,
+    gitHubUserStore: state.gitHubUserStore,
+    issuesStore: state.issuesStore,
+    repositoryStateManager: state.repositoryStateManager
+  }
+}
+
+class LocalApp extends React.Component<IAppProps & IProps, IAppState> {
   private loading = true
 
   private updateIntervalHandle?: number
@@ -82,7 +93,7 @@ export class App extends React.Component<IAppProps, IAppState> {
     return this.state.currentPopup !== null || this.state.errors.length > 0
   }
 
-  public constructor(props: IAppProps) {
+  public constructor(props: IAppProps & IProps) {
     super(props)
 
     props.dispatcher.loadInitialState().then(() => {
@@ -238,7 +249,7 @@ export class App extends React.Component<IAppProps, IAppState> {
       if (existingRepository) {
         await this.props.dispatcher.selectRepository(existingRepository)
       } else {
-        await dispatcher.showPopup({
+        await this.props.dispatcher.showPopup({
           type: PopupType.AddRepository,
           path,
         })
@@ -357,6 +368,7 @@ export class App extends React.Component<IAppProps, IAppState> {
 
   private renderPopup() {
     const popupContent = this.currentPopupContent()
+    if (!popupContent) return null
 
     return (
       <TransitionGroup>
@@ -378,10 +390,9 @@ export class App extends React.Component<IAppProps, IAppState> {
   }
 
   private renderAppError() {
+    if (this.state.errors.length === 0) return null
     return (
-      <AppError
-        errors={this.state.errors}
-      />
+      <AppError errors={this.state.errors} />
     )
   }
 
@@ -397,72 +408,10 @@ export class App extends React.Component<IAppProps, IAppState> {
     )
   }
 
-  private renderRepositoryList = (): JSX.Element => {
-    const selectedRepository = this.state.selectedState
-      ? this.state.selectedState.repository
-      : null
-    const externalEditorLabel = this.state.selectedExternalEditor
-      ? this.state.selectedExternalEditor
-      : undefined
-    const shellLabel = this.state.selectedShell
-    const filterText = this.state.repositoryFilterText
-    return (
-      <RepositoriesList
-        filterText={filterText}
-        selectedRepository={selectedRepository}
-        repositories={this.state.repositories}
-        recentRepositories={this.state.recentRepositories}
-        localRepositoryStateLookup={this.state.localRepositoryStateLookup}
-        askForConfirmationOnRemoveRepository={
-          this.state.askForConfirmationOnRepositoryRemoval
-        }
-        externalEditorLabel={externalEditorLabel}
-        shellLabel={shellLabel}
-        dispatcher={this.props.dispatcher}
-      />
-    )
-  }
-
-  private renderRepositoryToolbarButton() {
-    return <ToolbarRepositoryButton
-      repository={this.state.selectedState?.repository}
-      currentFoldout={this.state.currentFoldout}
-      renderRepositoryList={this.renderRepositoryList}
-      repositoriesCount={this.state.repositories.length}
-    />
-  }
-
-  private renderPushPullToolbarButton() {
-    return <ToolbarPushPullButton
-      selectedState={this.state.selectedState}
-    />
-  }
-
-
   private renderTagsToolbarButton(): JSX.Element | null {
-    const selection = this.state.selectedState
-
-    if (selection == null || selection.type !== SelectionType.Repository) {
-      return null
-    }
-
-    const repository = selection.repository
-    const currentTagName = this.props.appStore.getCurrentTagName(repository)
-    return <ToolbarTagsButton
-      currentFoldout={this.state.currentFoldout}
-      currentTag={currentTagName}
-      tagList={this.props.appStore.repositoryTags(repository)}
-      repository={repository} />
-  }
-
-  private renderBranchToolbarButton(): JSX.Element | null {
-    return <ToolbarBranchButton
-      uncommittedChangesStrategyKind={this.state.uncommittedChangesStrategyKind}
-      selectionType={this.state.selectedState?.type}
-      repository={this.state.selectedState?.repository}
-      state={this.state.selectedState?.state}
-      currentFoldout={this.state.currentFoldout}
-    />
+    const repository = this.props.appStore.getRepository()
+    if (!repository) return null
+    return <ToolbarTagsButton />
   }
 
   // we currently only render one banner at a time
@@ -516,11 +465,11 @@ export class App extends React.Component<IAppProps, IAppState> {
           className="sidebar-section"
           style={{ width: this.state.sidebarWidth }}
         >
-          {this.renderRepositoryToolbarButton()}
+          <ToolbarRepositoryButton />
         </div>
-        {this.renderBranchToolbarButton()}
+        <ToolbarBranchButton />
         {this.renderTagsToolbarButton()}
-        {this.renderPushPullToolbarButton()}
+        <ToolbarPushPullButton />
       </Toolbar>
     )
   }
@@ -528,13 +477,7 @@ export class App extends React.Component<IAppProps, IAppState> {
   private renderRepository() {
     const state = this.state
     if (this.inNoRepositoriesViewState()) {
-      return (
-        <NoRepositoriesView
-          dotComAccount={this.props.appStore.getDotComAccount()}
-          enterpriseAccount={this.props.appStore.getEnterpriseAccount()}
-          apiRepositories={state.apiRepositories}
-        />
-      )
+      return (<NoRepositoriesView />)
     }
 
 
@@ -544,35 +487,11 @@ export class App extends React.Component<IAppProps, IAppState> {
     }
 
     if (selectedState.type === SelectionType.Repository) {
-      const externalEditorLabel = state.selectedExternalEditor
-        ? state.selectedExternalEditor
-        : undefined
-
       return (
         <RepositoryView
           // When switching repositories we want to remount the RepositoryView
           // component to reset the scroll positions.
           key={selectedState.repository.hash}
-          currentFoldout={this.state.currentFoldout}
-          repository={selectedState.repository}
-          state={selectedState.state}
-          dispatcher={this.props.dispatcher}
-          sidebarWidth={state.sidebarWidth}
-          commitSummaryWidth={state.commitSummaryWidth}
-          stashedFilesWidth={state.stashedFilesWidth}
-          issuesStore={this.props.issuesStore}
-          gitHubUserStore={this.props.gitHubUserStore}
-          imageDiffType={state.imageDiffType}
-          hideWhitespaceInDiff={state.hideWhitespaceInDiff}
-          askForConfirmationOnDiscardChanges={
-            state.askForConfirmationOnDiscardChanges
-          }
-          externalEditorLabel={externalEditorLabel}
-          resolvedExternalEditor={state.resolvedExternalEditor}
-          appMenu={state.appMenuState[0]}
-          isShowingModal={this.isShowingModal}
-          isShowingFoldout={this.state.currentFoldout !== null}
-          stashesCount={this.state.localStashesCount}
         />
       )
     } else if (selectedState.type === SelectionType.CloningRepository) {
@@ -635,6 +554,7 @@ export class App extends React.Component<IAppProps, IAppState> {
     return this.state.repositories.length === 0
   }
 }
+export const App = connect<IAppProps, IAppState, IProps>(mapStateToProps)(LocalApp)
 
 function NoRepositorySelected() {
   return <div className="panel blankslate">No repository selected</div>

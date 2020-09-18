@@ -11,9 +11,9 @@ import { IAPIRepository } from '../../lib/api'
 import { assertNever } from '../../lib/fatal-error'
 import { ClickSource } from '../lib/list'
 import { PopupType } from '../../models/popup'
-import { dispatcher } from '../index'
+import { connect, dispatcher, IGlobalState } from '../index'
 
-interface INoRepositoriesProps {
+interface Iprops {
 
   /** The logged in account for GitHub.com. */
   readonly dotComAccount: Account | null
@@ -47,7 +47,7 @@ enum AccountTab {
   enterprise,
 }
 
-interface INoRepositoriesState {
+interface IState {
   /**
    * The selected account, or rather the preferred selection.
    * Has no effect when the user isn't signed in to any account.
@@ -85,11 +85,17 @@ interface INoRepositoriesState {
  * The "No Repositories" view. This is shown when the user hasn't added any
  * repositories to the app.
  */
-export class NoRepositoriesView extends React.Component<
-  INoRepositoriesProps,
-  INoRepositoriesState
-> {
-  public constructor(props: INoRepositoriesProps) {
+
+const mapStateToProps = (state: IGlobalState): Iprops => {
+  return {
+    apiRepositories: state.appStore.apiRepositories,
+    dotComAccount: state.appStore.getDotComAccount(),
+    enterpriseAccount: state.appStore.getEnterpriseAccount()
+  }
+}
+
+export class LocalNoRepositoriesView extends React.Component<Iprops, IState> {
+  public constructor(props: Iprops) {
     super(props)
 
     this.state = {
@@ -131,8 +137,8 @@ export class NoRepositoriesView extends React.Component<
   }
 
   public componentDidUpdate(
-    prevProps: INoRepositoriesProps,
-    prevState: INoRepositoriesState
+    prevProps: Iprops,
+    prevState: IState
   ) {
     if (
       prevProps.dotComAccount !== this.props.dotComAccount ||
@@ -390,3 +396,6 @@ export class NoRepositoriesView extends React.Component<
     )
   }
 }
+
+export const NoRepositoriesView =
+  connect(mapStateToProps)(LocalNoRepositoriesView)

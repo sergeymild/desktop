@@ -8,7 +8,7 @@ import { TipState, IValidBranch } from '../../models/tip'
 import { Branch } from '../../models/branch'
 import { SuggestedActionGroup } from '../suggested-actions'
 import { PopupType } from '../../models/popup'
-import { dispatcher } from '../index'
+import { connect, dispatcher, IGlobalState } from '../index'
 
 function formatMenuItemLabel(text: string) {
   if (__WIN32__ || __LINUX__) {
@@ -25,7 +25,7 @@ function formatMenuItemLabel(text: string) {
 
 const PaperStackImage = encodePathAsUrl(__dirname, 'static/paper-stack.svg')
 
-interface INoChangesProps {
+interface Iprops {
   /**
    * The currently selected repository
    */
@@ -40,18 +40,22 @@ interface INoChangesProps {
   readonly repositoryState: IRepositoryState
 }
 
+const mapStateToProps = (state: IGlobalState): Iprops => {
+  return {
+    repository: state.appStore.selectedRepository as Repository,
+    repositoryState: state.appStore.possibleSelectedState!.state!
+  }
+}
+
 /** The component to display when there are no local changes. */
-export class NoChanges extends React.PureComponent<
-  INoChangesProps,
-  {}
-> {
+class LocalNoChanges extends React.PureComponent<Iprops> {
   /**
    * ID for the timer that's activated when the component
    * mounts. See componentDidMount/componenWillUnmount.
    */
   private transitionTimer: number | null = null
 
-  public constructor(props: INoChangesProps) {
+  public constructor(props: Iprops) {
     super(props)
   }
 
@@ -157,3 +161,5 @@ export class NoChanges extends React.PureComponent<
     )
   }
 }
+
+export const NoChanges = connect(mapStateToProps)(LocalNoChanges)

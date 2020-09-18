@@ -600,7 +600,7 @@ export class Dispatcher {
 
   /** Push the current branch. */
   public push(options?: { forceWithLease: boolean }) {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state == null || state.type !== SelectionType.Repository) return
 
     if (options && options.forceWithLease) {
@@ -624,7 +624,7 @@ export class Dispatcher {
 
   /** Pull the current branch. */
   public pull(): Promise<void> {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state == null || state.type !== SelectionType.Repository) {
       return Promise.resolve()
     }
@@ -633,7 +633,7 @@ export class Dispatcher {
   }
 
   public async showChanges() {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state == null || state.type !== SelectionType.Repository) {
       return
     }
@@ -646,7 +646,7 @@ export class Dispatcher {
   }
 
   public async showStashes() {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state == null || state.type !== SelectionType.Repository) {
       return
     }
@@ -659,7 +659,7 @@ export class Dispatcher {
   }
 
   public async showHistory(showBranchList: boolean = false) {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state == null || state.type !== SelectionType.Repository) {
       return
     }
@@ -692,7 +692,7 @@ export class Dispatcher {
   }
 
   public showCreateBranch = () => {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (!state || state.type !== SelectionType.Repository) return
 
     // We explicitly disable the menu item in this scenario so this
@@ -712,7 +712,7 @@ export class Dispatcher {
   }
 
   public showBranches() {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state == null || state.type !== SelectionType.Repository) {
       return
     }
@@ -728,7 +728,7 @@ export class Dispatcher {
   }
 
   public showTags() {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state == null || state.type !== SelectionType.Repository) {
       return
     }
@@ -744,7 +744,7 @@ export class Dispatcher {
   }
 
   public removeCurrentRepository(): any {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state == null) return null
     if (!state.repository) return
 
@@ -764,7 +764,7 @@ export class Dispatcher {
   }
 
   public renameDialogBranch() {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state == null || state.type !== SelectionType.Repository) {
       return
     }
@@ -780,7 +780,7 @@ export class Dispatcher {
   }
 
   public deleteDialogBranch() {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state === null || state.type !== SelectionType.Repository) {
       return
     }
@@ -810,7 +810,7 @@ export class Dispatcher {
   }
 
   public discardAllChanges() {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
 
     if (state == null || state.type !== SelectionType.Repository) {
       return
@@ -828,7 +828,7 @@ export class Dispatcher {
   }
 
   public openCurrentRepositoryWorkingDirectory() {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state == null || state.type !== SelectionType.Repository) {
       return
     }
@@ -837,7 +837,7 @@ export class Dispatcher {
   }
 
   public updateBranch() {
-    const selectedState = this.appStore.getSelectedState()
+    const selectedState = this.appStore.possibleSelectedState
     if (
       selectedState == null ||
       selectedState.type !== SelectionType.Repository
@@ -858,7 +858,7 @@ export class Dispatcher {
   }
 
   public commitMessageDialog() {
-    const repository = this.appStore.getSelectedState()?.repository
+    const repository = this.appStore.possibleSelectedState?.repository
     if (!repository || repository instanceof CloningRepository) return
     return dispatcher.showPopup({
       type: PopupType.Commit,
@@ -867,7 +867,7 @@ export class Dispatcher {
   }
 
   public mergeBranchDialog() {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state == null || state.type !== SelectionType.Repository) {
       return
     }
@@ -879,7 +879,7 @@ export class Dispatcher {
   }
 
   public showRebaseDialog() {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state == null || state.type !== SelectionType.Repository) return
     const repository = state.repository
 
@@ -896,7 +896,7 @@ export class Dispatcher {
   }
 
   public showRepositorySettings() {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state == null || state.type !== SelectionType.Repository) return
     const repository = state.repository
 
@@ -907,7 +907,7 @@ export class Dispatcher {
   }
 
   public viewRepositoryOnGitHub() {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state == null || state.type !== SelectionType.Repository) return
     const repository = state.repository
 
@@ -917,14 +917,14 @@ export class Dispatcher {
   }
 
   public openIssueCreationOnGitHub() {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state == null || state.type !== SelectionType.Repository) return
     const repository = state.repository
     this.openIssueCreationPage(repository)
   }
 
   public openCurrentRepositoryInShell = () => {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state == null || state.type !== SelectionType.Repository) return
     const repository = state.repository
 
@@ -948,7 +948,7 @@ export class Dispatcher {
   }
 
   public openPullRequest = () => {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state == null || state.type !== SelectionType.Repository) return
 
     const currentPullRequest = state.state.branchesState.currentPullRequest
@@ -961,7 +961,7 @@ export class Dispatcher {
   }
 
   public openCurrentRepositoryInExternalEditor() {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state == null || state.type !== SelectionType.Repository) return
     const repository = state.repository
 
@@ -1003,7 +1003,7 @@ export class Dispatcher {
   }
 
   public onViewCommitOnGitHub = async (SHA: string) => {
-    const state = this.appStore.getSelectedState()
+    const state = this.appStore.possibleSelectedState
     if (state == null || state.type !== SelectionType.Repository) return
     const repository = state.repository
 

@@ -155,7 +155,7 @@ import { GitStoreCache } from './git-store-cache'
 import { GitErrorContext } from '../git-error-context'
 import { getBoolean, getNumber, getNumberArray, setBoolean, setNumber, setNumberArray } from '../local-storage'
 import { ExternalEditorError } from '../editors/shared'
-import { ApiRepositoriesStore } from './api-repositories-store'
+import { ApiRepositoriesStore, IAccountRepositories } from './api-repositories-store'
 import { selectWorkingDirectoryFiles, updateChangedFiles, updateConflictState } from './updates/changes-state'
 import { ManualConflictResolution, ManualConflictResolutionKind } from '../../models/manual-conflict-resolution'
 import { BranchPruner } from './helpers/branch-pruner'
@@ -259,10 +259,23 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private readonly gitStoreCache: GitStoreCache
 
   private accounts: ReadonlyArray<Account> = new Array<Account>()
-  private repositories: ReadonlyArray<Repository> = new Array<Repository>()
-  private recentRepositories: ReadonlyArray<number> = new Array<number>()
+  public repositories: ReadonlyArray<Repository> = new Array<Repository>()
+  public recentRepositories: ReadonlyArray<number> = new Array<number>()
 
-  private selectedRepository: Repository | CloningRepository | null = null
+  private _selectedRepository: Repository | CloningRepository | null = null
+  public get selectedRepository(): Repository | CloningRepository | null {
+    return this._selectedRepository
+  }
+
+  private _apiRepositories: ReadonlyMap<Account, IAccountRepositories> = new Map<Account, IAccountRepositories>()
+  public get apiRepositories(): ReadonlyMap<Account, IAccountRepositories> {
+    return this._apiRepositories
+  }
+
+  private _selectedState: PossibleSelections | null = null
+  public get possibleSelectedState(): PossibleSelections | null {
+    return this._selectedState
+  }
 
   /** The background fetcher for the currently selected repository. */
   private currentBackgroundFetcher: BackgroundFetcher | null = null
@@ -283,7 +296,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private emitQueued = false
   private unified: number = defaultUnifiedCount
 
-  private readonly localRepositoryStateLookup = new Map<
+  public readonly localRepositoryStateLookup = new Map<
     number,
     ILocalRepositoryState
   >()
@@ -293,7 +306,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
    * the main process has not yet provided the renderer with
    * a copy of the application menu structure.
    */
-  private appMenu: AppMenu | null = null
+  public appMenu: AppMenu | null = null
 
   /**
    * Used to highlight access keys throughout the app when the
@@ -307,31 +320,41 @@ export class AppStore extends TypedBaseStore<IAppState> {
    */
   private appIsFocused: boolean = false
 
-  private sidebarWidth: number = defaultSidebarWidth
-  private commitSummaryWidth: number = defaultCommitSummaryWidth
-  private stashedFilesWidth: number = defaultStashedFilesWidth
+  public sidebarWidth: number = defaultSidebarWidth
+  public commitSummaryWidth: number = defaultCommitSummaryWidth
+  public stashedFilesWidth: number = defaultStashedFilesWidth
   private windowState: WindowState
   private windowZoomFactor: number = 1
   private isUpdateAvailableBannerVisible: boolean = false
-  private localStashesCount: number = 0
+  public localStashesCount: number = 0
 
   public askForConfirmationOnRepositoryRemoval: boolean = confirmRepoRemovalDefault
-  private confirmDiscardChanges: boolean = confirmDiscardChangesDefault
+  public confirmDiscardChanges: boolean = confirmDiscardChangesDefault
   private askForConfirmationOnForcePush = askForConfirmationOnForcePushDefault
-  private imageDiffType: ImageDiffType = imageDiffTypeDefault
-  private hideWhitespaceInDiff: boolean = hideWhitespaceInDiffDefault
+  public imageDiffType: ImageDiffType = imageDiffTypeDefault
+  public hideWhitespaceInDiff: boolean = hideWhitespaceInDiffDefault
 
-  private uncommittedChangesStrategyKind: UncommittedChangesStrategyKind = uncommittedChangesStrategyKindDefault
+  private _uncommittedChangesStrategyKind: UncommittedChangesStrategyKind = uncommittedChangesStrategyKindDefault
+  public get uncommittedChangesStrategyKind(): UncommittedChangesStrategyKind {
+    return this._uncommittedChangesStrategyKind
+  }
 
-  private selectedExternalEditor: ExternalEditor | null = null
+  private _selectedExternalEditor: ExternalEditor | null = null
+  public get selectedExternalEditor(): ExternalEditor | null {
+    return this._selectedExternalEditor
+  }
 
   private resolvedExternalEditor: ExternalEditor | null = null
 
   /** The user's preferred shell. */
-  private selectedShell = DefaultShell
+  private _selectedShell = DefaultShell
+  public get selectedShell(): Shell { return this._selectedShell }
 
   /** The current repository filter text */
-  private repositoryFilterText: string = ''
+  private _repositoryFilterText: string = ''
+  public get repositoryFilterText(): string {
+    return this._repositoryFilterText
+  }
 
   private currentMergeTreePromise: Promise<void> | null = null
 
@@ -346,7 +369,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private automaticallySwitchTheme = false
 
   public constructor(
-    private readonly gitHubUserStore: GitHubUserStore,
+    public readonly gitHubUserStore: GitHubUserStore,
     private readonly cloningRepositoriesStore: CloningRepositoriesStore,
     private readonly issuesStore: IssuesStore,
     private readonly signInStore: SignInStore,
@@ -385,8 +408,12 @@ export class AppStore extends TypedBaseStore<IAppState> {
     )
   }
 
+  public isShowingModal(): boolean {
+    return this.currentPopup !== null || this.errors.length > 0
+  }
+
   private async _loadLocalStashesCount() {
-    const repository = this.selectedRepository
+    const repository = this._selectedRepository
     if (!repository) { return }
     if (repository instanceof Repository) {
       this.localStashesCount = await getStashesCount(repository as Repository)
@@ -503,8 +530,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
     }
   }
 
-  public getSelectedState(): PossibleSelections | null {
-    const repository = this.selectedRepository
+  private getSelectedState(): PossibleSelections | null {
+    const repository = this._selectedRepository
 
     if (!repository) {
       return null
@@ -537,12 +564,37 @@ export class AppStore extends TypedBaseStore<IAppState> {
     }
   }
 
+  public getStateRepositoriesCount(): number {
+    return this.repositories.length + this.cloningRepositoriesStore.repositories.length
+  }
+
+  public getRepository(): Repository | null {
+    const repository = this._selectedRepository
+
+    if (!repository) return null
+
+    if (repository instanceof CloningRepository) {
+      return null
+    }
+
+    return repository
+  }
+
+  public getStateRepositories(): ReadonlyArray<Repository | CloningRepository> {
+    return [
+      ...this.repositories,
+      ...this.cloningRepositoriesStore.repositories,
+    ]
+  }
+
   public getState(): IAppState {
     const repositories = [
       ...this.repositories,
       ...this.cloningRepositoriesStore.repositories,
     ]
 
+    this._selectedState = this.getSelectedState()
+    this._apiRepositories = this.apiRepositoriesStore.getState()
     return {
       accounts: this.accounts,
       repositories,
@@ -551,7 +603,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       windowState: this.windowState,
       windowZoomFactor: this.windowZoomFactor,
       appIsFocused: this.appIsFocused,
-      selectedState: this.getSelectedState(),
+      selectedState: this._selectedState,
       signInState: this.signInStore.getState(),
       currentPopup: this.currentPopup,
       currentFoldout: this.currentFoldout,
@@ -570,18 +622,22 @@ export class AppStore extends TypedBaseStore<IAppState> {
       askForConfirmationOnDiscardChanges: this.confirmDiscardChanges,
       askForConfirmationOnForcePush: this.askForConfirmationOnForcePush,
       uncommittedChangesStrategyKind: this.uncommittedChangesStrategyKind,
-      selectedExternalEditor: this.selectedExternalEditor,
+      selectedExternalEditor: this._selectedExternalEditor,
       imageDiffType: this.imageDiffType,
       hideWhitespaceInDiff: this.hideWhitespaceInDiff,
-      selectedShell: this.selectedShell,
+      selectedShell: this._selectedShell,
       repositoryFilterText: this.repositoryFilterText,
       resolvedExternalEditor: this.resolvedExternalEditor,
       selectedCloneRepositoryTab: this.selectedCloneRepositoryTab,
       selectedTheme: this.selectedTheme,
       automaticallySwitchTheme: this.automaticallySwitchTheme,
-      apiRepositories: this.apiRepositoriesStore.getState(),
+      apiRepositories: this._apiRepositories,
       localStashesCount: this.localStashesCount,
     }
+  }
+
+  public getAppMenuState(): ReadonlyArray<IMenu> {
+    return this.appMenu ? this.appMenu.openMenus : []
   }
 
   private onGitStoreUpdated(repository: Repository, gitStore: GitStore) {
@@ -1230,7 +1286,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
   /** This shouldn't be called directly. See `Dispatcher`. */
   public async _setRepositoryFilterText(text: string): Promise<void> {
-    this.repositoryFilterText = text
+    this._repositoryFilterText = text
     this.emitUpdate()
   }
 
@@ -1291,9 +1347,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
   public async _selectRepository(
     repository: Repository | CloningRepository | null
   ): Promise<Repository | null> {
-    const previouslySelectedRepository = this.selectedRepository
+    const previouslySelectedRepository = this._selectedRepository
 
-    this.selectedRepository = repository
+    this._selectedRepository = repository
 
     this.emitUpdate()
     this.stopBackgroundFetching()
@@ -1384,7 +1440,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     }
 
     // The selected repository could have changed while we were refreshing.
-    if (this.selectedRepository !== repository) {
+    if (this._selectedRepository !== repository) {
       return null
     }
 
@@ -1615,7 +1671,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     const strategy = parseStrategy(
       localStorage.getItem(uncommittedChangesStrategyKindKey)
     )
-    this.uncommittedChangesStrategyKind =
+    this._uncommittedChangesStrategyKind =
       strategy || uncommittedChangesStrategyKindDefault
 
     this.updateSelectedExternalEditor(
@@ -1623,7 +1679,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     ).catch(e => log.error('Failed resolving current editor at startup', e))
 
     const shellValue = localStorage.getItem(shellKey)
-    this.selectedShell = shellValue ? parseShell(shellValue) : DefaultShell
+    this._selectedShell = shellValue ? parseShell(shellValue) : DefaultShell
 
     this.updateMenuLabelsForSelectedRepository()
 
@@ -1661,7 +1717,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private updateSelectedExternalEditor(
     selectedEditor: ExternalEditor | null
   ): Promise<void> {
-    this.selectedExternalEditor = selectedEditor
+    this._selectedExternalEditor = selectedEditor
 
     // Make sure we keep the resolved (cached) editor
     // in sync when the user changes their editor choice.
@@ -1758,9 +1814,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
   }
 
   private updateRepositorySelectionAfterRepositoriesChanged() {
-    const selectedRepository = this.selectedRepository
+    const selectedRepository = this._selectedRepository
     let newSelectedRepository: Repository | CloningRepository | null = this
-      .selectedRepository
+      ._selectedRepository
     if (selectedRepository) {
       const r =
         this.repositories.find(
@@ -1819,7 +1875,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     this.updateRebaseFlowConflictsIfFound(repository)
 
-    if (this.selectedRepository === repository) {
+    if (this._selectedRepository === repository) {
       this._triggerConflictsFlow(repository)
     }
 
@@ -2415,7 +2471,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     // Note that this method should never leak the actual repositories
     // instance since that's a mutable array. We should always return
     // a copy.
-    return this.repositories.filter(x => x !== this.selectedRepository)
+    return this.repositories.filter(x => x !== this._selectedRepository)
   }
 
   /**
@@ -2553,7 +2609,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     name: string,
     startPoint: string | null,
     uncommittedChangesStrategy: UncommittedChangesStrategy = getUncommittedChangesStrategy(
-      this.uncommittedChangesStrategyKind
+      this._uncommittedChangesStrategyKind
     ),
     noTrackOption: boolean = false
   ): Promise<Repository> {
@@ -2629,7 +2685,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       checkoutProgress,
     }))
 
-    if (this.selectedRepository === repository) {
+    if (this._selectedRepository === repository) {
       this.emitUpdate()
     }
   }
@@ -2740,7 +2796,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     repository: Repository,
     branch: Branch,
     uncommittedChangesStrategy: UncommittedChangesStrategy = getUncommittedChangesStrategy(
-      this.uncommittedChangesStrategyKind
+      this._uncommittedChangesStrategyKind
     )
   ): Promise<Repository> {
     const gitStore = this.gitStoreCache.get(repository)
@@ -3107,7 +3163,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
         remote.getCurrentWindow().setProgressBar(-1)
       }
     }
-    if (this.selectedRepository === repository) {
+    if (this._selectedRepository === repository) {
       this.emitUpdate()
     }
   }
@@ -4116,7 +4172,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
   public async _openShell(path: string) {
 
     try {
-      const match = await findShellOrDefault(this.selectedShell)
+      const match = await findShellOrDefault(this._selectedShell)
       await launchShell(match, path, error => this._pushError(error))
     } catch (error) {
       this.emitError(error)
@@ -4195,7 +4251,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
   public _setUncommittedChangesStrategyKindSetting(
     value: UncommittedChangesStrategyKind
   ): Promise<void> {
-    this.uncommittedChangesStrategyKind = value
+    this._uncommittedChangesStrategyKind = value
 
     localStorage.setItem(uncommittedChangesStrategyKindKey, value)
 
@@ -4213,7 +4269,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
   }
 
   public _setShell(shell: Shell): Promise<void> {
-    this.selectedShell = shell
+    this._selectedShell = shell
     localStorage.setItem(shellKey, shell)
     this.emitUpdate()
 
@@ -4385,8 +4441,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     if (this.appIsFocused) {
       this.repositoryIndicatorUpdater.resume()
-      if (this.selectedRepository instanceof Repository) {
-        this.startPullRequestUpdater(this.selectedRepository)
+      if (this._selectedRepository instanceof Repository) {
+        this.startPullRequestUpdater(this._selectedRepository)
       }
     } else {
       this.repositoryIndicatorUpdater.pause()
@@ -4652,7 +4708,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       revertProgress: progress,
     }))
 
-    if (this.selectedRepository === repository) {
+    if (this._selectedRepository === repository) {
       this.emitUpdate()
     }
   }
@@ -5105,7 +5161,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
   }
 
   public async _resolveCurrentEditor() {
-    const match = await findEditorOrDefault(this.selectedExternalEditor)
+    const match = await findEditorOrDefault(this._selectedExternalEditor)
     const resolvedExternalEditor = match != null ? match.editor : null
     if (this.resolvedExternalEditor !== resolvedExternalEditor) {
       this.resolvedExternalEditor = resolvedExternalEditor
@@ -5425,6 +5481,27 @@ export class AppStore extends TypedBaseStore<IAppState> {
     }
 
     return selection.state.aheadBehind
+  }
+
+  public getBranchName(): string | null {
+    const tip = this.possibleSelectedState?.state?.branchesState.tip
+
+    let branchName: string | null = null
+
+    if (tip?.kind === TipState.Valid) {
+      branchName = tip.branch.name
+    } else if (tip?.kind === TipState.Unborn) {
+      branchName = tip.ref
+    }
+    return branchName
+  }
+
+  public getCurrentBranch(): Branch | null {
+    const tip = this.possibleSelectedState?.state?.branchesState.tip
+    if (tip?.kind === TipState.Valid) {
+      return tip.branch
+    }
+    return null
   }
 }
 

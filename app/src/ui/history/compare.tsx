@@ -18,10 +18,11 @@ import { MergeCallToActionWithConflicts } from './merge-call-to-action-with-conf
 import { assertNever } from '../../lib/fatal-error'
 import { enableNDDBBanner } from '../../lib/feature-flag'
 import { ITagItem } from '../../lib/git'
+import { connect, IGlobalState } from '../index'
 
 const DivergingBannerAnimationTimeout = 300
 
-interface ICompareSidebarProps {
+interface IProps {
   readonly repository: Repository
   readonly isLocalRepository: boolean
   readonly compareState: ICompareState
@@ -30,17 +31,35 @@ interface ICompareSidebarProps {
   readonly dispatcher: Dispatcher
   readonly currentBranch: Branch | null
   readonly selectedCommitSha: string | null
-  readonly onRevertCommit: (commit: Commit) => void
-  readonly onCompareListScrolled: (scrollTop: number) => void
-  readonly compareListScrollTop?: number
   readonly localTags: ReadonlyArray<ITagItem> | null
   readonly tagsToPush: ReadonlyArray<string> | null
+}
+
+interface IExProps {
+  readonly onCompareListScrolled: (scrollTop: number) => void
+  readonly compareListScrollTop?: number
 }
 
 /** If we're within this many rows from the bottom, load the next history batch. */
 const CloseToBottomThreshold = 10
 
-export class CompareSidebar extends React.Component<ICompareSidebarProps, {}> {
+const mapStateToProps = (state: IGlobalState): IProps => {
+  const selectedState = state.appStore.possibleSelectedState!.state!
+  return {
+    dispatcher: state.dispatcher,
+    repository: state.appStore.selectedRepository as Repository,
+    isLocalRepository: selectedState.remote === null,
+    compareState: selectedState.compareState,
+    selectedCommitSha: selectedState.commitSelection.sha,
+    currentBranch: state.appStore.getCurrentBranch(),
+    commitLookup: selectedState.commitLookup,
+    localCommitSHAs: selectedState.localCommitSHAs,
+    localTags: selectedState.localTags,
+    tagsToPush: selectedState.tagsToPush
+  }
+}
+
+class LocalCompareSidebar extends React.Component<IProps & IExProps, {}> {
   private textbox: TextBox | null = null
   private readonly loadChangedFilesScheduler = new ThrottledScheduler(200)
   private loadingMoreCommitsPromise: Promise<void> | null = null
@@ -164,7 +183,7 @@ export class CompareSidebar extends React.Component<ICompareSidebarProps, {}> {
         localCommitSHAs={this.props.localCommitSHAs}
         onRevertCommit={
           ableToRevertCommit(this.props.compareState.formState)
-            ? this.props.onRevertCommit
+            ? this.onRevertCommit
             : undefined
         }
         onCommitSelected={this.onCommitSelected}
@@ -177,6 +196,10 @@ export class CompareSidebar extends React.Component<ICompareSidebarProps, {}> {
         tagsToPush={this.props.tagsToPush}
       />
     )
+  }
+
+  private onRevertCommit = (commit: Commit) => {
+    this.props.dispatcher.revertCommit(this.props.repository, commit)
   }
 
   private renderActiveTab(view: ICompareBranch) {
@@ -354,3 +377,6 @@ function ableToRevertCommit(
     formState.comparisonMode === ComparisonMode.Ahead
   )
 }
+
+export const CompareSidebar =
+  connect<IProps, {}, IExProps>(mapStateToProps)(LocalCompareSidebar)

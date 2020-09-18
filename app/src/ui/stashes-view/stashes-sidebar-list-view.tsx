@@ -9,14 +9,18 @@ import { showContextualMenu } from '../main-process-proxy'
 import { Dispatcher } from '../dispatcher'
 import { StashListItem } from './stashes-list-item'
 import { BannerType } from '../../models/banner'
+import { connect, IGlobalState } from '../index'
 
-interface IStashesListProps {
+interface IProps {
   readonly dispatcher: Dispatcher
   readonly repository: Repository
+}
+
+interface IExProps {
   readonly handleStashSelect: (item: IStashEntry) => void
 }
 
-interface IStashesListState {
+interface IState {
   readonly groups: ReadonlyArray<IFilterListGroup<IStashItem>>
   selectedStash: IStashItem | null
 }
@@ -26,9 +30,16 @@ export interface IStashItem extends IFilterListItem {
   readonly id: string
 }
 
-export class StashesSidebarListView extends React.Component<IStashesListProps, IStashesListState> {
+const mapStateToProps = (state: IGlobalState): IProps => {
+  return {
+    dispatcher: state.dispatcher,
+    repository: state.appStore.selectedRepository as Repository
+  }
+}
 
-  public constructor(props: IStashesListProps) {
+class LocalStashesSidebarListView extends React.Component<IProps & IExProps, IState> {
+
+  public constructor(props: IProps & IExProps) {
     super(props)
 
     this.state = {
@@ -149,3 +160,6 @@ export class StashesSidebarListView extends React.Component<IStashesListProps, I
     />
   }
 }
+
+export const StashesSidebarListView =
+  connect<IProps, IState, IExProps>(mapStateToProps)(LocalStashesSidebarListView)

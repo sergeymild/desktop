@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { dispatcher } from './index'
+import { connect, dispatcher, IGlobalState } from './index'
 import { Foldout, FoldoutType } from '../lib/app-state'
 import { DropdownState, ToolbarDropdown } from './toolbar'
 import { FilterList, IFilterListGroup, IFilterListItem } from './lib/filter-list'
@@ -25,7 +25,14 @@ interface IState {
   readonly selectedItem: IListItem | null
 }
 
-export class SubmodulesButton extends React.PureComponent<IProps, IState> {
+const mapStateToProps = (state: IGlobalState): IProps => {
+  return {
+    currentFoldout: state.appStore.currentFoldout,
+    submodules: (state.appStore.selectedRepository as Repository).submodules
+  }
+}
+
+class LocalSubmodulesButton extends React.PureComponent<IProps, IState> {
   public state = {
     filterText: "",
     selectedItem: null,
@@ -119,3 +126,5 @@ export class SubmodulesButton extends React.PureComponent<IProps, IState> {
     </div>
   }
 }
+
+export const SubmodulesButton = connect(mapStateToProps)(LocalSubmodulesButton)

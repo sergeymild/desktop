@@ -15,6 +15,8 @@ import {
   ITextDiff,
 } from '../../models/diff'
 import { Loading } from '../lib/loading'
+import { dispatcher } from '../index'
+import { openFile } from '../lib/open-file'
 
 /**
  * The time (in milliseconds) we allow when loading a diff before
@@ -51,18 +53,6 @@ interface ISeamlessDiffSwitcherProps {
 
   /** Whether we should show a confirmation dialog when the user discards changes */
   readonly askForConfirmationOnDiscardChanges?: boolean
-
-  /**
-   * Called when the user requests to open a binary file in an the
-   * system-assigned application for said file type.
-   */
-  readonly onOpenBinaryFile: (fullPath: string) => void
-
-  /**
-   * Called when the user is viewing an image diff and requests
-   * to change the diff presentation mode.
-   */
-  readonly onChangeImageDiffType: (type: ImageDiffType) => void
 
   /*
    * Called when the user wants to discard a selection of the diff.
@@ -183,6 +173,14 @@ export class SeamlessDiffSwitcher extends React.Component<
     }
   }
 
+  private onChangeImageDiffType = async (imageDiffType: ImageDiffType) => {
+    await dispatcher.changeImageDiffType(imageDiffType)
+  }
+
+  private onOpenBinaryFile = async (fullPath: string) => {
+    await openFile(fullPath, dispatcher)
+  }
+
   public render() {
     const { isLoadingDiff, isLoadingSlow } = this.state
     const {
@@ -194,8 +192,6 @@ export class SeamlessDiffSwitcher extends React.Component<
       onDiscardChanges,
       diff,
       file,
-      onOpenBinaryFile,
-      onChangeImageDiffType,
     } = this.state.propSnapshot
 
     const className = classNames('seamless-diff-switcher', {
@@ -225,8 +221,8 @@ export class SeamlessDiffSwitcher extends React.Component<
             }
             onIncludeChanged={isLoadingDiff ? noop : onIncludeChanged}
             onDiscardChanges={isLoadingDiff ? noop : onDiscardChanges}
-            onOpenBinaryFile={isLoadingDiff ? noop : onOpenBinaryFile}
-            onChangeImageDiffType={isLoadingDiff ? noop : onChangeImageDiffType}
+            onOpenBinaryFile={isLoadingDiff ? noop : this.onOpenBinaryFile}
+            onChangeImageDiffType={isLoadingDiff ? noop : this.onChangeImageDiffType}
           />
         ) : null}
         {loadingIndicator}

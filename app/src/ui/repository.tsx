@@ -1,7 +1,5 @@
 import * as React from 'react'
 import { Repository } from '../models/repository'
-import { Commit } from '../models/commit'
-import { TipState } from '../models/tip'
 import { UiView } from './ui-view'
 import { Changes, ChangesSidebar } from './changes'
 import { NoChanges } from './changes/no-changes'
@@ -10,39 +8,27 @@ import { FilesChangedBadge } from './changes/files-changed-badge'
 import { CompareSidebar, SelectedCommit } from './history'
 import { Resizable } from './resizable'
 import { TabBar } from './tab-bar'
-import { Foldout, IRepositoryState, RepositorySectionTab } from '../lib/app-state'
+import { IRepositoryState, RepositorySectionTab } from '../lib/app-state'
 import { Dispatcher } from './dispatcher'
-import { GitHubUserStore, IssuesStore } from '../lib/stores'
 import { assertNever } from '../lib/fatal-error'
 import { FocusContainer } from './lib/focus-container'
 import { Octicon, OcticonSymbol } from './octicons'
-import { ImageDiffType } from '../models/diff'
-import { IMenu } from '../models/app-menu'
 import { IStashEntry } from '../models/stash-entry'
 import { enableNDDBBanner } from '../lib/feature-flag'
-import { ExternalEditor } from '../lib/editors'
-import { openFile } from './lib/open-file'
 import { StashesSidebarContentView } from './stashes-view/stashes-sidebar-content-view'
 import { StashesSidebarListView } from './stashes-view/stashes-sidebar-list-view'
 import { SubmodulesButton } from './submodules-button'
+import { connect, IGlobalState } from './index'
 
 /** The widest the sidebar can be with the minimum window size. */
 const MaxSidebarWidth = 700
 
-interface IRepositoryViewProps {
+interface IProps {
   readonly repository: Repository
   readonly state: IRepositoryState
   readonly dispatcher: Dispatcher
   readonly sidebarWidth: number
-  readonly commitSummaryWidth: number
-  readonly stashedFilesWidth: number
-  readonly issuesStore: IssuesStore
-  readonly gitHubUserStore: GitHubUserStore
-  readonly imageDiffType: ImageDiffType
-  readonly hideWhitespaceInDiff: boolean
-  readonly askForConfirmationOnDiscardChanges: boolean
   readonly stashesCount: number
-  readonly currentFoldout: Foldout | null
 
   /**
    * A value indicating whether or not the application is currently presenting
@@ -55,18 +41,6 @@ interface IRepositoryViewProps {
    * a foldout dialog such as the file menu, or the branches dropdown
    */
   readonly isShowingFoldout: boolean
-
-  /** The name of the currently selected external editor */
-  readonly externalEditorLabel?: string
-
-  /** A cached entry representing an external editor found on the user's machine */
-  readonly resolvedExternalEditor: ExternalEditor | null
-
-  /**
-   * The top-level application menu item.
-   */
-  readonly appMenu: IMenu | undefined
-
 }
 
 interface IRepositoryViewState {
@@ -81,12 +55,24 @@ const enum Tab {
   Stash = 2,
 }
 
-export class RepositoryView extends React.Component<IRepositoryViewProps,
+const mapStateToProps = (state: IGlobalState): IProps => {
+  return {
+    dispatcher: state.dispatcher,
+    state: state.appStore.possibleSelectedState!.state!,
+    repository: state.appStore.selectedRepository as Repository,
+    isShowingFoldout: state.appStore.currentFoldout !== null,
+    isShowingModal: state.appStore.isShowingModal(),
+    sidebarWidth: state.appStore.sidebarWidth,
+    stashesCount: state.appStore.localStashesCount
+  }
+}
+
+class LocalRepositoryView extends React.Component<IProps,
   IRepositoryViewState> {
   private previousSection: RepositorySectionTab = this.props.state
     .selectedSection
 
-  public constructor(props: IRepositoryViewProps) {
+  public constructor(props: IProps) {
     super(props)
 
     this.state = {
@@ -158,26 +144,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
   }
 
   private renderChangesSidebar(): JSX.Element {
-    const tip = this.props.state.branchesState.tip
-
-    let branchName: string | null = null
-
-    if (tip.kind === TipState.Valid) {
-      branchName = tip.branch.name
-    } else if (tip.kind === TipState.Unborn) {
-      branchName = tip.ref
-    }
-
-    const localCommitSHAs = this.props.state.localCommitSHAs
-    const mostRecentLocalCommitSHA =
-      localCommitSHAs.length > 0 ? localCommitSHAs[0] : null
-    const mostRecentLocalCommit =
-      (mostRecentLocalCommitSHA
-        ? this.props.state.commitLookup.get(mostRecentLocalCommitSHA)
-        : null) || null
-    // -1 Because of right hand side border
-    const availableWidth = this.props.sidebarWidth - 1
-
     const scrollTop =
       this.previousSection === RepositorySectionTab.History
         ? this.state.changesListScrollTop
@@ -186,20 +152,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
 
     return (
       <ChangesSidebar
-        repository={this.props.repository}
-        dispatcher={this.props.dispatcher}
-        changes={this.props.state.changesState}
-        branch={branchName}
-        mostRecentLocalCommit={mostRecentLocalCommit}
-        issuesStore={this.props.issuesStore}
-        availableWidth={availableWidth}
-        gitHubUserStore={this.props.gitHubUserStore}
-        isCommitting={this.props.state.isCommitting}
-        isPushPullFetchInProgress={this.props.state.isPushPullFetchInProgress}
-        askForConfirmationOnDiscardChanges={
-          this.props.askForConfirmationOnDiscardChanges
-        }
-        externalEditorLabel={this.props.externalEditorLabel}
         onChangesListScrolled={this.onChangesListScrolled}
         changesListScrollTop={scrollTop}
       />
@@ -211,16 +163,10 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
   }
 
   private renderStashes(): JSX.Element {
-    return <StashesSidebarListView
-      repository={this.props.repository}
-      handleStashSelect={this.handleStashSelect}
-      dispatcher={this.props.dispatcher}/>
+    return <StashesSidebarListView handleStashSelect={this.handleStashSelect} />
   }
 
   private renderCompareSidebar(): JSX.Element {
-    const tip = this.props.state.branchesState.tip
-    const currentBranch = tip.kind === TipState.Valid ? tip.branch : null
-
     const scrollTop =
       this.previousSection === RepositorySectionTab.Changes
         ? this.state.compareListScrollTop
@@ -229,19 +175,8 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
 
     return (
       <CompareSidebar
-        repository={this.props.repository}
-        isLocalRepository={this.props.state.remote === null}
-        compareState={this.props.state.compareState}
-        selectedCommitSha={this.props.state.commitSelection.sha}
-        currentBranch={currentBranch}
-        commitLookup={this.props.state.commitLookup}
-        localCommitSHAs={this.props.state.localCommitSHAs}
-        localTags={this.props.state.localTags}
-        dispatcher={this.props.dispatcher}
-        onRevertCommit={this.onRevertCommit}
         onCompareListScrolled={this.onCompareListScrolled}
         compareListScrollTop={scrollTop}
-        tagsToPush={this.props.state.tagsToPush}
       />
     )
   }
@@ -268,13 +203,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
     this.props.dispatcher.setSidebarWidth(width)
   }
 
-  private renderSubmodules(): JSX.Element | null {
-    return <SubmodulesButton
-      currentFoldout={this.props.currentFoldout}
-      submodules={this.props.repository.submodules}
-    />
-  }
-
   private renderSidebar(): JSX.Element {
     return (
       <FocusContainer onFocusWithinChanged={this.onSidebarFocusWithinChanged}>
@@ -285,7 +213,7 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
           onResize={this.handleSidebarResize}
           maximumWidth={MaxSidebarWidth}
         >
-          {this.renderSubmodules()}
+          <SubmodulesButton />
           {this.renderTabs()}
           {this.renderSidebarContents()}
         </Resizable>
@@ -304,35 +232,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
     }
   }
 
-
-  private renderContentForHistory(): JSX.Element {
-    const { commitSelection } = this.props.state
-
-    const sha = commitSelection.sha
-
-    const selectedCommit =
-      sha != null ? this.props.state.commitLookup.get(sha) || null : null
-
-    const { changedFiles, file, diff } = commitSelection
-
-    return (
-      <SelectedCommit
-        repository={this.props.repository}
-        dispatcher={this.props.dispatcher}
-        selectedCommit={selectedCommit}
-        changedFiles={changedFiles}
-        selectedFile={file}
-        currentDiff={diff}
-        commitSummaryWidth={this.props.commitSummaryWidth}
-        selectedDiffType={this.props.imageDiffType}
-        externalEditorLabel={this.props.externalEditorLabel}
-        hideWhitespaceInDiff={this.props.hideWhitespaceInDiff}
-        onOpenBinaryFile={this.onOpenBinaryFile}
-        onChangeImageDiffType={this.onChangeImageDiffType}
-      />
-    )
-  }
-
   private renderContentForChanges(): JSX.Element | null {
     const { changesState } = this.props.state
     const { workingDirectory, selection } = changesState
@@ -344,13 +243,7 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
     }
 
     if (workingDirectory.files.length === 0) {
-      return (
-        <NoChanges
-          key={this.props.repository.id}
-          repository={this.props.repository}
-          repositoryState={this.props.state}
-        />
-      )
+      return <NoChanges key={this.props.repository.id} />
     } else {
       if (selectedFileIDs.length === 0) {
         return null
@@ -363,29 +256,9 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
       }
 
       return (
-        <Changes
-          repository={this.props.repository}
-          file={selectedFile}
-          diff={diff}
-          isCommitting={this.props.state.isCommitting}
-          imageDiffType={this.props.imageDiffType}
-          hideWhitespaceInDiff={this.props.hideWhitespaceInDiff}
-          onOpenBinaryFile={this.onOpenBinaryFile}
-          onChangeImageDiffType={this.onChangeImageDiffType}
-          askForConfirmationOnDiscardChanges={
-            this.props.askForConfirmationOnDiscardChanges
-          }
-        />
+        <Changes file={selectedFile} diff={diff} />
       )
     }
-  }
-
-  private onOpenBinaryFile = async (fullPath: string) => {
-    await openFile(fullPath, this.props.dispatcher)
-  }
-
-  private onChangeImageDiffType = async (imageDiffType: ImageDiffType) => {
-    await this.props.dispatcher.changeImageDiffType(imageDiffType)
   }
 
   private renderContent(): JSX.Element | null {
@@ -393,17 +266,9 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
     if (selectedSection === RepositorySectionTab.Changes) {
       return this.renderContentForChanges()
     } else if (selectedSection === RepositorySectionTab.History) {
-      return this.renderContentForHistory()
+      return <SelectedCommit />
     } else if (selectedSection === RepositorySectionTab.Stash) {
-      return <StashesSidebarContentView
-        selectedStash={this.state.selectedStash}
-        repository={this.props.repository}
-        commitSummaryWidth={this.props.commitSummaryWidth}
-        dispatcher={this.props.dispatcher}
-        selectedDiffType={this.props.imageDiffType}
-        hideWhitespaceInDiff={this.props.hideWhitespaceInDiff}
-        onChangeImageDiffType={this.onChangeImageDiffType}
-        onOpenBinaryFile={this.onOpenBinaryFile}/>
+      return <StashesSidebarContentView selectedStash={this.state.selectedStash} />
     } else {
       return assertNever(selectedSection, 'Unknown repository section')
     }
@@ -416,10 +281,6 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
         {this.renderContent()}
       </UiView>
     )
-  }
-
-  private onRevertCommit = (commit: Commit) => {
-    this.props.dispatcher.revertCommit(this.props.repository, commit)
   }
 
   public async componentDidMount() {
@@ -481,3 +342,5 @@ export class RepositoryView extends React.Component<IRepositoryViewProps,
     }
   }
 }
+
+export const RepositoryView = connect(mapStateToProps)(LocalRepositoryView)

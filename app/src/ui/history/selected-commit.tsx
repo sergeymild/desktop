@@ -28,9 +28,9 @@ import { showContextualMenu } from '../main-process-proxy'
 import { CommitSummary } from './commit-summary'
 import { FileList } from './file-list'
 import { SeamlessDiffSwitcher } from '../diff/seamless-diff-switcher'
-import { dispatcher } from '../index'
+import { connect, dispatcher, IGlobalState } from '../index'
 
-interface ISelectedCommitProps {
+interface IProps {
   readonly repository: Repository
   readonly dispatcher: Dispatcher
   readonly selectedCommit: Commit | null
@@ -43,34 +43,42 @@ interface ISelectedCommitProps {
   readonly externalEditorLabel?: string
 
   readonly hideWhitespaceInDiff: boolean
-
-  /**
-   * Called when the user requests to open a binary file in an the
-   * system-assigned application for said file type.
-   */
-  readonly onOpenBinaryFile: (fullPath: string) => void
-
-  /**
-   * Called when the user is viewing an image diff and requests
-   * to change the diff presentation mode.
-   */
-  readonly onChangeImageDiffType: (type: ImageDiffType) => void
 }
 
-interface ISelectedCommitState {
+interface IState {
   readonly isExpanded: boolean
   readonly hideDescriptionBorder: boolean
 }
 
+const mapStateToProps = (state: IGlobalState): IProps => {
+  const { commitSelection, commitLookup } = state.appStore.possibleSelectedState!.state!
+
+  const sha = commitSelection.sha
+
+  const selectedCommit = sha != null ? commitLookup.get(sha) || null : null
+
+  const { changedFiles, file, diff } = commitSelection
+
+  return {
+    repository: state.appStore.selectedRepository as Repository,
+    dispatcher: state.dispatcher,
+    externalEditorLabel: state.appStore.selectedExternalEditor || undefined,
+    hideWhitespaceInDiff: state.appStore.hideWhitespaceInDiff,
+    commitSummaryWidth: state.appStore.commitSummaryWidth,
+    changedFiles: changedFiles,
+    currentDiff: diff,
+    selectedCommit: selectedCommit,
+    selectedDiffType: state.appStore.imageDiffType,
+    selectedFile: file
+  }
+}
+
 /** The History component. Contains the commit list, commit summary, and diff. */
-export class SelectedCommit extends React.Component<
-  ISelectedCommitProps,
-  ISelectedCommitState
-> {
+class LocalSelectedCommit extends React.Component<IProps, IState> {
   private readonly loadChangedFilesScheduler = new ThrottledScheduler(200)
   private historyRef: HTMLDivElement | null = null
 
-  public constructor(props: ISelectedCommitProps) {
+  public constructor(props: IProps) {
     super(props)
 
     this.state = {
@@ -87,7 +95,7 @@ export class SelectedCommit extends React.Component<
     this.historyRef = ref
   }
 
-  public componentWillUpdate(nextProps: ISelectedCommitProps) {
+  public componentWillUpdate(nextProps: IProps) {
     // reset isExpanded if we're switching commits.
     const currentValue = this.props.selectedCommit
       ? this.props.selectedCommit.sha
@@ -131,8 +139,6 @@ export class SelectedCommit extends React.Component<
         diff={diff}
         readOnly={true}
         hideWhitespaceInDiff={this.props.hideWhitespaceInDiff}
-        onOpenBinaryFile={this.props.onOpenBinaryFile}
-        onChangeImageDiffType={this.props.onChangeImageDiffType}
       />
     )
   }
@@ -305,3 +311,7 @@ function NoCommitSelected() {
     </div>
   )
 }
+
+
+export const SelectedCommit =
+  connect(mapStateToProps)(LocalSelectedCommit)

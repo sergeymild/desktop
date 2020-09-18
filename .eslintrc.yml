@@ -143,15 +143,6 @@ rules:
     - global
   no-buffer-constructor: error
 
-  ###########
-  # SPECIAL #
-  ###########
-  no-restricted-syntax:
-    - error
-    # no-default-export
-    - selector: ExportDefaultDeclaration
-      message: Use of default exports is forbidden
-
 overrides:
   - files: '*.d.ts'
     rules:

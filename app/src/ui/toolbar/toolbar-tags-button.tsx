@@ -4,17 +4,30 @@ import { OcticonSymbol } from '../octicons'
 import { Repository } from '../../models/repository'
 import { TagsList } from '../tags/tags-list'
 import { Foldout, FoldoutType } from '../../lib/app-state'
-import { dispatcher } from '../index'
+import { connect, IGlobalState } from '../index'
 import { IRepositoryTags } from '../../lib/git'
+import { Dispatcher } from '../dispatcher'
 
 interface IProps {
   readonly repository: Repository
   readonly tagList: IRepositoryTags | null
   readonly currentTag: string | null
   readonly currentFoldout: Foldout | null
+  readonly dispatcher: Dispatcher
 }
 
-class ToolbarTagsButton extends React.PureComponent<IProps, {}> {
+const mapStateToProps = (state: IGlobalState): IProps => {
+  const repository = state.appStore.getRepository()!
+  return {
+    currentFoldout: state.appStore.currentFoldout,
+    repository: repository,
+    tagList: state.appStore.repositoryTags(repository),
+    currentTag: state.appStore.getCurrentTagName(repository),
+    dispatcher: state.dispatcher
+  }
+}
+
+class LocalToolbarTagsButton extends React.PureComponent<IProps, {}> {
 
   private renderBranchFoldout = (): JSX.Element | null => {
     if (this.props.tagList === null) { return null }
@@ -26,9 +39,9 @@ class ToolbarTagsButton extends React.PureComponent<IProps, {}> {
 
   private onDropDownStateChanged = (state: DropdownState): void => {
     if (state === 'open') {
-      dispatcher.showFoldout({ type: FoldoutType.Tags })
+      this.props.dispatcher.showFoldout({ type: FoldoutType.Tags })
     } else {
-      dispatcher.closeFoldout(FoldoutType.Tags)
+      this.props.dispatcher.closeFoldout(FoldoutType.Tags)
     }
   }
 
@@ -46,4 +59,5 @@ class ToolbarTagsButton extends React.PureComponent<IProps, {}> {
   }
 }
 
-export { ToolbarTagsButton }
+export const ToolbarTagsButton =
+  connect(mapStateToProps)(LocalToolbarTagsButton)

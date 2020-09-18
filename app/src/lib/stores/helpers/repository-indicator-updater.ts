@@ -13,7 +13,6 @@ const SkewUpperBound = 30 * 1000
 
 // We don't need cryptographically secure random numbers for
 // the skew. Pseudo-random should be just fine.
-// eslint-disable-next-line insecure-random
 const skew = Math.ceil(Math.random() * SkewUpperBound)
 
 export class RepositoryIndicatorUpdater {

@@ -9,27 +9,39 @@ import { Dispatcher } from '../dispatcher'
 import { SeamlessDiffSwitcher } from '../diff/seamless-diff-switcher'
 import { IDiff, ImageDiffType } from '../../models/diff'
 import { getCommitDiff } from '../../lib/git'
+import { connect, IGlobalState } from '../index'
 
-interface IStashesSidebarContentProps {
+interface IProps {
   readonly repository: Repository
-  readonly selectedStash: IStashEntry | null
   readonly commitSummaryWidth: number
   readonly dispatcher: Dispatcher
   readonly selectedDiffType: ImageDiffType
   readonly hideWhitespaceInDiff: boolean
-  readonly onOpenBinaryFile: (fullPath: string) => void
-  readonly onChangeImageDiffType: (type: ImageDiffType) => void
 }
 
-interface IStashesSidebarContentState {
+interface IExProps {
+  readonly selectedStash: IStashEntry | null
+}
+
+interface IState {
   files: ReadonlyArray<CommittedFileChange>
   selectedFile: CommittedFileChange | null
   readonly currentDiff: IDiff | null
 }
 
-export class StashesSidebarContentView extends React.Component<IStashesSidebarContentProps, IStashesSidebarContentState> {
+const mapStateToProps = (state: IGlobalState): IProps => {
+  return {
+    repository: state.appStore.selectedRepository as Repository,
+    dispatcher: state.dispatcher,
+    hideWhitespaceInDiff: state.appStore.hideWhitespaceInDiff,
+    selectedDiffType: state.appStore.imageDiffType,
+    commitSummaryWidth: state.appStore.commitSummaryWidth
+  }
+}
 
-  public constructor(props: IStashesSidebarContentProps) {
+class LocalStashesSidebarContentView extends React.Component<IProps & IExProps, IState> {
+
+  public constructor(props: IProps & IExProps) {
     super(props)
 
     this.state = {
@@ -39,7 +51,7 @@ export class StashesSidebarContentView extends React.Component<IStashesSidebarCo
     }
   }
 
-  public async componentWillReceiveProps(nextProps: Readonly<IStashesSidebarContentProps>, nextContext: any) {
+  public async componentWillReceiveProps(nextProps: Readonly<IProps & IExProps>, nextContext: any) {
     const stashSha = nextProps.selectedStash?.stashSha
     if (!stashSha) {
       return
@@ -106,8 +118,6 @@ export class StashesSidebarContentView extends React.Component<IStashesSidebarCo
         diff={diff}
         readOnly={true}
         hideWhitespaceInDiff={this.props.hideWhitespaceInDiff}
-        onOpenBinaryFile={this.props.onOpenBinaryFile}
-        onChangeImageDiffType={this.props.onChangeImageDiffType}
       />
     )
   }
@@ -129,3 +139,6 @@ export class StashesSidebarContentView extends React.Component<IStashesSidebarCo
     )
   }
 }
+
+export const StashesSidebarContentView =
+  connect<IProps, IState, IExProps>(mapStateToProps)(LocalStashesSidebarContentView)

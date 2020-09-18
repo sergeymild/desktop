@@ -6,19 +6,29 @@ import {
   UncommittedChangesStrategyKind,
 } from '../../models/uncommitted-changes-strategy'
 import { DropdownState } from './dropdown'
-import { dispatcher } from '../index'
+import { connect, dispatcher, IGlobalState } from '../index'
 import { Repository } from '../../models/repository'
 import { CloningRepository } from '../../models/cloning-repository'
 
 interface IProps {
   readonly selectionType: SelectionType | undefined
-  readonly repository: Repository | CloningRepository | undefined
+  readonly repository: Repository | CloningRepository | null
   readonly currentFoldout: Foldout | null
   readonly state: IRepositoryState | undefined
   readonly uncommittedChangesStrategyKind: UncommittedChangesStrategyKind
 }
 
-export class ToolbarBranchButton extends React.PureComponent<IProps, {}> {
+const mapStateToProps = (state: IGlobalState): IProps => {
+  return {
+    repository: state.appStore.selectedRepository,
+    currentFoldout: state.appStore.currentFoldout,
+    selectionType: state.appStore.possibleSelectedState?.type,
+    state: state.appStore.possibleSelectedState?.state,
+    uncommittedChangesStrategyKind: state.appStore.uncommittedChangesStrategyKind
+  }
+}
+
+export class LocalToolbarBranchButton extends React.PureComponent<IProps> {
 
   private onDropdownStateChanged = (newState: DropdownState) => {
     if (newState === 'open') {
@@ -54,3 +64,6 @@ export class ToolbarBranchButton extends React.PureComponent<IProps, {}> {
     )
   }
 }
+
+export const ToolbarBranchButton =
+  connect(mapStateToProps)(LocalToolbarBranchButton)
