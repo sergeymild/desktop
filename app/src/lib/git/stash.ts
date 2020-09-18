@@ -207,14 +207,12 @@ export async function createDesktopStashEntry(
     if (matches !== null && matches.length > 0) {
       // rethrow, because these messages should prevent the stash from being created
       throw new GitError(result, args)
+    } else {
+      log.info(
+        `[createDesktopStashEntry] a stash was created successfully but exit code ${result.exitCode} reported. stderr: ${result.stderr}`
+      )
+      throw new Error(result.stdout)
     }
-
-    // if no error messages were emitted by Git, we should log but continue because
-    // a valid stash was created and this should not interfere with the checkout
-
-    log.info(
-      `[createDesktopStashEntry] a stash was created successfully but exit code ${result.exitCode} reported. stderr: ${result.stderr}`
-    )
   }
 
   return true

@@ -2862,8 +2862,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       return
     }
 
-    await this._createStashAndDropPreviousEntry(repository, currentBranch.name)
-
+    this._createStashAndDropPreviousEntry(repository, currentBranch.name)
     await this._refreshRepository(repository)
   }
 
@@ -5178,11 +5177,14 @@ export class AppStore extends TypedBaseStore<IAppState> {
     const { changesState: { workingDirectory } } =
       this.repositoryStateCache.get(repository)
 
-    await createDesktopStashEntry(
-      repository,
-      branchName,
-      getUntrackedFiles(workingDirectory)
-    )
+    const gitStore = this.gitStoreCache.get(repository)
+    await gitStore.performFailableOperation(() => {
+      return createDesktopStashEntry(
+        repository,
+        branchName,
+        getUntrackedFiles(workingDirectory)
+      )
+    })
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */

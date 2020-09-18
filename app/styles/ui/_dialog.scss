@@ -171,6 +171,9 @@ dialog {
     .dialog-content {
       position: relative;
       margin-left: var(--spacing-double);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
       // A zero padding would mean the icon and the text lines up so we
       // add another double spacing plus the width of the icon to ensure
       // we have a decently horizontally centered placement of the icon.
