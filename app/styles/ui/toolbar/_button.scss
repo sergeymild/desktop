@@ -10,6 +10,7 @@
   // relatively in order for the progress bar not to position itself
   // above all the other content.
   position: relative;
+  z-index: var(--foldout-z-index);
 
   // General button behavior, mostly resets.
   // For the button content styling see second button style. Note that we

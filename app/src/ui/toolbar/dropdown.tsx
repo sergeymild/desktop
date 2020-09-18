@@ -128,11 +128,10 @@ export interface IToolbarDropdownProps {
 
   /** Classes to be appended to `ToolbarButton` component */
   readonly buttonClassName?: string
-  readonly clientRectKey?: "height" | "bottom" | "top"
 }
 
 interface IToolbarDropdownState {
-  readonly clientRect: ClientRect | null
+  readonly clientRect: DOMRect | null
 }
 
 /**
@@ -230,9 +229,9 @@ export class ToolbarDropdown extends React.Component<
     }
 
     return {
-      position: 'absolute',
+      position: 'fixed',
       // @ts-ignore
-      top: rect[this.props.clientRectKey || "bottom"],
+      top: rect.y + rect.height,
       left: 0,
       width: '100%',
       // @ts-ignore

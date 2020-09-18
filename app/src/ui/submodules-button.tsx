@@ -109,7 +109,6 @@ class LocalSubmodulesButton extends React.PureComponent<IProps, IState> {
 
 
   public render() {
-    console.log("SubmodulesButton")
     if (this.props.submodules.length === 0) return null
 
     const isOpen = this.props.currentFoldout?.type === FoldoutType.Submodules
@@ -118,7 +117,6 @@ class LocalSubmodulesButton extends React.PureComponent<IProps, IState> {
       <ToolbarDropdown
         buttonClassName="submodules-dropdown-button"
         title={"Submodules"}
-        clientRectKey="height"
         onDropdownStateChanged={this.onDropdownStateChanged}
         dropdownContentRenderer={this.renderSubmodulesList}
         dropdownState={isOpen ? 'open' : 'closed'}
