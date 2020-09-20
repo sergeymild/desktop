@@ -5,13 +5,15 @@ import { iconForRepository, OcticonSymbol } from '../octicons'
 import { Foldout, FoldoutType } from '../../lib/app-state'
 import { connect, IGlobalState } from '../index'
 import { CloningRepository } from '../../models/cloning-repository'
-import { RepositoriesList } from '../repositories-list'
 import { Dispatcher } from '../dispatcher'
+import classNames from 'classnames'
+import { RepositoriesList } from '../repositories-list'
 
 interface IProps {
   readonly repository: Repository | CloningRepository | undefined
   readonly repositoriesCount: number
   readonly currentFoldout: Foldout | null
+  readonly sidebarWidth: number
   readonly dispatcher: Dispatcher
 }
 
@@ -20,7 +22,8 @@ const mapStateToProps = (state: IGlobalState): IProps => {
     repository: state.appStore.possibleSelectedState?.repository,
     currentFoldout: state.appStore.currentFoldout,
     repositoriesCount: state.appStore.getStateRepositoriesCount(),
-    dispatcher: state.dispatcher
+    dispatcher: state.dispatcher,
+    sidebarWidth: state.appStore.sidebarWidth
   }
 }
 
@@ -62,15 +65,20 @@ class LocalToolbarRepositoryButton extends React.PureComponent<IProps, {}> {
     const tooltip = repository && !isOpen ? repository.path : undefined
 
 
-    return <ToolbarDropdown
-      icon={icon}
-      title={title}
-      description={__DARWIN__ ? 'Current Repository' : 'Current repository'}
-      tooltip={tooltip}
-      onDropdownStateChanged={this.onDropdownStateChanged}
-      dropdownContentRenderer={this.renderRepositoryList}
-      dropdownState={currentState}
-    />
+    return <div
+      className={classNames('sidebar-section', {open: isOpen})}
+      style={{ width: `calc(${this.props.sidebarWidth}px - var(--spacing))` }}
+    >
+      <ToolbarDropdown
+        icon={icon}
+        title={title}
+        description={__DARWIN__ ? 'Current Repository' : 'Current repository'}
+        tooltip={tooltip}
+        onDropdownStateChanged={this.onDropdownStateChanged}
+        dropdownContentRenderer={this.renderRepositoryList}
+        dropdownState={currentState}
+      />
+    </div>
   }
 }
 

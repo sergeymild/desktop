@@ -3,7 +3,6 @@
 /** A React component holding the main application toolbar component. */
 #desktop-app-toolbar {
   height: var(--toolbar-height);
-  border-bottom: 1px solid var(--toolbar-border-color);
 
   display: flex;
   flex-direction: row;
@@ -20,6 +19,33 @@
 
   color: var(--toolbar-text-color);
   background-color: var(--toolbar-background-color);
+  padding: 0 var(--spacing);
+
+  > div {
+    height: calc(var(--toolbar-height) - 10px);
+    border-radius: 4px;
+    margin-right: var(--spacing);
+    overflow: hidden;
+    &.open {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    div {
+      &.open {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+    }
+
+    &:last-child {
+      margin-right: 0;
+    }
+
+    .border-right {
+      display: none;
+    }
+  }
 
   .sidebar-section {
     display: flex;
@@ -80,7 +106,7 @@
   padding: 0 6px;
 
   font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
+  font-weight: 600;
 
   span {
     display: flex;

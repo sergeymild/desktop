@@ -6,38 +6,30 @@
 @import '~primer-support/lib/variables/color-system.scss';
 
 :root {
+  --color-accent-background: #007a5a;
+  --color-accent-background-hover: #016b4f;
+  --color-list-item-hover: #f6f8fa;
+  --color-list-item-selected: #f6f8fa;
+
   --color-new: #{$green};
   --color-deleted: #{$red};
   --color-modified: #{$yellow-700};
   --color-renamed: #{$blue};
   --color-conflicted: #{$orange};
 
-  --text-color: #{$gray-900};
-  --text-secondary-color: #{$gray-500};
-  --background-color: #{$white};
+  --text-color: #24292e;
+  --text-secondary-color: #6a737d;
+  --background-color: #ffffff;
 
-  --button-height: 25px;
+  --button-border-radius: 4px;
+  --button-text-color: #ffffff;
 
-  --button-background: #{$blue};
-  --button-border-radius: 6px;
-  --button-hover-background: #{lighten($blue, 5%)};
-  --button-text-color: #{$white};
-  --button-focus-border-color: #{$blue-600};
+  --link-button-color: #0366d6;
+  --link-button-hover-color: #005cc5;
 
-  --link-button-color: #{$blue};
-  --link-button-hover-color: #{$blue-600};
-
-  --secondary-button-background: #{$gray-000};
-  --secondary-button-hover-background: #{$white};
+  --secondary-button-background: #fafbfc;
+  --secondary-button-hover-background: #005cc5;
   --secondary-button-text-color: var(--text-color);
-  --secondary-button-focus-shadow-color: #{rgba($gray-200, 0.75)};
-  --secondary-button-focus-border-color: #{$gray-300};
-
-  /**
-   * Color for icons that are placed on top of a colored backing
-   * (like a circle badge icon)
-   */
-  --badge-icon-color: #{$white};
 
   // Typography
   //
@@ -46,28 +38,6 @@
   --font-family-sans-serif: system-ui, sans-serif, #{$emoji_fallback_fonts};
   --font-family-monospace: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace, #{$emoji_fallback_fonts};
 
-  /**
-   * Font weight to use for semibold text
-   */
-  --font-weight-bold: 900;
-  --font-weight-semibold: 600;
-
-  /**
-   * Font weight to use for light text
-   */
-  --font-weight-light: 300;
-
-  // Pixel value used to responsively scale all typography. Applied to the `<html>` element.
-  // When adding a new font-size variable, please update the fix-emoji-spacing.ts file.
-  --font-size: 12px;
-  --font-size-sm: 11px;
-  --font-size-md: 14px;
-  --font-size-lg: 28px;
-  --font-size-xl: 32px;
-  --font-size-xxl: 42px;
-
-  /** Extra small font size, be very conservative with the use of this */
-  --font-size-xs: 9px;
 
   /**
    * Background color for custom scroll bars.
@@ -93,19 +63,13 @@
   // to decide what states to support (active selection, selection, etc).
 
   --box-background-color: var(--background-color);
-  --box-alt-background-color: #{$gray-100};
-
-  /**
-   * Background color for skeleton or "loading" boxes
-   */
-  --box-skeleton-background-color: #{$gray-200};
-  --skeleton-background-gradient: -webkit-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0) 100%);
+  --box-alt-background-color: #f6f8fa;
 
   /**
    * Border color for boxes.
    */
-  --box-border-color: #{$gray-200};
-  --box-border-accent-color: #{$blue};
+  --box-border-color: #e1e4e8;
+  --box-border-accent-color: #0366d6;
 
   /**
    * Background color for selected boxes without keyboard focus
@@ -140,7 +104,7 @@
   /**
    * Background color for selected boxes with active keyboard focus
    */
-  --box-selected-active-background-color: #{$blue};
+  --box-selected-active-background-color: red;
 
   /**
    * Text color for selected boxes with active keyboard focus
@@ -202,18 +166,17 @@
 
   --toolbar-height: 50px;
 
-  --toolbar-background-color: #{$gray-900};
-  --toolbar-border-color: #{$gray-900};
+  --toolbar-background-color: #350d36;
   --toolbar-text-color: #{$white};
   --toolbar-text-secondary-color: #{$gray-300};
 
   --toolbar-button-color: var(--toolbar-text-color);
   --toolbar-button-background-color: transparent;
-  --toolbar-button-border-color: black;
+  --toolbar-button-border-color: rgb(104,74,104);
   --toolbar-button-secondary-color: var(--toolbar-text-secondary-color);
 
   --toolbar-button-hover-color: #{$white};
-  --toolbar-button-hover-background-color: #{$gray-800};
+  --toolbar-button-hover-background-color: rgba(255, 255, 255, 0.2);
   --toolbar-button-hover-border-color: var(--toolbar-button-border-color);
 
   --toolbar-button-focus-background-color: #{$gray-800};
@@ -222,7 +185,7 @@
   --toolbar-button-active-background-color: var(--background-color);
   --toolbar-button-active-border-color: var(--background-color);
 
-  --toolbar-button-progress-color: #{$gray-800};
+  --toolbar-button-progress-color: rgba(255, 255, 255, 0.4);
   --toolbar-button-focus-progress-color: #{$gray-700};
   --toolbar-button-hover-progress-color: #{$gray-700};
   --toolbar-dropdown-open-progress-color: #{$gray-200};
@@ -250,7 +213,7 @@
   --toolbar-badge-active-background-color: #{$gray-200};
 
   --tab-bar-height: 29px;
-  --tab-bar-active-color: #{$blue};
+  --tab-bar-active-color: var(--color-accent-background);
   --tab-bar-background-color: #{$white};
   --tab-bar-hover-background-color: #{$gray-100};
 

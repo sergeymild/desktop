@@ -67,7 +67,7 @@
     border-top: var(--base-border);
     display: flex;
     flex-direction: column;
-    font-size: var(--font-size-sm);
+    font-size: 11px;
     text-align: center;
     padding: var(--spacing);
   }
@@ -82,7 +82,7 @@
     display: flex;
     justify-content: flex-end;
     flex: 1;
-    font-size: var(--font-size-sm);
+    font-size: 11px;
 
     &-item {
       display: flex;
