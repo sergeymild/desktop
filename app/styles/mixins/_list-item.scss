@@ -7,11 +7,7 @@
   height: 100%;
 
   &.selected {
-    --text-color: var(--box-selected-text-color);
-    --text-secondary-color: var(--box-selected-text-color);
-
-    color: var(--text-color);
-    background-color: var(--box-selected-background-color);
+    background-color: var(--list-item-hover-background-color);
   }
 
   &:focus {

@@ -7,7 +7,7 @@ import classNames from 'classnames'
 
 export type DropdownState = 'open' | 'closed'
 
-export interface IToolbarDropdownProps {
+export interface IProps {
   /** The primary button text, describing its function */
   readonly title?: string
 
@@ -130,20 +130,17 @@ export interface IToolbarDropdownProps {
   readonly buttonClassName?: string
 }
 
-interface IToolbarDropdownState {
+interface IState {
   readonly clientRect: DOMRect | null
 }
 
 /**
  * A toolbar dropdown button
  */
-export class ToolbarDropdown extends React.Component<
-  IToolbarDropdownProps,
-  IToolbarDropdownState
-> {
+export class ToolbarDropdown extends React.Component<IProps, IState> {
   private innerButton: ToolbarButton | null = null
 
-  public constructor(props: IToolbarDropdownProps) {
+  public constructor(props: IProps) {
     super(props)
     this.state = { clientRect: null }
   }

@@ -2,8 +2,12 @@
   .preferences-container {
     display: flex;
     .tab-container {
-      border-left: var(--base-border);
       flex: 1;
+
+      select, input:not([type=radio]) {
+        height: 36px;
+        padding: var(--spacing-half);
+      }
     }
 
     .advanced-section {
@@ -38,7 +42,7 @@
         align-self: flex-start;
 
         .name {
-          font-weight: var(--font-weight-semibold);
+          font-weight: 600;
           // Tighten it up a little so that the real name and
           // username lines up with the avatar.
           margin-top: -2px;
@@ -68,7 +72,7 @@
 
   .git-settings-description {
     margin-top: var(--spacing-double);
-    font-size: var(--font-size-sm);
+    font-size: 11px;
     color: var(--text-secondary-color);
   }
 }

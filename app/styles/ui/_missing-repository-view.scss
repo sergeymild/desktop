@@ -42,7 +42,7 @@
   /* xl-sized title */
   .title {
     @include ellipsis;
-    font-size: var(--font-size-xl);
+    font-size: 32px;
     font-weight: var(--font-weight-light);
   }
 

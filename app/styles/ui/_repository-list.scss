@@ -134,7 +134,7 @@
     }
 
     .title {
-      font-weight: var(--font-weight-semibold);
+      font-weight: 600;
     }
 
     .protip {
@@ -143,7 +143,7 @@
       padding-right: var(--spacing-double);
 
       text-align: center;
-      font-size: var(--font-size-sm);
+      font-size: 11px;
 
       .kbd-shortcut {
         display: inline-block;

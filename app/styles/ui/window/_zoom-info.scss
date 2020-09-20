@@ -18,8 +18,8 @@
     color: var(--toast-notification-color);
     text-align: center;
     border-radius: 100px;
-    font-size: var(--font-size-md);
-    font-weight: var(--font-weight-semibold);
+    font-size: 14px;
+    font-weight: 600;
 
     // This is so sad but CodeMirror uses z-indexes like crazy
     // and we need to make sure we stay above all of that.

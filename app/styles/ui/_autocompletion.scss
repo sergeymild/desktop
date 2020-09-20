@@ -111,7 +111,7 @@
 
     .title {
       @include ellipsis;
-      font-weight: var(--font-weight-semibold);
+      font-weight: 600;
     }
   }
 
@@ -132,13 +132,13 @@
         @include ellipsis;
         color: var(--text-secondary-color);
         font-style: italic;
-        font-size: var(--font-size-sm);
+        font-size: 11px;
       }
     }
 
     .username {
       @include ellipsis;
-      font-weight: var(--font-weight-semibold);
+      font-weight: 600;
       margin-right: var(--spacing-half);
     }
 

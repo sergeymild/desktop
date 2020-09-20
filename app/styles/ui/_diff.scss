@@ -10,7 +10,7 @@
   height: 100%;
   color: var(--diff-text-color);
   background: var(--background-color);
-  font-size: var(--font-size-sm);
+  font-size: 11px;
   font-family: var(--font-family-monospace);
 
   span {
@@ -80,7 +80,7 @@
     input.CodeMirror-search-field {
       background: var(--box-background-color);
       color: var(--text-color);
-      font-size: var(--font-size);
+      font-size: 12px;
       font-family: var(--font-family-sans-serif);
       height: var(--text-field-height);
       padding: 0;
@@ -357,14 +357,14 @@
   }
 
   .image-diff-header {
-    font-weight: var(--font-weight-semibold);
+    font-weight: 600;
     padding-bottom: 10px;
   }
 
   .image-diff-footer {
     color: var(--text-secondary-color);
     .strong {
-      font-weight: var(--font-weight-semibold);
+      font-weight: 600;
     }
   }
 }
@@ -394,7 +394,7 @@
 
   .image-diff-summary {
     color: var(--text-secondary-color);
-    font-weight: var(--font-weight-semibold);
+    font-weight: 600;
     .added {
       color: var(--color-new);
     }

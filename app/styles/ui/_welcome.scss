@@ -2,7 +2,7 @@
   align-items: stretch;
   justify-content: center;
   flex-direction: row;
-  font-size: var(--font-size-md);
+  font-size: 14px;
 
   #start {
     display: flex;
@@ -63,7 +63,7 @@
 
   input,
   button {
-    font-size: var(--font-size-md);
+    font-size: 14px;
     height: auto;
   }
 
@@ -98,11 +98,11 @@
   }
 
   .create-account-link {
-    font-weight: var(--font-weight-semibold);
+    font-weight: 600;
   }
 
   .basic-auth-link {
-    font-size: var(--font-size);
+    font-size: 12px;
   }
 
   .welcome-main-buttons {
@@ -127,7 +127,7 @@
 }
 
 .welcome-title {
-  font-size: var(--font-size-xxl);
+  font-size: 42px;
   font-weight: var(--font-weight-light);
   line-height: 1.25;
   margin-bottom: var(--spacing);
@@ -138,7 +138,7 @@
 }
 
 .welcome-button {
-  font-weight: var(--font-weight-semibold);
+  font-weight: 600;
   margin: var(--spacing) 0;
 }
 

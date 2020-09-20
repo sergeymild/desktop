@@ -562,7 +562,7 @@ export class ChangesList extends React.Component<IChangesListProps,
       <Row className="merge-button-row">
       <Button
         type="submit"
-        className="commit-button merge-button"
+        className="commit-button button-component-primary merge-button"
         disabled={this.props.workingDirectory.files.length === 0}
         onClick={this.handleCommitClick}
       >Commit</Button>

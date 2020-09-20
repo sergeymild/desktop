@@ -461,12 +461,7 @@ class LocalApp extends React.Component<IAppProps & IProps, IAppState> {
 
     return (
       <Toolbar id="desktop-app-toolbar">
-        <div
-          className="sidebar-section"
-          style={{ width: this.state.sidebarWidth }}
-        >
-          <ToolbarRepositoryButton />
-        </div>
+        <ToolbarRepositoryButton />
         <ToolbarBranchButton />
         {this.renderTagsToolbarButton()}
         <ToolbarPushPullButton />

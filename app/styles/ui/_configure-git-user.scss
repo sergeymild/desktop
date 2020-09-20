@@ -7,7 +7,7 @@
     background: var(--form-error-background);
     border: 1px solid var(--form-error-border-color);
     color: var(--form-error-text-color);
-    font-size: var(--font-size-sm);
+    font-size: 11px;
     padding: var(--spacing-half);
     border-radius: var(--border-radius);
   }
@@ -24,11 +24,11 @@
     .header {
       background: rgb(242, 248, 254);
       padding: var(--spacing-half) var(--spacing);
-      font-size: var(--font-size-sm);
+      font-size: 11px;
     }
 
     .commit {
-      font-size: var(--font-size);
+      font-size: 12px;
       padding: var(--spacing-half) var(--spacing);
       width: 280px;
       border-bottom: none;

@@ -73,8 +73,8 @@
   }
 
   &-title {
-    font-size: var(--font-size-md);
-    font-weight: var(--font-weight-semibold);
+    font-size: 14px;
+    font-weight: 600;
     line-height: 16px;
     padding: var(--spacing);
     word-wrap: break-word;
@@ -110,7 +110,7 @@
 
   &-description {
     font-family: var(--font-family-monospace);
-    font-size: var(--font-size-sm);
+    font-size: 11px;
     word-wrap: break-word;
     white-space: pre-line;
     padding: var(--spacing);
@@ -133,7 +133,7 @@
     flex-direction: row;
     min-width: 0;
     margin-right: var(--spacing);
-    font-size: var(--font-size-sm);
+    font-size: 11px;
     flex-shrink: 0;
 
     .avatar,
