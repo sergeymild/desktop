@@ -5,12 +5,14 @@ import { iconForRepository, OcticonSymbol } from '../octicons'
 import { Foldout, FoldoutType } from '../../lib/app-state'
 import { dispatcher } from '../index'
 import { CloningRepository } from '../../models/cloning-repository'
+import classNames from 'classnames'
 
 interface IProps {
   readonly repository: Repository | CloningRepository | undefined
   readonly repositoriesCount: number
   readonly currentFoldout: Foldout | null
   readonly renderRepositoryList: () => JSX.Element
+  readonly sidebarWidth: number
 }
 
 export class ToolbarRepositoryButton extends React.PureComponent<IProps, {}> {
@@ -48,14 +50,19 @@ export class ToolbarRepositoryButton extends React.PureComponent<IProps, {}> {
     const tooltip = repository && !isOpen ? repository.path : undefined
 
 
-    return <ToolbarDropdown
-      icon={icon}
-      title={title}
-      description={__DARWIN__ ? 'Current Repository' : 'Current repository'}
-      tooltip={tooltip}
-      onDropdownStateChanged={this.onDropdownStateChanged}
-      dropdownContentRenderer={this.props.renderRepositoryList}
-      dropdownState={currentState}
-    />
+    return <div
+      className={classNames('sidebar-section', {open: isOpen})}
+      style={{ width: `calc(${this.props.sidebarWidth}px - var(--spacing))` }}
+    >
+      <ToolbarDropdown
+        icon={icon}
+        title={title}
+        description={__DARWIN__ ? 'Current Repository' : 'Current repository'}
+        tooltip={tooltip}
+        onDropdownStateChanged={this.onDropdownStateChanged}
+        dropdownContentRenderer={this.props.renderRepositoryList}
+        dropdownState={currentState}
+      />
+    </div>
   }
 }

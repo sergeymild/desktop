@@ -15,7 +15,7 @@
     // octicons (i.e. green for added, yellowish for modified etc)
     // but fall back to picking up the ambient text color when the
     // list item is both focused and selected.
-    &.focus-within .list-item:not(.selected),
+    &.focus-within .list-item,
     &:not(.focus-within) .list-item {
       @include octicon-status;
     }

@@ -40,7 +40,7 @@ body {
 
 html {
   // Sets a specific default `font-size` for user with `rem` type scales.
-  font-size: var(--font-size);
+  font-size: 12px;
 
   // NB This seems to be necessary on macOS (and possibly others)
   // for the absolutely positioned foldout to fill the window
@@ -51,7 +51,7 @@ html {
 body {
   // https://css-tricks.com/html-vs-body-in-css/
   font-family: var(--font-family-sans-serif);
-  font-size: var(--font-size);
+  font-size: 12px;
   line-height: 1.5;
 
   color: var(--text-color);

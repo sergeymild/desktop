@@ -14,12 +14,9 @@ body.theme-dark {
 
   --text-color: #{$gray-300};
   --text-secondary-color: #{$gray-400};
-  --background-color: rgb(40, 42, 48);
+  --background-color: rgb(26, 29, 33);
 
-  --button-background: #{$blue};
-  --button-hover-background: #{lighten($blue, 5%)};
-  --button-text-color: #{$white};
-  --button-focus-border-color: #{$blue-600};
+  --button-border-radius: 4px;
 
   --link-button-color: #{lighten($blue-400, 3%)};
   --link-button-hover-color: #{$blue-400};
@@ -27,14 +24,6 @@ body.theme-dark {
   --secondary-button-background: #{$gray-800};
   --secondary-button-hover-background: var(--secondary-button-background);
   --secondary-button-text-color: var(--text-color);
-  --secondary-button-focus-shadow-color: #{rgba($gray-200, 0.75)};
-  --secondary-button-focus-border-color: #{$gray-300};
-
-  /**
-   * Color for icons that are placed on top of a colored backing
-   * (like a circle badge icon)
-   */
-  --badge-icon-color: #{$gray-300};
 
   /**
    * Background color for custom scroll bars.
@@ -60,24 +49,19 @@ body.theme-dark {
   // to decide what states to support (active selection, selection, etc).
 
   --box-background-color: #{darken($gray-900, 3%)};
-  --box-alt-background-color: rgb(52, 54, 62);
+  --box-alt-background-color: rgba(34, 37, 41, 1);
 
-  /**
-   * Background color for skeleton or "loading" boxes
-   */
-  --box-skeleton-background-color: #{$gray-700};
-  --skeleton-background-gradient: -webkit-linear-gradient(left, rgba(36, 41, 46, 0) 0%, rgba(36, 41, 46, 0.5) 50%, rgba(36, 41, 46, 0) 100%);
 
   /**
    * Border color for boxes.
    */
-  --box-border-color: #3f4249;
+  --box-border-color: rgb(53, 55, 59);
   --box-border-accent-color: #{$blue};
 
   /**
    * Background color for selected boxes without keyboard focus
    */
-  --box-selected-background-color: rgba(#444d56, 0.4);
+  --box-selected-background-color: var(--list-item-hover-background-color);
 
   /**
    * Text color for when a user hovers over a boxe with a
@@ -141,14 +125,13 @@ body.theme-dark {
 
   --base-box-shadow: 0 0 0 1px rgba( 29,28,29 ,0.13),0 18px 48px 0 rgba(0,0,0,0.35);
 
-  --toolbar-background-color: rgb(41, 44, 52);
-  --toolbar-border-color: var(--box-border-color);
+  --toolbar-background-color: #121016;;
   --toolbar-text-color: var(--text-color);
   --toolbar-text-secondary-color: rgb(127, 128, 133);
 
   --toolbar-button-color: var(--toolbar-text-color);
   --toolbar-button-background-color: transparent;
-  --toolbar-button-border-color: var(--box-border-color);
+  --toolbar-button-border-color: rgb(66,65,69);
   --toolbar-button-secondary-color: var(--toolbar-text-secondary-color);
 
   --toolbar-button-hover-color: #{$white};
@@ -158,7 +141,7 @@ body.theme-dark {
   --toolbar-button-focus-background-color: #{$gray-800};
 
   --toolbar-button-active-color: var(--text-color);
-  --toolbar-button-active-background-color: var(--background-color);
+  --toolbar-button-active-background-color: var(--foldout-background-color);
   --toolbar-button-active-border-color: var(--box-border-color);
 
   --toolbar-button-progress-color: #{$gray-800};
@@ -188,14 +171,14 @@ body.theme-dark {
   --toolbar-badge-background-color: #{$gray-700};
   --toolbar-badge-active-background-color: #{$gray-700};
 
-  --tab-bar-active-color: #{$blue};
+  --tab-bar-active-color: #007a5a;
   --tab-bar-background-color: var(--box-background-color);
   --tab-bar-hover-background-color: #{$gray-800};
 
   /** Count bubble colors when used inside of a tab bar item */
   --tab-bar-count-color: rgb(147, 164, 224);
   --tab-bar-count-background-color: transparent;
-  --foldout-background-color: rgb(63, 68, 82);
+  --foldout-background-color: rgb(53, 55, 59);
 
   /**
     * Badge colors when used inside of list items.
@@ -208,7 +191,7 @@ body.theme-dark {
   --list-item-selected-badge-background-color: #{$gray-500};
   --list-item-selected-active-badge-color: #{$gray-900};
   --list-item-selected-active-badge-background-color: #{$white};
-  --list-item-hover-background-color: #{$gray-800};
+  --list-item-hover-background-color: #27242C;
 
   /**
    * Toast notifications are shown temporarily for things like the zoom

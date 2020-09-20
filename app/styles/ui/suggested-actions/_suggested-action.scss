@@ -47,21 +47,21 @@
   h2 {
     margin: 0;
     padding: 0;
-    font-size: var(--font-size);
-    font-weight: var(--font-weight-semibold);
+    font-size: 12px;
+    font-weight: 600;
   }
 
   p.description {
     margin: 0;
     padding: 0;
-    font-size: var(--font-size);
+    font-size: 12px;
     margin-bottom: var(--spacing-half);
   }
 
   p.discoverability {
     margin: 0;
     padding: 0;
-    font-size: var(--font-size);
+    font-size: 12px;
     color: var(--text-secondary-color);
 
     kbd {

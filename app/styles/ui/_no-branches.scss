@@ -7,7 +7,7 @@
   padding: var(--spacing);
 
   .title {
-    font-weight: var(--font-weight-semibold);
+    font-weight: 600;
     text-align: center;
   }
 
@@ -16,7 +16,7 @@
     margin-right: var(--spacing-double);
 
     text-align: center;
-    font-size: var(--font-size-sm);
+    font-size: 11px;
   }
 
   .create-branch-button {
@@ -29,6 +29,6 @@
     padding-right: var(--spacing-triple);
 
     text-align: center;
-    font-size: var(--font-size-sm);
+    font-size: 11px;
   }
 }

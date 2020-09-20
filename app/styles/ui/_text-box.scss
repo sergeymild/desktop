@@ -27,7 +27,8 @@
   input {
     @include textboxish;
     @include textboxish-disabled;
-
+    height: 28px;
+    border-radius: 4px;
     // Customize the "clear" icon on search text inputs to match our
     // theme icons and colors.
     //

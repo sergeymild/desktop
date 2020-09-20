@@ -17821,7 +17821,7 @@ merged
 +    color: var(--toast-notification-color);
      text-align: center;
      border-radius: 100px;
-     font-size: var(--font-size-md);
+     font-size: 14px;
 merged
   result 100644 0e9a54a357e4abc1b90c957b3f2b5b9d770d63a9 app/styles/ui/window/_zoom-info.scss
   our    100644 0c6db84cbb5f535dedef4192e2e914f5ab4ce20d app/styles/ui/window/_zoom-info.scss
@@ -17835,7 +17835,7 @@ merged
 +    color: var(--toast-notification-color);
      text-align: center;
      border-radius: 100px;
-     font-size: var(--font-size-md);
+     font-size: 14px;
 removed in remote
   base   100755 a5d7b84a673458d14d9aab082183a1968c2c7492 app/test/fixtures/submodule-basic-setup/_git/modules/foo/submodule/hooks/applypatch-msg.sample
   our    100755 a5d7b84a673458d14d9aab082183a1968c2c7492 app/test/fixtures/submodule-basic-setup/_git/modules/foo/submodule/hooks/applypatch-msg.sample

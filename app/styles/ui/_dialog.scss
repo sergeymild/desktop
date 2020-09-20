@@ -110,7 +110,6 @@ dialog {
   }
 
   .dialog-header {
-    height: 50px;
     border-bottom: var(--base-border);
 
     display: flex;
@@ -124,11 +123,11 @@ dialog {
     }
 
     h1 {
-      font-weight: var(--font-weight-semibold);
+      font-weight: 800;
       font-size: 22px;
-      margin: 0;
       padding: 0;
-      margin-right: var(--spacing);
+      margin: 0 var(--spacing) 0 0;
+      flex: 1 1 auto;
 
       @include ellipsis;
     }
@@ -137,36 +136,31 @@ dialog {
       flex-shrink: 0;
 
       border: 0;
-      height: 16px;
-      width: 16px;
-
-      // Set the left margin to auto so that flexbox positions the button
-      // on the right hand side of the dialog and add a -10px right hand
-      // side margin to put the button where it should be (we use a double
-      // margin for the header itself).
-      margin: 0 calc(var(--spacing) * -1) 0 auto;
+      height: 36px;
+      width: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       padding: 0;
       background: transparent;
 
       color: var(--text-secondary-color);
       cursor: pointer;
 
-      // Let the button deal with all mouse events.
-      // Without this the octicon resets the cursor when
-      // hovering over the <path>.
       .octicon {
         pointer-events: none;
       }
 
       &:hover {
-        color: var(--text-color);
+        background: var(--list-item-hover-background-color);
+        border-radius: 0.5rem;
       }
 
       &:focus {
         outline: 0;
       }
     }
-    @include close-button;
+
   }
 
   &.warning,
@@ -240,7 +234,7 @@ dialog {
 
     h2,
     h3 {
-      font-weight: var(--font-weight-semibold);
+      font-weight: 600;
       margin-top: 0;
       margin-bottom: var(--spacing);
 
@@ -250,10 +244,10 @@ dialog {
     }
 
     h2 {
-      font-size: var(--font-size-md);
+      font-size: 14px;
     }
     h3 {
-      font-size: var(--font-size);
+      font-size: 12px;
     }
 
     ul,
@@ -289,7 +283,6 @@ dialog {
     button {
       @include ellipsis;
       margin-right: var(--spacing-half);
-      min-width: 120px;
 
       &:last-child {
         margin-right: 0;
@@ -373,7 +366,7 @@ dialog {
 
     .description {
       color: var(--text-secondary-color);
-      font-size: var(--font-size-sm);
+      font-size: 11px;
     }
   }
 
@@ -391,7 +384,7 @@ dialog {
 
     .forgot-password-row,
     .what-is-this-row {
-      font-size: var(--font-size-sm);
+      font-size: 11px;
       justify-content: flex-end;
     }
 
@@ -420,7 +413,7 @@ dialog {
 }
 
 .warning-helper-text {
-  font-size: var(--font-size-sm);
+  font-size: 11px;
 
   .octicon {
     fill: var(--dialog-warning-color);

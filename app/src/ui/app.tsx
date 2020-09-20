@@ -429,6 +429,7 @@ export class App extends React.Component<IAppProps, IAppState> {
       currentFoldout={this.state.currentFoldout}
       renderRepositoryList={this.renderRepositoryList}
       repositoriesCount={this.state.repositories.length}
+      sidebarWidth={this.state.sidebarWidth}
     />
   }
 
@@ -512,12 +513,7 @@ export class App extends React.Component<IAppProps, IAppState> {
 
     return (
       <Toolbar id="desktop-app-toolbar">
-        <div
-          className="sidebar-section"
-          style={{ width: this.state.sidebarWidth }}
-        >
-          {this.renderRepositoryToolbarButton()}
-        </div>
+        {this.renderRepositoryToolbarButton()}
         {this.renderBranchToolbarButton()}
         {this.renderTagsToolbarButton()}
         {this.renderPushPullToolbarButton()}
