@@ -14,7 +14,7 @@ import {
 import { Account } from '../../models/account'
 import { AppMenu, IMenu } from '../../models/app-menu'
 import { IAuthor } from '../../models/author'
-import { Branch, IAheadBehind, BranchType } from '../../models/branch'
+import { Branch, BranchType, IAheadBehind } from '../../models/branch'
 import { CloneRepositoryTab } from '../../models/clone-repository-tab'
 import { CloningRepository } from '../../models/cloning-repository'
 import { Commit, CommitOneLine, ICommitContext } from '../../models/commit'
@@ -200,7 +200,7 @@ import { WorkflowPreferences } from '../../models/workflow-preferences'
 import { RepositoryIndicatorUpdater } from './helpers/repository-indicator-updater'
 import { CherryPickResult } from '../git/cherry-pick'
 import { CommitIdentity } from '../../models/commit-identity'
-import Fs from "fs"
+import Fs from 'fs'
 import * as Path from 'path'
 import { parseGitModules } from './submodules-file-parser'
 import { TrashNameLabel } from '../../ui/lib/context-menu'
@@ -213,6 +213,7 @@ const RecentRepositoriesKey = 'recently-selected-repositories'
  *  in the repository switcher dropdown
  */
 const RecentRepositoriesLength = 3
+export const BannerDismissTimeout = 5000
 
 const defaultSidebarWidth: number = 250
 const sidebarWidthConfigKey: string = 'sidebar-width'

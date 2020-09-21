@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { Octicon, OcticonSymbol } from '../octicons'
 import { Banner } from './banner'
+import { BannerDismissTimeout } from '../../lib/stores'
 
 export function BranchAlreadyUpToDate({
   ourBranch,
@@ -24,10 +25,8 @@ export function BranchAlreadyUpToDate({
     )
 
   return (
-    <Banner id="successful-merge" timeout={5000}>
-      <div className="green-circle">
-        <Octicon className="check-icon" symbol={OcticonSymbol.check} />
-      </div>
+    <Banner id="successful-merge" timeout={BannerDismissTimeout}>
+      <Octicon className="check-icon" symbol={OcticonSymbol.check} />
       <div className="banner-message">{message}</div>
     </Banner>
   )
