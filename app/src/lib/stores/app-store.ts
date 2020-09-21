@@ -370,7 +370,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
   private selectedTheme = ApplicationTheme.Light
   private automaticallySwitchTheme = false
-  private repositoryIndicatorsEnabled: boolean
+  public repositoryIndicatorsEnabled: boolean
   public constructor(
     public readonly gitHubUserStore: GitHubUserStore,
     private readonly cloningRepositoriesStore: CloningRepositoriesStore,
@@ -4655,6 +4655,31 @@ export class AppStore extends TypedBaseStore<IAppState> {
     }
 
     return addedRepositories
+  }
+
+  public async _removeRepositories(
+    repositories: ReadonlyArray<Repository | CloningRepository>
+  ): Promise<void> {
+    const localRepositories = repositories.filter(
+      r => r instanceof Repository
+    ) as ReadonlyArray<Repository>
+    const cloningRepositories = repositories.filter(
+      r => r instanceof CloningRepository
+    ) as ReadonlyArray<CloningRepository>
+    cloningRepositories.forEach(r => {
+      this._removeCloningRepository(r)
+    })
+
+    for (const repository of localRepositories) {
+      await this.repositoriesStore.removeRepository(repository)
+    }
+
+    const allRepositories = await this.repositoriesStore.getAll()
+    if (allRepositories.length === 0) {
+      this._closeFoldout(FoldoutType.Repository)
+    } else {
+      this._showFoldout({ type: FoldoutType.Repository })
+    }
   }
 
   public async _removeRepository(

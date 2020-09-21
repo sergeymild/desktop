@@ -433,7 +433,13 @@ class LocalApp extends React.Component<IAppProps & IProps, IAppState> {
     return (
       <TransitionGroup>
         {banner && (
-          <CSSTransition classNames="banner" timeout={bannerTransitionTimeout}>
+          <CSSTransition classNames={{
+            appearActive: "banner",
+            enterActive: "banner",
+            enterDone: "banner",
+            enter: "banner banner-enter",
+            exit: "banner banner-exit"
+          }} timeout={bannerTransitionTimeout}>
             {banner}
           </CSSTransition>
         )}

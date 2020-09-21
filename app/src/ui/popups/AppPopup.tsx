@@ -221,6 +221,7 @@ export const AppPopup: React.FC<IProps> = (
     case PopupType.Preferences:
       return (
         <Preferences
+          repositoryIndicatorsEnabled={appStore.repositoryIndicatorsEnabled}
           key="preferences"
           initialSelectedTab={popup.initialSelectedTab}
           dispatcher={dispatcher}

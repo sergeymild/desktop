@@ -164,7 +164,7 @@ export class Preferences extends React.Component<
     return (
       <Dialog
         id="preferences"
-        title={__DARWIN__ ? 'Preferences' : 'Options'}
+        title={'Preferences'}
         onDismissed={this.props.onDismissed}
         onSubmit={this.onSave}
       >
@@ -317,12 +317,10 @@ export class Preferences extends React.Component<
       case PreferencesTab.Advanced: {
         View = (
           <Advanced
-            optOutOfUsageTracking={this.state.optOutOfUsageTracking}
             repositoryIndicatorsEnabled={this.state.repositoryIndicatorsEnabled}
             uncommittedChangesStrategyKind={
               this.state.uncommittedChangesStrategyKind
             }
-            onOptOutofReportingchanged={this.onOptOutofReportingChanged}
             onUncommittedChangesStrategyKindChanged={
               this.onUncommittedChangesStrategyKindChanged
             }

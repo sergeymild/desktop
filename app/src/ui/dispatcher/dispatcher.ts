@@ -112,6 +112,27 @@ export class Dispatcher {
     return this.appStore._addRepositories(paths)
   }
 
+  /** Remove the repositories represented by the given IDs from local storage. */
+  public async removeRepositories(
+    repositories: ReadonlyArray<Repository | CloningRepository>,
+    moveToTrash: boolean
+  ): Promise<void> {
+    if (moveToTrash) {
+      repositories.forEach(repository => {
+        shell.moveItemToTrash(repository.path)
+      })
+    }
+
+    return this.appStore._removeRepositories(repositories)
+  }
+
+  /**
+   * Remove the repositories represented by the given IDs from local storage.
+   *
+   * When `moveToTrash` is enabled, only the repositories that were successfully
+   * deleted on disk are removed from the app. If some failed due to files being
+   * open elsewhere, an error is thrown.
+   */
   public removeRepository = (
     repository: Repository | CloningRepository | null
   ) => {
@@ -161,21 +182,6 @@ export class Dispatcher {
         })
       },
     })
-  }
-
-
-  /**
-   * Remove the repositories represented by the given IDs from local storage.
-   *
-   * When `moveToTrash` is enabled, only the repositories that were successfully
-   * deleted on disk are removed from the app. If some failed due to files being
-   * open elsewhere, an error is thrown.
-   */
-  public async removeRepository(
-    repository: Repository | CloningRepository,
-    moveToTrash: boolean
-  ): Promise<void> {
-    return this.appStore._removeRepository(repository, moveToTrash)
   }
 
   /** Update the repository's `missing` flag. */

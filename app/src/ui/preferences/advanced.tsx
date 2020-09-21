@@ -4,7 +4,7 @@ import { Checkbox, CheckboxValue } from '../lib/checkbox'
 import { UncommittedChangesStrategyKind } from '../../models/uncommitted-changes-strategy'
 import { RadioButton } from '../lib/radio-button'
 
-interface IAdvancedPreferencesProps {
+interface IProps {
   readonly uncommittedChangesStrategyKind: UncommittedChangesStrategyKind
   readonly repositoryIndicatorsEnabled: boolean
   readonly onUncommittedChangesStrategyKindChanged: (
@@ -18,10 +18,10 @@ interface IAdvancedPreferencesState {
 }
 
 export class Advanced extends React.Component<
-  IAdvancedPreferencesProps,
+  IProps,
   IAdvancedPreferencesState
 > {
-  public constructor(props: IAdvancedPreferencesProps) {
+  public constructor(props: IProps) {
     super(props)
 
     this.state = {

@@ -268,6 +268,7 @@ export class GitStore extends BaseStore {
     if (this._remoteTags.size === 0 || forceFetchRemote) {
       this._remoteTags = await fetchRemoteTags(this.repository, account, this.currentRemote)
     }
+    console.log("refreshTags", this._remoteTags)
     const previousTags = this._localTags
     const newTags = await this.performFailableOperation(() =>
       fetchAllTags(this.repository, this._remoteTags)

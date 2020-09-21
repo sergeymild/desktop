@@ -4,17 +4,73 @@
 @import 'banners/rebase-conflicts';
 @import 'banners/update-available';
 
+@keyframes c-toast-fade-in {
+  0% {
+    transform: translateY(-20px);
+    opacity: 0
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1
+  }
+}
+
+@keyframes c-toast-fade-out {
+  0% {
+    transform: translateY(0);
+    opacity: 1
+  }
+
+  to {
+    transform: translateY(-20px);
+    opacity: 0
+  }
+}
+
+.banner-exit {
+  animation: c-toast-fade-out 80ms cubic-bezier(.36,.19,.29,1) 0s 1 normal forwards
+}
+
+.banner-enter {
+  animation: c-toast-fade-in 80ms cubic-bezier(.36,.19,.29,1) 0s 1 normal forwards;
+}
+
 .banner {
-  $banner-height: 30px;
-  height: $banner-height;
-  position: relative;
+  //$banner-height: 30px;
+  //height: $banner-height;
+  //position: relative;
+  //display: flex;
+  //flex-wrap: nowrap;
+  //overflow: hidden;
+  //align-content: center;
+  //align-items: center;
+  //justify-content: space-between;
+  //padding-left: var(--spacing);
+
+
+  box-shadow: 0 18px 30px 0 rgba(0, 0, 0, 0.08);
+  position: absolute;
   display: flex;
-  flex-wrap: nowrap;
-  overflow: hidden;
-  align-content: center;
   align-items: center;
-  justify-content: space-between;
-  padding-left: var(--spacing);
+  justify-content: center;
+  max-width: 500px;
+  padding: 10px 16px 12px 16px;
+  background: var(--toolbar-background-color);
+  color: #fff;
+  border-radius: 6px;
+  background-clip: padding-box;
+  z-index: 1053;
+  word-break: break-word;
+  font-size: 15px;
+  line-height: 22px;
+  top: calc(var(--toolbar-height) + var(--tab-bar-height) + 10px);
+  right: 20px;
+
+  a {
+    color: white;
+    text-decoration: underline;
+  }
 
   // Prevents the notification banner from decreasing its height
   // when a large diff is rendered.
@@ -27,6 +83,15 @@
     align-content: center;
     justify-content: left;
     align-items: center;
+
+    svg {
+      position: relative;
+      display: inline-flex;
+      width: 20px;
+      height: 20px;
+      align-items: center;
+      justify-content: center;
+    }
   }
   .close {
     display: flex;
@@ -49,26 +114,35 @@
     }
   }
 
-  // animations for entering and leaving
-  &.banner-enter {
-    height: 0px;
-    opacity: 0;
-
-    &.banner-enter-active {
-      height: $banner-height;
-      opacity: 1;
-      transition: height 300ms ease-in-out, opacity 200ms ease-in 300ms;
+  .banner-message {
+    display: flex;
+    flex-direction: column;
+    margin: 0 1ex;
+    span {
+      margin: 0;
     }
   }
 
-  &.banner-exit {
-    height: $banner-height;
-    opacity: 1;
-
-    &.banner-exit-active {
-      height: 0px;
-      opacity: 0;
-      transition: height 225ms ease-in-out 175ms, opacity 175ms ease-in;
-    }
-  }
+  //// animations for entering and leaving
+  //&.banner-enter {
+  //  height: 0px;
+  //  opacity: 0;
+  //
+  //  &.banner-enter-active {
+  //    height: $banner-height;
+  //    opacity: 1;
+  //    transition: height 300ms ease-in-out, opacity 200ms ease-in 300ms;
+  //  }
+  //}
+  //
+  //&.banner-exit {
+  //  height: $banner-height;
+  //  opacity: 1;
+  //
+  //  &.banner-exit-active {
+  //    height: 0px;
+  //    opacity: 0;
+  //    transition: height 225ms ease-in-out 175ms, opacity 175ms ease-in;
+  //  }
+  //}
 }

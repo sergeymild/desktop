@@ -92,21 +92,13 @@
 
   background: var(--toolbar-badge-background-color);
 
-  // Perfectly round semi circle ends with real tight
-  // padding on either side. Now in two flavors!
-  @include darwin {
-    height: 13px;
-  }
-
-  @include win32 {
-    height: 14px;
-  }
+  height: 16px;
 
   border-radius: 8px;
   padding: 0 6px;
 
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 400;
 
   span {
     display: flex;

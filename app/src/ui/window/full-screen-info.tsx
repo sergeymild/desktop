@@ -28,7 +28,7 @@ const holdDuration = 3000
  * other content (except for dialogs, we can't put ourselves on top of dialogs
  * easily at the moment).
  */
-export class FullScreenInfo extends React.Component<
+export class FullScreenInfo extends React.PureComponent<
   IFullScreenInfoProps,
   IFullScreenInfoState
 > {
