@@ -14,7 +14,7 @@ import {
 import { Account } from '../../models/account'
 import { AppMenu, IMenu } from '../../models/app-menu'
 import { IAuthor } from '../../models/author'
-import { Branch, IAheadBehind } from '../../models/branch'
+import { Branch, IAheadBehind, BranchType } from '../../models/branch'
 import { CloneRepositoryTab } from '../../models/clone-repository-tab'
 import { CloningRepository } from '../../models/cloning-repository'
 import { Commit, CommitOneLine, ICommitContext } from '../../models/commit'
@@ -203,6 +203,7 @@ import { CommitIdentity } from '../../models/commit-identity'
 import Fs from "fs"
 import * as Path from 'path'
 import { parseGitModules } from './submodules-file-parser'
+import { TrashNameLabel } from '../../ui/lib/context-menu'
 
 const LastSelectedRepositoryIDKey = 'last-selected-repository-id'
 
@@ -241,6 +242,8 @@ const hideWhitespaceInDiffDefault = false
 const hideWhitespaceInDiffKey = 'hide-whitespace-in-diff'
 
 const shellKey = 'shell'
+
+const repositoryIndicatorsEnabledKey = 'enable-repository-indicators'
 
 // background fetching should occur hourly when Desktop is active, but this
 // lower interval ensures user interactions like switching repositories and
@@ -367,7 +370,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
   private selectedTheme = ApplicationTheme.Light
   private automaticallySwitchTheme = false
-
+  private repositoryIndicatorsEnabled: boolean
   public constructor(
     public readonly gitHubUserStore: GitHubUserStore,
     private readonly cloningRepositoriesStore: CloningRepositoriesStore,
@@ -397,15 +400,29 @@ export class AppStore extends TypedBaseStore<IAppState> {
     this.wireUpIpcEventHandlers(browserWindow)
     this.wireupStoreEventHandlers()
     getAppMenu()
+
+    // We're considering flipping the default value and have new users
+    // start off with repository indicators disabled. As such we'll start
+    // persisting the current default to localstorage right away so we
+    // can change the default in the future without affecting current
+    // users.
+    if (getBoolean(repositoryIndicatorsEnabledKey) === undefined) {
+      setBoolean(repositoryIndicatorsEnabledKey, true)
+    }
+
+    this.repositoryIndicatorsEnabled =
+      getBoolean(repositoryIndicatorsEnabledKey) ?? true
+
     this.repositoryIndicatorUpdater = new RepositoryIndicatorUpdater(
       this.getRepositoriesForIndicatorRefresh,
       this.refreshIndicatorForRepository
     )
 
-    window.setTimeout(
-      () => this.repositoryIndicatorUpdater.start(),
-      InitialRepositoryIndicatorTimeout
-    )
+    window.setTimeout(() => {
+      if (this.repositoryIndicatorsEnabled) {
+        this.repositoryIndicatorUpdater.start()
+      }
+    }, InitialRepositoryIndicatorTimeout)
   }
 
   public isShowingModal(): boolean {
@@ -633,6 +650,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       automaticallySwitchTheme: this.automaticallySwitchTheme,
       apiRepositories: this._apiRepositories,
       localStashesCount: this.localStashesCount,
+      repositoryIndicatorsEnabled: this.repositoryIndicatorsEnabled,
     }
   }
 
@@ -2503,6 +2521,22 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
       return gitStore.aheadBehind
     })
+  }
+
+  public _setRepositoryIndicatorsEnabled(repositoryIndicatorsEnabled: boolean) {
+    if (this.repositoryIndicatorsEnabled === repositoryIndicatorsEnabled) {
+      return
+    }
+
+    setBoolean(repositoryIndicatorsEnabledKey, repositoryIndicatorsEnabled)
+    this.repositoryIndicatorsEnabled = repositoryIndicatorsEnabled
+    if (repositoryIndicatorsEnabled) {
+      this.repositoryIndicatorUpdater.start()
+    } else {
+      this.repositoryIndicatorUpdater.stop()
+    }
+
+    this.emitUpdate()
   }
 
   /**
@@ -4623,21 +4657,32 @@ export class AppStore extends TypedBaseStore<IAppState> {
     return addedRepositories
   }
 
-  public async _removeRepositories(
-    repositories: ReadonlyArray<Repository | CloningRepository>
+  public async _removeRepository(
+    repository: Repository | CloningRepository,
+    moveToTrash: boolean
   ): Promise<void> {
-    const localRepositories = repositories.filter(
-      r => r instanceof Repository
-    ) as ReadonlyArray<Repository>
-    const cloningRepositories = repositories.filter(
-      r => r instanceof CloningRepository
-    ) as ReadonlyArray<CloningRepository>
-    cloningRepositories.forEach(r => {
-      this._removeCloningRepository(r)
-    })
+    try {
+      if (moveToTrash) {
+        const deleted = shell.moveItemToTrash(repository.path)
 
-    for (const repository of localRepositories) {
-      await this.repositoriesStore.removeRepository(repository)
+        if (!deleted) {
+          this.emitError(
+            new Error(
+              `Failed moving repository directory to ${TrashNameLabel}.\n\nA common reason for this is if a file or directory is open in another program.`
+            )
+          )
+          return
+        }
+      }
+
+      if (repository instanceof CloningRepository) {
+        this._removeCloningRepository(repository)
+      } else {
+        await this.repositoriesStore.removeRepository(repository)
+      }
+    } catch (err) {
+      this.emitError(err)
+      return
     }
 
     const allRepositories = await this.repositoriesStore.getAll()
@@ -5083,8 +5128,15 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     const gitStore = this.gitStoreCache.get(repository)
 
+    // Find a remote branch matching the given name or a local branch
+    // whose upstream tracking branch matches the given name (i.e someone
+    // has already checked out the remote branch)
     const findBranch = (name: string) =>
-      gitStore.allBranches.find(branch => branch.name === name) || null
+      gitStore.allBranches.find(branch =>
+        branch.type === BranchType.Local
+          ? branch.upstream === name
+          : branch.name === name
+      ) ?? null
 
     // If we don't have a default remote here, it's probably going
     // to just crash and burn on checkout, but that's okay

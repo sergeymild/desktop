@@ -222,6 +222,14 @@ export interface IAppState {
   readonly apiRepositories: ReadonlyMap<Account, IAccountRepositories>
 
   readonly localStashesCount: number
+  /**
+   * Whether or not the app should update the repository indicators (the
+   * blue dot and the ahead/behind arrows in the repository list used to
+   * indicate that the repository has uncommitted changes or is out of sync
+   * with its remote) in the background. See `RepositoryIndicatorUpdater`
+   * for more information
+   */
+  readonly repositoryIndicatorsEnabled: boolean
 }
 
 export enum FoldoutType {
