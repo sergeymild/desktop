@@ -250,7 +250,9 @@ export class ToolbarDropdown extends React.Component<IProps, IState> {
       position: 'absolute',
       marginLeft: rect.left,
       minWidth: rect.width,
-      height: '100%',
+      height: '99%',
+      borderBottomLeftRadius: '4px',
+      borderBottomRightRadius: '4px',
       top: 0,
     }
   }
