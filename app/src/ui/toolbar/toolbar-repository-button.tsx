@@ -7,7 +7,6 @@ import { connect, IGlobalState } from '../index'
 import { CloningRepository } from '../../models/cloning-repository'
 import { Dispatcher } from '../dispatcher'
 import classNames from 'classnames'
-import { RepositoriesList } from '../repositories-list'
 
 interface IProps {
   readonly repository: Repository | CloningRepository | undefined
