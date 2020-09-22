@@ -203,6 +203,9 @@ export class RepositoriesStore extends TypedBaseStore<ReadonlyArray<Repository>>
 
   /** Remove the given repository. */
   public async removeRepository(repository: Repository): Promise<void> {
+    for (const submodule of repository.submodules) {
+      await this.db.repositories.delete(submodule.id)
+    }
     await this.db.repositories.delete(repository.id)
     clearTagsToPush(repository)
 

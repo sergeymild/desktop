@@ -33,6 +33,9 @@ export function getTagsToPush(repository: Repository) {
  * @param repository the repository object
  */
 export function clearTagsToPush(repository: Repository) {
+  for (const submodule of repository.submodules) {
+    localStorage.removeItem(getTagsToPushKey(submodule))
+  }
   localStorage.removeItem(getTagsToPushKey(repository))
 }
 
