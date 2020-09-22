@@ -11,12 +11,14 @@ interface IProps {
   readonly files: ReadonlyArray<WorkingDirectoryFileChange>
   readonly dispatcher: Dispatcher
   readonly repository: Repository | null
+  readonly confirmDiscardChanges: boolean
 }
 
 const mapStateToProps = (state: IGlobalState): IProps => ({
   files: state.appStore.possibleSelectedState?.state?.changesState?.workingDirectory.files || [],
   dispatcher: state.dispatcher,
-  repository: state.appStore.getRepository()
+  repository: state.appStore.getRepository(),
+  confirmDiscardChanges: state.appStore.confirmDiscardChanges
 })
 
 class LocalToolbarDiscardButton extends React.Component<IProps> {
@@ -27,10 +29,16 @@ class LocalToolbarDiscardButton extends React.Component<IProps> {
     return nextProps.files.length !== this.props.files.length
   }
 
-  private onStashChanges = () => {
+  private onClick = async () => {
     const repository = this.props.repository
     if (repository === null) return
-    this.props.dispatcher.showPopup({
+    if (!this.props.confirmDiscardChanges) {
+      return await this.props.dispatcher.discardChanges(
+        repository,
+        this.props.files
+      )
+    }
+    await this.props.dispatcher.showPopup({
       type: PopupType.ConfirmDiscardChanges,
       repository: repository,
       showDiscardChangesSetting: false,
@@ -44,7 +52,7 @@ class LocalToolbarDiscardButton extends React.Component<IProps> {
       <ToolbarButton
         title="Discard"
         icon={OcticonSymbol.remove}
-        onClick={this.onStashChanges}
+        onClick={this.onClick}
         disabled={this.props.files.length === 0}
         className="vertically warning"
       />
