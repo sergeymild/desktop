@@ -1,13 +1,13 @@
 @import '../../mixins';
 
 #continue-rebase {
-  border-top: 1px solid var(--box-border-color);
+  border-top: 1px solid var(--divider-color);
   flex-direction: column;
   flex-shrink: 0;
   margin-top: auto;
 
   display: flex;
-  background-color: var(--box-alt-background-color);
+  background-color: transparent;
   padding: var(--spacing);
 
   .warning-untracked-files {

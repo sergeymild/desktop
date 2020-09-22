@@ -1,9 +1,9 @@
 .toolbar-dropdown.open .pr-badge {
-  background: var(--toolbar-badge-active-background-color);
+  background: var(--color-accent);
 }
 
 .toolbar-dropdown:not(.open) .pr-badge {
-  background: var(--toolbar-badge-background-color);
+  background: var(--color-accent);
 }
 
 .pr-badge {

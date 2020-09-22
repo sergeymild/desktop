@@ -14,16 +14,11 @@ body.theme-dark {
 
   --text-color: #{$gray-300};
   --text-secondary-color: #{$gray-400};
-  --background-color: rgb(26, 29, 33);
+
 
   --button-border-radius: 4px;
 
-  --link-button-color: #{lighten($blue-400, 3%)};
-  --link-button-hover-color: #{$blue-400};
 
-  --secondary-button-background: #{$gray-800};
-  --secondary-button-hover-background: var(--secondary-button-background);
-  --secondary-button-text-color: var(--text-color);
 
   /**
    * Background color for custom scroll bars.
@@ -41,157 +36,43 @@ body.theme-dark {
    */
   --scroll-bar-thumb-background-color-active: rgba(255, 255, 255, 0.5);
 
-  // Box
-  //
-  // We use the term 'box' here to refer to a very high-level generic
-  // component that fits many use cases. A 'box' might be a list item
-  // or an item in a tab control header. It's up to each implementation
-  // to decide what states to support (active selection, selection, etc).
 
-  --box-background-color: #{darken($gray-900, 3%)};
-  --box-alt-background-color: rgba(34, 37, 41, 1);
-
-
-  /**
-   * Border color for boxes.
-   */
-  --box-border-color: rgb(53, 55, 59);
-  --box-border-accent-color: #{$blue};
-
-  /**
-   * Background color for selected boxes without keyboard focus
-   */
-  --box-selected-background-color: var(--list-item-hover-background-color);
-
-  /**
-   * Text color for when a user hovers over a boxe with a
-   * pointing device. Should not be used by boxes that doesn't
-   * implement a hover state since this will conflict with
-   * selection and active selection
-   */
-  --box-hover-text-color: var(--text-color);
-
-  /**
-   * Background color for when a user hovers over a boxe with a
-   * pointing device. Should not be used by boxes that doesn't
-   * implement a hover state since this will conflict with
-   * selection and active selection
-   */
-
-  /**
-   * Text color for selected boxes without keyboard focus
-   */
-  --box-selected-text-color: var(--text-color);
-
-  /**
-   * Border color for selected boxes without keyboard focus
-   */
-  --box-selected-border-color: #{$gray-400};
-
-  /**
-   * Background color for selected boxes with active keyboard focus
-   */
-  --box-selected-active-background-color: rgb(45, 52, 68);
-
-  /**
-   * Text color for selected boxes with active keyboard focus
-   */
-  --box-selected-active-text-color: var(--text-color);
-
-  /**
-   * Border color for selected boxes with active keyboard focus
-   */
-  --box-selected-active-border-color: #{$gray-400};
-
-  /**
-   * Gradient used to indicate that content is overflowing, intended
-   * for use when content can be expanded through other means than
-   * scrolling.
-   */
-  --box-overflow-shadow-background: #{linear-gradient(180deg, rgba($gray-900, 0) 0%, rgba($gray-900, 1) 90%, rgba($gray-900, 1) 100%)};
-
-  /**
-   * Placeholder color for input boxes
-   */
-  --box-placeholder-color: #{$gray-400};
-
-  /**
-   * Author input (co-authors)
-   */
-  --co-author-tag-background-color: #{$blue-800};
-  --co-author-tag-border-color: #{$blue-700};
-
-  --base-border: 1px solid var(--box-border-color);
+  --base-border: 1px solid var(--divider-color);
 
   --base-box-shadow: 0 0 0 1px rgba(232,232,232 ,0.13),0 18px 48px 0 rgba(0,0,0,0.35);
 
-  --toolbar-background-color: #121016;;
-  --toolbar-text-color: var(--text-color);
-  --toolbar-text-secondary-color: rgb(127, 128, 133);
 
-  --toolbar-button-color: var(--toolbar-text-color);
-  --toolbar-button-background-color: transparent;
-  --toolbar-button-border-color: rgb(66,65,69);
-  --toolbar-button-secondary-color: var(--toolbar-text-secondary-color);
-
-  --toolbar-button-hover-color: #{$white};
-  --toolbar-button-hover-background-color: #{$gray-800};
-  --toolbar-button-hover-border-color: var(--toolbar-button-border-color);
-
-  --toolbar-button-focus-background-color: #{$gray-800};
-
-  --toolbar-button-active-color: var(--text-color);
-  --toolbar-button-active-background-color: var(--foldout-background-color);
-  --toolbar-button-active-border-color: var(--box-border-color);
 
   --toolbar-button-progress-color: #{$gray-800};
-  --toolbar-button-focus-progress-color: #{$gray-700};
-  --toolbar-button-hover-progress-color: #{$gray-700};
-  --toolbar-dropdown-open-progress-color: #{$gray-200};
 
   /**
     * App menu bar colors (Windows/Linux only)
     */
-  --app-menu-button-color: var(--toolbar-text-color);
-  --app-menu-button-hover-color: var(--toolbar-button-hover-color);
-  --app-menu-button-hover-background-color: var(--toolbar-button-hover-background-color);
+
+
+
   --app-menu-button-active-color: var(--text-color);
   --app-menu-button-active-background-color: #{$gray-800};
   --app-menu-pane-color: var(--text-color);
-  --app-menu-pane-secondary-color: var(--text-secondary-color);
+  --app-menu-pane-secondary-color: var(--secondary-text-color);
   --app-menu-pane-background-color: #{$gray-800};
   --app-menu-divider-color: #{$gray-600};
 
-  /**
-   * Background color for badges inside of toolbar buttons.
-   * Examples of badges are the ahead/behind bubble in the
-   * push/pull button and the PR badge in the branch drop
-   * down button.
-   */
-  --toolbar-badge-background-color: #{$gray-700};
-  --toolbar-badge-active-background-color: #{$gray-700};
 
-  --tab-bar-active-color: #007a5a;
-  --tab-bar-background-color: var(--box-background-color);
-  --tab-bar-hover-background-color: #{$gray-800};
 
-  /** Count bubble colors when used inside of a tab bar item */
-  --tab-bar-count-color: rgb(147, 164, 224);
-  --tab-bar-count-background-color: transparent;
-  --foldout-background-color: rgb(53, 55, 59);
+
 
   /**
     * Badge colors when used inside of list items.
     * Example of this is the ahead/behind indicators inside
     * of the repository list.
     */
-  --list-item-badge-color: var(--text-color);
-  --list-item-badge-background-color: #{$gray-600};
-  --list-item-selected-badge-color: #{$white};
-  --list-item-selected-badge-background-color: #{$gray-500};
-  --list-item-selected-active-badge-color: #{$gray-900};
-  --list-item-selected-active-badge-background-color: #{$white};
-  --list-item-hover-background-color: #27242C;
+
+
+
+
+
+
 
   /**
    * Toast notifications are shown temporarily for things like the zoom
@@ -201,26 +82,12 @@ body.theme-dark {
   --toast-notification-color: var(--text-color);
   --toast-notification-background-color: #{rgba(black, 0.8)};
 
-  /** The highlight color used for focus rings and focus box shadows */
-  --focus-color: #{$blue};
 
-  /**
-   * An alternative focus color to use when the background color of
-   * the focused element is the same as the regular focus color.
-   */
-  --alt-focus-color: #{$blue-800};
 
   /**
    * Variables for form elements
    */
   --text-field-focus-shadow-color: rgb(93, 137, 249);
-
-  /**
-   * Blankslate actions, see `BlankslateAction` component.
-   */
-  --primary-suggested-action-background: var(--box-alt-background-color);
-  --primary-suggested-action-border-color: var(--box-alt-background-color);
-  --suggested-action-icon-color: #{$blue-400};
 
   /**
    * Diff view
@@ -231,7 +98,7 @@ body.theme-dark {
   --diff-gutter-color: #{$gray-800};
   --diff-gutter-background-color: #{darken($gray-900, 3%)};
 
-  --diff-line-number-color: var(--text-secondary-color);
+  --diff-line-number-color: var(--secondary-text-color);
   --diff-line-number-column-width: 50px;
 
   --diff-selected-background-color: #{$blue-700};
@@ -257,7 +124,7 @@ body.theme-dark {
   --diff-hunk-border-color: #{lighten($gray-900, 3%)};
   --diff-hunk-gutter-color: #{lighten($gray-900, 3%)};
   --diff-hunk-gutter-background-color: #{darken($gray-900, 6%)};
-  --diff-hunk-text-color: var(--text-secondary-color);
+  --diff-hunk-text-color: var(--secondary-text-color);
 
   --diff-hover-background-color: #{$blue-500};
   --diff-hover-border-color: #{$blue-400};

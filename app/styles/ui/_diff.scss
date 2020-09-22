@@ -9,7 +9,7 @@
 .diff-code-mirror .CodeMirror {
   height: 100%;
   color: var(--diff-text-color);
-  background: var(--background-color);
+  background: var(--primary-background);
   font-size: 11px;
   font-family: var(--font-family-monospace);
 
@@ -78,8 +78,8 @@
     }
 
     input.CodeMirror-search-field {
-      background: var(--box-background-color);
-      color: var(--text-color);
+      background: transparent;
+      color: var(--primary-text-color);
       font-size: 12px;
       font-family: var(--font-family-sans-serif);
       height: var(--text-field-height);
@@ -172,7 +172,7 @@
   }
 
   &.diff-context {
-    background: var(--background-color);
+    background: var(--primary-background);
   }
 
   &.diff-hunk {
@@ -362,7 +362,7 @@
   }
 
   .image-diff-footer {
-    color: var(--text-secondary-color);
+    color: var(--secondary-text-color);
     .strong {
       font-weight: 600;
     }
@@ -393,7 +393,7 @@
   }
 
   .image-diff-summary {
-    color: var(--text-secondary-color);
+    color: var(--secondary-text-color);
     font-weight: 600;
     .added {
       color: var(--color-new);
@@ -517,7 +517,7 @@
       }
 
       .swiper {
-        border-left: 1px solid var(--text-secondary-color);
+        border-left: 1px solid var(--secondary-text-color);
         margin: 0;
         overflow: hidden;
         position: absolute;

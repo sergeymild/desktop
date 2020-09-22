@@ -1261,6 +1261,11 @@ react-dom@^16.8.4:
     prop-types "^15.6.2"
     scheduler "^0.13.4"
 
+react-input-checkbox@^0.1.6:
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/react-input-checkbox/-/react-input-checkbox-0.1.6.tgz#65010dd79ba4cf28acf945b802a06bc94a14494e"
+  integrity sha512-dxn+mojz+JIMjCVUlOJUZj+bQhv8dmPRfpbk7IT0hgzwOJAIq0udx/JUGUDw7bYjSM5quV0BylPLp6HoC6AwLA==
+
 react-is@^16.8.1:
   version "16.8.4"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.8.4.tgz#90f336a68c3a29a096a3d648ab80e87ec61482a2"

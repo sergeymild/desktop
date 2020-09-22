@@ -21,9 +21,7 @@ import { ConfigLockFileExists } from './config-lock-file-exists'
 interface IConfigureGitUserProps {
   /** The logged-in accounts. */
   readonly accounts: ReadonlyArray<Account>
-
-  /** Called after the user has chosen to save their config. */
-  readonly onSave?: () => void
+  readonly done: () => void
 
   /** The label for the button which saves config changes. */
   readonly saveLabel?: string
@@ -246,9 +244,6 @@ export class ConfigureGitUser extends React.Component<
         }
       }
     }
-
-    if (this.props.onSave) {
-      this.props.onSave()
-    }
+    this.props.done()
   }
 }

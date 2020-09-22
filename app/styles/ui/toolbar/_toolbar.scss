@@ -3,9 +3,12 @@
 /** A React component holding the main application toolbar component. */
 #desktop-app-toolbar {
   height: var(--toolbar-height);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 10;
 
   display: flex;
   flex-direction: row;
+  align-items: center;
 
   flex-grow: 0;
   flex-shrink: 0;
@@ -17,12 +20,12 @@
    */
   min-width: 0;
 
-  color: var(--toolbar-text-color);
-  background-color: var(--toolbar-background-color);
+  color: var(--toolbar-primary-color);
+  background-color: var(--primary-color);
   padding: 0 var(--spacing);
 
   > div {
-    height: calc(var(--toolbar-height) - 10px);
+    height: calc(var(--toolbar-height) - var(--tab-bar-height));
     border-radius: 4px;
     margin-right: var(--spacing);
     overflow: hidden;
@@ -90,7 +93,7 @@
 .ahead-behind {
   display: flex;
 
-  background: var(--toolbar-badge-background-color);
+  background: var(--color-accent);
 
   height: 16px;
 
@@ -140,7 +143,7 @@
     }
 
     &:disabled {
-      .icon, .text { color: var(--toolbar-button-secondary-color) }
+      .icon, .text { color: var(--toolbar-secondary-color) }
     }
   }
 }

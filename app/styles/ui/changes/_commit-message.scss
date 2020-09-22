@@ -10,6 +10,7 @@
 
   .checkbox-component {
     margin-top: var(--spacing);
+    margin-left: calc(var(--spacing-double) + var(--text-field-height));
   }
 
   .summary {
@@ -30,7 +31,7 @@
       flex-shrink: 0;
       width: var(--text-field-height);
       height: var(--text-field-height);
-      margin-right: var(--spacing-half);
+      margin-right: var(--spacing-double);
     }
   }
 
@@ -40,18 +41,19 @@
   }
 
   .co-authors-toggle {
-    color: var(--text-secondary-color);
+    color: var(--secondary-text-color);
 
     &:hover {
-      color: var(--text-color);
+      color: var(--primary-text-color);
     }
   }
 
   &.with-co-authors .co-authors-toggle {
-    color: var(--link-button-color);
+    color: var(--color-accent);
+    text-decoration: underline;
 
     &:hover {
-      color: var(--link-button-hover-color);
+      text-decoration: none;
     }
   }
 
@@ -65,17 +67,11 @@
   }
 
   .description-focus-container {
-    border: 1px solid var(--box-border-color);
+    border: 1px solid var(--divider-color);
     border-radius: var(--border-radius);
-    background: var(--background-color);
+    background: var(--primary-background);
     // Fake that we're a text-box
     cursor: text;
-
-    &.focus-within {
-      outline: none;
-      border-color: var(--focus-color);
-      box-shadow: 0 0 0 1px var(--text-field-focus-shadow-color);
-    }
 
     .description-field.with-overflow {
       position: relative;
@@ -109,7 +105,7 @@
 
     .action-bar {
       padding: var(--spacing-half);
-      background: var(--box-background-color);
+      background: transparent;
       border-radius: var(--border-radius);
 
       // We're not faking being a textbox any more
@@ -122,7 +118,7 @@
       }
 
       &.disabled {
-        background: var(--box-alt-background-color);
+        background: transparent;
       }
     }
 
@@ -147,7 +143,7 @@
         margin-left: 3px;
         margin-top: 1px;
         font-size: 11px;
-        color: var(--text-secondary-color);
+        color: var(--secondary-text-color);
         opacity: 0;
         transition: 150ms all ease-in-out;
         pointer-events: none;

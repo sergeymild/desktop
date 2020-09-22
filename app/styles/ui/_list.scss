@@ -61,7 +61,7 @@
 .list-focus-container {
   // The selected items must act as the focused element when inside
   &.focus-within .list-item.selected {
-    background-color: var(--list-item-hover-background-color);
+    background-color: var(--color-list-item-selected);
   }
 }
 

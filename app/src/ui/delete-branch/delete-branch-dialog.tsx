@@ -88,9 +88,9 @@ export class DeleteBranch extends React.Component<
   }
 
   private onIncludeRemoteChanged = (
-    event: React.FormEvent<HTMLInputElement>
+    isChecked: boolean
   ) => {
-    const value = event.currentTarget.checked
+    const value = isChecked
 
     this.setState({ includeRemoteBranch: value })
   }

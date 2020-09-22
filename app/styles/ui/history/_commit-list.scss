@@ -50,7 +50,7 @@
       flex: 1 1 auto;
       justify-content: flex-end;
       margin-left: var(--spacing);
-      color: var(--list-item-badge-color);
+      color: var(--icon-text-color);
       height: 16px;
       line-height: 16px;
       max-width: 50%;
@@ -65,8 +65,8 @@
           flex: 1 1 auto;
           padding: 0 var(--spacing-half);
           border-radius: var(--border-radius);
-          background: var(--list-item-badge-background-color);
-          box-shadow: 1px 0 0 var(--background-color);
+          background: var(--color-accent);
+          box-shadow: 1px 0 0 var(--primary-background);
           z-index: 3;
           @include ellipsis;
         }
@@ -75,7 +75,7 @@
           width: var(--spacing);
           margin-left: -5px;
           border-radius: 0 var(--border-radius) var(--border-radius) 0;
-          background: var(--list-item-badge-background-color);
+          background: var(--color-accent);
         }
       }
 
@@ -84,7 +84,7 @@
         height: 100%;
         border-radius: 8px;
         padding: 0 var(--spacing-half);
-        background: var(--list-item-badge-background-color);
+        background: var(--color-accent);
         margin-left: var(--spacing-half);
       }
     }
@@ -98,16 +98,15 @@
   .list-item.selected {
     .commit {
       .unpushed-indicator {
-        background: var(--list-item-selected-badge-background-color);
-        color: var(--list-item-selected-badge-color);
+        background: var(--color-accent);
+        color: var(--icon-text-color);
       }
       .tag-name {
-        background: var(--list-item-selected-badge-background-color);
-        color: var(--list-item-selected-badge-color);
-        box-shadow: 1px 0 0 var(--box-selected-background-color);
+        background: var(--color-accent);
+        color: var(--icon-text-color);
       }
       .tag-indicator-more {
-        background: var(--list-item-selected-badge-background-color);
+        background: var(--color-accent);
       }
     }
   }
@@ -116,17 +115,17 @@
     .list-item.selected {
       .commit {
         .unpushed-indicator {
-          background: var(--list-item-selected-active-badge-background-color);
-          color: var(--list-item-selected-active-badge-color);
+          background: var(--color-accent);
+          color: var(--icon-text-color);
         }
         .tag-name {
-          background: var(--list-item-selected-active-badge-background-color);
-          color: var(--list-item-selected-active-badge-color);
-          box-shadow: 1px 0 0 var(--box-selected-active-background-color);
+          background: var(--color-accent);
+          color: var(--icon-text-color);
+          box-shadow: 1px 0 0 var(--color-accent);
         }
         .tag-indicator-more {
-          background: var(--list-item-selected-active-badge-background-color);
-          color: var(--list-item-selected-active-badge-color);
+          background: var(--color-accent);
+          color: var(--icon-text-color);
         }
       }
     }

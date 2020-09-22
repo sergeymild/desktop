@@ -36,9 +36,9 @@ export class Appearance extends React.Component<IAppearanceProps, {}> {
   }
 
   private onAutomaticallySwitchThemeChanged = (
-    event: React.FormEvent<HTMLInputElement>
+    isChecked: boolean
   ) => {
-    const value = event.currentTarget.checked
+    const value = isChecked
 
     if (value) {
       this.onSelectedThemeChanged(

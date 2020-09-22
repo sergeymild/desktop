@@ -5,7 +5,7 @@
 }
 
 .warning {
-  color: var(--color-conflicted);
+  color: var(--color-accent-warning);
 }
 
 /** A React component holding the currently selected repository's changes */
@@ -33,8 +33,8 @@
 
     padding: 0 var(--spacing);
 
-    color: var(--secondary-button-text-color);
-    background-color: var(--secondary-button-background);
+    color: var(--primary-text-color);
+    background-color: var(--color-secondary-accent);
 
     border: none;
     border-top: var(--base-border);
@@ -46,16 +46,12 @@
     }
 
     &:hover,
-    &:focus {
-      background-color: var(--secondary-button-hover-background);
-      background: var(--box-selected-background-color);
-    }
     &.selected,
     &.selected:hover {
-      color: var(--box-selected-active-text-color);
-      background-color: var(--box-selected-active-background-color);
+      color: var(--toolbar-primary-color);
+      background-color: var(--color-accent);
       .stack-icon {
-        fill: var(--box-selected-active-text-color);
+        fill: var(--toolbar-primary-color);
       }
     }
 
@@ -75,8 +71,8 @@
   }
 
   .changes-list-menu {
-    background: var(--box-alt-background-color);
-    border-bottom: 1px solid var(--box-border-color);
+    background: transparent;
+    border-bottom: 1px solid var(--divider-color);
     height: 29px;
     flex: 0 0 auto;
 
@@ -89,14 +85,14 @@
       align-items: center;
       justify-content: center;
       height: 100%;
-      border-right: 1px solid var(--box-border-color);
-      background: var(--background-color);
+      border-right: 1px solid var(--divider-color);
+      background: var(--primary-background);
       &:hover {
-        background: var(--tab-bar-hover-background-color)
+        background: var(--color-list-item-hover)
       }
 
       &.disabled {
-        background: var(--tab-bar-hover-background-color);
+        background: var(--color-list-item-hover);
         opacity: 0.5;
       }
 
@@ -111,8 +107,8 @@
   }
 
   .header {
-    background: var(--box-alt-background-color);
-    border-bottom: 1px solid var(--box-border-color);
+    background: transparent;
+    border-bottom: 1px solid var(--divider-color);
     padding: 0 var(--spacing);
     height: 29px;
     flex: 0 0 auto;

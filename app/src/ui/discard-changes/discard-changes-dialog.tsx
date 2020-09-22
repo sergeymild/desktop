@@ -161,9 +161,9 @@ export class DiscardChanges extends React.Component<
   }
 
   private onConfirmDiscardChangesChanged = (
-    event: React.FormEvent<HTMLInputElement>
+    isChecked: boolean
   ) => {
-    const value = !event.currentTarget.checked
+    const value = !isChecked
 
     this.setState({ confirmDiscardChanges: value })
   }

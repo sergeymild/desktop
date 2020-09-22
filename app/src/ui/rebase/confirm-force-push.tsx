@@ -68,11 +68,8 @@ export class ConfirmForcePush extends React.Component<
     )
   }
 
-  private onAskForConfirmationOnForcePushChanged = (
-    event: React.FormEvent<HTMLInputElement>
-  ) => {
-    const value = !event.currentTarget.checked
-
+  private onAskForConfirmationOnForcePushChanged = (isChecked: boolean) => {
+    const value = !isChecked
     this.setState({ askForConfirmationOnForcePush: value })
   }
 

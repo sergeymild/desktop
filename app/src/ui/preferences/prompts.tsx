@@ -32,27 +32,27 @@ export class Prompts extends React.Component<
   }
 
   private onConfirmDiscardChangesChanged = (
-    event: React.FormEvent<HTMLInputElement>
+    isChecked: boolean
   ) => {
-    const value = event.currentTarget.checked
+    const value = isChecked
 
     this.setState({ confirmDiscardChanges: value })
     this.props.onConfirmDiscardChangesChanged(value)
   }
 
   private onConfirmForcePushChanged = (
-    event: React.FormEvent<HTMLInputElement>
+    isChecked: boolean
   ) => {
-    const value = event.currentTarget.checked
+    const value = isChecked
 
     this.setState({ confirmForcePush: value })
     this.props.onConfirmForcePushChanged(value)
   }
 
   private onConfirmRepositoryRemovalChanged = (
-    event: React.FormEvent<HTMLInputElement>
+    isChecked: boolean
   ) => {
-    const value = event.currentTarget.checked
+    const value = isChecked
 
     this.setState({ confirmRepositoryRemoval: value })
     this.props.onConfirmRepositoryRemovalChanged(value)

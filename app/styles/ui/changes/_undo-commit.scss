@@ -4,7 +4,7 @@
   justify-content: space-between;
 
   border-top: var(--base-border);
-  background: var(--box-alt-background-color);
+  background: transparent;
 
   .commit-info {
     padding: var(--spacing-half) var(--spacing);
@@ -21,7 +21,7 @@
       @include ellipsis;
     }
     .ago {
-      color: var(--text-secondary-color);
+      color: var(--secondary-text-color);
     }
   }
 

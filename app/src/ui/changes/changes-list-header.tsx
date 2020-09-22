@@ -10,7 +10,7 @@ interface IProps {
   readonly workingDirectory: WorkingDirectoryStatus
   readonly rebaseConflictState: RebaseConflictState | null
   readonly isCommitting: boolean
-  readonly onIncludeAllChanged: (event: React.FormEvent<HTMLInputElement>) => void
+  readonly onIncludeAllChanged: (isChecked: boolean) => void
 }
 
 export const ChangesListHeader: React.FC<IProps> = (

@@ -6,7 +6,7 @@ import { Checkbox, CheckboxValue } from '../lib/checkbox'
 import { Dispatcher } from '../dispatcher'
 import { DialogFooter, DialogContent, Dialog } from '../dialog'
 import { Ref } from '../lib/ref'
-import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { OkCancelButtonGroup } from '../dialog'
 
 interface IWarnForcePushProps {
   readonly dispatcher: Dispatcher
@@ -81,9 +81,9 @@ export class WarnForcePushDialog extends React.Component<
   }
 
   private onAskForConfirmationOnForcePushChanged = (
-    event: React.FormEvent<HTMLInputElement>
+    isChecked: boolean
   ) => {
-    const value = !event.currentTarget.checked
+    const value = !isChecked
 
     this.setState({ askForConfirmationOnForcePush: value })
   }

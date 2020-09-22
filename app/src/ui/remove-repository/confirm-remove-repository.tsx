@@ -91,9 +91,9 @@ export class ConfirmRemoveRepository extends React.Component<
   }
 
   private onConfirmRepositoryDeletion = (
-    event: React.FormEvent<HTMLInputElement>
+    isChecked: boolean
   ) => {
-    const value = event.currentTarget.checked
+    const value = isChecked
 
     this.setState({ deleteRepoFromDisk: value })
   }

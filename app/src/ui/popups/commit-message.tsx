@@ -247,7 +247,7 @@ export class CommitMessagePopup extends React.Component<IProps, IState> {
     return <Avatar user={avatarUser} title={avatarTitle} />
   }
 
-  private onAmendChange = (event: React.FormEvent<HTMLInputElement>) => {
+  private onAmendChange = () => {
     const amend = this.state.amend === CheckboxValue.Off
       ? CheckboxValue.On
       : CheckboxValue.Off

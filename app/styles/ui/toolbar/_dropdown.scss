@@ -10,21 +10,17 @@
 
   &.open {
     & > .toolbar-button > button {
-      color: var(--toolbar-button-active-color);
-      background-color: var(--toolbar-button-active-background-color);
+      color: var(--primary-text-color);
+      background-color: var(--primary-background);
       z-index: var(--foldout-z-index);
 
       // The foldout doesn't have a border so we have to either
       // color ours or remove it entirely for us to match the
       // min-width of the foldout.
-      border-color: var(--toolbar-button-active-border-color);
+      border-color: var(--primary-background);
 
       .description {
-        color: var(--text-secondary-color);
-      }
-
-      .progress {
-        background-color: var(--toolbar-dropdown-open-progress-color);
+        color: var(--secondary-text-color);
       }
     }
   }

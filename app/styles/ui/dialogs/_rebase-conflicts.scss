@@ -17,7 +17,7 @@ dialog#rebase-conflicts-list {
 
   .green-circle {
     background-color: var(--color-new);
-    color: var(--background-color);
+    color: var(--primary-background);
     border-radius: 50%;
     height: 22px;
     width: 22px;
@@ -90,7 +90,7 @@ dialog#rebase-conflicts-list {
       }
 
       .command-line-hint {
-        color: var(--text-secondary-color);
+        color: var(--secondary-text-color);
       }
     }
   }

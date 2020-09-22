@@ -37,9 +37,9 @@ export class Advanced extends React.Component<
   }
 
   private onRepositoryIndicatorsEnabledChanged = (
-    event: React.FormEvent<HTMLInputElement>
+    isChecked: boolean
   ) => {
-    this.props.onRepositoryIndicatorsEnabledChanged(event.currentTarget.checked)
+    this.props.onRepositoryIndicatorsEnabledChanged(isChecked)
   }
 
   public render() {

@@ -7,9 +7,8 @@ interface IProps {
   readonly stashName: string
 }
 
-export const StashApplied: React.FC<IProps> = (stashName) => {
+export const StashApplied: React.FC<IProps> = ({ stashName }) => {
   const message = <span>Stash <strong>{stashName}</strong> Applied.</span>
-
   return (
     <Banner id="successful-merge" timeout={BannerDismissTimeout}>
       <Octicon className="check-icon" symbol={OcticonSymbol.check} />

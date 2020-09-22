@@ -5,9 +5,9 @@
 // It's a mix in because the styles are shared between inputs
 // and select components.
 @mixin textboxish {
-  border: 1px solid var(--box-border-color);
+  border: 1px solid var(--divider-color);
   border-radius: 6px;
-  background: var(--box-background-color);
+  background: transparent;
   color: currentColor;
   font-size: 12px;
   font-family: var(--font-family-sans-serif);
@@ -19,7 +19,7 @@
   }
 
   &::-webkit-input-placeholder {
-    color: var(--box-placeholder-color);
+    color: var(--secondary-text-color);
   }
 }
 
@@ -29,8 +29,8 @@
 }
 
 @mixin textboxish-disabled-styles {
-  background: var(--box-alt-background-color);
-  color: var(--text-secondary-color);
+  background: transparent;
+  color: var(--secondary-text-color);
 }
 
 @mixin textboxish-disabled {

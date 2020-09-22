@@ -33,8 +33,8 @@ dialog {
   outline: none;
   border-radius: var(--border-radius);
 
-  color: var(--text-color);
-  background: var(--background-color);
+  color: var(--primary-text-color);
+  background: var(--primary-background);
 
   // This resets the properties we animate in the transition group
   // such that if there's ever a race condition between the JS timing
@@ -108,7 +108,6 @@ dialog {
   }
 
   .dialog-header {
-    border-bottom: var(--base-border);
 
     display: flex;
     flex-direction: row;
@@ -126,8 +125,6 @@ dialog {
       padding: 0;
       margin: 0 var(--spacing) 0 0;
       flex: 1 1 auto;
-
-      @include ellipsis;
     }
 
     .close {
@@ -142,7 +139,7 @@ dialog {
       padding: 0;
       background: transparent;
 
-      color: var(--text-secondary-color);
+      color: var(--secondary-text-color);
       cursor: pointer;
 
       .octicon {
@@ -150,7 +147,7 @@ dialog {
       }
 
       &:hover {
-        background: var(--list-item-hover-background-color);
+        background: var(--color-list-item-hover);
         border-radius: 0.5rem;
       }
 
@@ -269,7 +266,6 @@ dialog {
     display: flex;
     flex-direction: column;
 
-    border-top: var(--base-border);
     padding: var(--spacing-double);
 
     .button-group {
@@ -363,7 +359,7 @@ dialog {
     width: 450px;
 
     .description {
-      color: var(--text-secondary-color);
+      color: var(--secondary-text-color);
       font-size: 11px;
     }
   }

@@ -27,7 +27,7 @@
   }
 
   .compare-form {
-    background: var(--box-alt-background-color);
+    background: transparent;
     flex: initial;
     padding: var(--spacing-half);
     border-bottom: var(--base-border);
@@ -41,7 +41,7 @@
   }
 
   .merge-status {
-    background: var(--background-color);
+    background: var(--primary-background);
     border-width: 0 var(--spacing-half);
     border: solid transparent;
     box-sizing: content-box;
@@ -73,12 +73,12 @@
   }
 
   .no-branches {
-    color: var(--text-secondary-color);
+    color: var(--secondary-text-color);
     margin-top: var(--spacing-double);
   }
 
   .branch-commit-counter {
-    color: var(--text-secondary-color);
+    color: var(--secondary-text-color);
     display: flex;
     justify-content: flex-end;
     flex: 1;
@@ -94,7 +94,7 @@
     }
 
     .octicon {
-      fill: var(--text-secondary-color);
+      fill: var(--secondary-text-color);
       width: 8px;
       margin-left: 1px;
 
@@ -111,7 +111,6 @@
 
     &-item {
       box-shadow: none;
-      background: var(--tab-bar-background-color);
       border: var(--base-border);
 
       &:first-of-type {
@@ -120,12 +119,6 @@
 
       &:last-of-type {
         border-radius: 0 var(--border-radius) var(--border-radius) 0;
-      }
-
-      &.selected {
-        background: var(--box-selected-active-background-color);
-        border-color: var(--box-border-accent-color);
-        color: var(--box-selected-active-text-color);
       }
     }
   }

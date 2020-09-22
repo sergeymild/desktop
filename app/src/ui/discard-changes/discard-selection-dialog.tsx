@@ -124,9 +124,9 @@ export class DiscardSelection extends React.Component<
   }
 
   private onConfirmDiscardSelectionChanged = (
-    event: React.FormEvent<HTMLInputElement>
+    isChecked: boolean
   ) => {
-    const value = !event.currentTarget.checked
+    const value = !isChecked
 
     this.setState({ confirmDiscardSelection: value })
   }

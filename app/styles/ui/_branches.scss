@@ -25,8 +25,8 @@
   .count {
     display: flex;
 
-    background: var(--tab-bar-count-background-color);
-    color: var(--tab-bar-count-color);
+    background: var(--color-accent);
+    color: var(--icon-text-color);
 
     margin-left: var(--spacing-half);
 
@@ -109,7 +109,7 @@
         min-width: 0;
         font-weight: var(--font-weight-light);
         font-size: 11px;
-        color: var(--text-secondary-color);
+        color: var(--secondary-text-color);
       }
     }
 
@@ -161,7 +161,7 @@
 
     .description {
       margin-right: var(--spacing-half);
-      color: var(--text-secondary-color);
+      color: var(--secondary-text-color);
       font-size: 11px;
       flex-grow: 1;
       text-align: right;

@@ -5,7 +5,7 @@
     text-align: center;
 
     .merge-status {
-      background: var(--background-color);
+      background: var(--primary-background);
       border-width: 0 var(--spacing-half);
       border: solid transparent;
       box-sizing: content-box;
@@ -34,10 +34,10 @@
   .merge-info {
     margin-bottom: 0;
     text-align: center;
-    color: var(--text-secondary-color);
+    color: var(--secondary-text-color);
 
     strong {
-      color: var(--text-color);
+      color: var(--primary-text-color);
     }
   }
 

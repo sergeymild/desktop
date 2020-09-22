@@ -41,12 +41,12 @@ fieldset.vertical-segmented-control {
       }
 
       &.selected {
-        color: var(--box-selected-active-text-color);
-        background: var(--box-selected-active-background-color);
-        border-color: var(--box-selected-active-background-color);
+        color: var(--toolbar-primary-color);
+        background: var(--color-accent);
+        border-color: var(--color-accent);
 
         p {
-          color: var(--box-selected-active-text-color);
+          color: var(--toolbar-primary-color);
         }
 
         // The list item that immediately follows a selected item
@@ -54,17 +54,12 @@ fieldset.vertical-segmented-control {
         // of the selected one. This makes for crisp division between
         // selected and non-selected without a gray border to interfere.
         & + li {
-          border-top-color: var(--box-selected-active-background-color);
+          border-top-color: var(--color-accent);
         }
       }
 
       &:hover:not(.selected) {
         background: var(--box-hover-background-color);
-        color: var(--box-hover-text-color);
-
-        p {
-          color: var(--box-hover-text-color);
-        }
       }
 
       .title {
@@ -73,7 +68,7 @@ fieldset.vertical-segmented-control {
       }
 
       p {
-        color: var(--text-secondary-color);
+        color: var(--secondary-text-color);
       }
     }
 

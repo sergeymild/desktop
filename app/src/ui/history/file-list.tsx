@@ -1,12 +1,8 @@
 import * as React from 'react'
 
 import { CommittedFileChange } from '../../models/status'
-
-import { PathLabel } from '../lib/path-label'
 import { List } from '../lib/list'
-
-import { Octicon, iconForStatus } from '../octicons'
-import { mapStatus } from '../../lib/status'
+import { FileListItem } from './file-list-item'
 
 interface IFileListProps {
   readonly files: ReadonlyArray<CommittedFileChange>
@@ -27,8 +23,6 @@ export class FileList extends React.Component<IFileListProps> {
 
   private renderFile = (row: number) => {
     const file = this.props.files[row]
-    const status = file.status
-    const fileStatus = mapStatus(status)
 
     const listItemPadding = 10 * 2
     const statusWidth = 16
@@ -39,21 +33,11 @@ export class FileList extends React.Component<IFileListProps> {
       filePathPadding -
       statusWidth
 
-    return (
-      <div className="file" onContextMenu={this.props.onContextMenu}>
-        <PathLabel
-          path={file.path}
-          status={file.status}
-          availableWidth={availablePathWidth}
-        />
-
-        <Octicon
-          symbol={iconForStatus(status)}
-          className={'status status-' + fileStatus.toLowerCase()}
-          title={fileStatus}
-        />
-      </div>
-    )
+    return <FileListItem
+      availablePathWidth={availablePathWidth}
+      file={file}
+      onContextMenu={this.props.onContextMenu}
+    />
   }
 
   private rowForFile(file: CommittedFileChange | null): number {

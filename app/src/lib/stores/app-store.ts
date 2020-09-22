@@ -2984,7 +2984,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       return
     }
 
-    this._createStashAndDropPreviousEntry(repository, currentBranch.name)
+    await this._createStashAndDropPreviousEntry(repository, currentBranch.name)
     await this._refreshRepository(repository)
   }
 

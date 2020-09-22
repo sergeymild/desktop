@@ -8,12 +8,12 @@
     width: 100%;
 
     .octicon {
-      fill: var(--text-secondary-color);
+      fill: var(--secondary-text-color);
       margin-right: var(--spacing-half);
     }
 
     &.loading {
-      color: var(--text-secondary-color);
+      color: var(--secondary-text-color);
     }
   }
 }

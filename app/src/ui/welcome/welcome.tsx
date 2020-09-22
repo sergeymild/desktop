@@ -206,6 +206,7 @@ export class Welcome extends React.Component<IWelcomeProps, IWelcomeState> {
           <ConfigureGit
             advance={this.advanceToStep}
             accounts={this.props.accounts}
+            done={this.done}
           />
         )
 
@@ -223,6 +224,16 @@ export class Welcome extends React.Component<IWelcomeProps, IWelcomeState> {
     }
 
     this.setState({ currentStep: step })
+  }
+
+  private done = () => {
+    // Add a delay so that the exit animations (defined in css)
+    // have time to run to completion.
+    this.setState({ exiting: true }, () => {
+      setTimeout(() => {
+        this.props.dispatcher.endWelcomeFlow()
+      }, 250)
+    })
   }
 
   public render() {

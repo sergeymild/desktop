@@ -35,6 +35,8 @@ import { ToolbarBranchButton } from './toolbar/toolbar-branch-button'
 import { ToolbarPushPullButton } from './toolbar/toolbar-push-pull-button'
 import { MenuEventHandlerView } from './menu-event-handler-view'
 import { connect, IGlobalState } from './index'
+import { ToolbarStashButton } from './toolbar/toolbar-stash-button'
+import { ToolbarDiscardButton } from './toolbar/toolbar-discard-button'
 
 const MinuteInMilliseconds = 1000 * 60
 const HourInMilliseconds = MinuteInMilliseconds * 60
@@ -471,6 +473,9 @@ class LocalApp extends React.Component<IAppProps & IProps, IAppState> {
         <ToolbarBranchButton />
         {this.renderTagsToolbarButton()}
         <ToolbarPushPullButton />
+        <div style={{flexGrow: 1}}/>
+        <ToolbarStashButton/>
+        <ToolbarDiscardButton/>
       </Toolbar>
     )
   }

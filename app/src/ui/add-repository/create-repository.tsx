@@ -380,10 +380,10 @@ export class CreateRepository extends React.Component<
   }
 
   private onCreateWithReadmeChange = (
-    event: React.FormEvent<HTMLInputElement>
+    isChecked: boolean
   ) => {
     this.setState({
-      createWithReadme: event.currentTarget.checked,
+      createWithReadme: isChecked,
     })
   }
 

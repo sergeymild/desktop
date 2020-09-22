@@ -11,16 +11,16 @@
 
   @include darwin {
     height: var(--darwin-title-bar-height);
-    background: var(--toolbar-background-color);
+    background: var(--status-bar-background);
   }
 
   @include win32 {
     height: var(--win32-title-bar-height);
-    background: var(--win32-title-bar-background-color);
+    background: var(--status-bar-background);
     border-bottom: 1px solid #000;
 
     .app-icon {
-      color: var(--toolbar-button-secondary-color);
+      color: var(--toolbar-secondary-color);
       margin: 0 var(--spacing);
       align-self: center;
     }

@@ -134,7 +134,6 @@ export class Button extends React.Component<IButtonProps, {}> {
         aria-haspopup={this.props.ariaHasPopup}
       >
         {this.props.children}
-        <span className="border-right"/>
       </button>
     )
   }

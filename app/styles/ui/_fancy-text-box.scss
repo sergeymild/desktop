@@ -1,7 +1,7 @@
 @import '../mixins';
 
 .fancy-text-box-component {
-  background: var(--box-background-color);
+  background: transparent;
   display: flex;
   align-items: center;
   border: var(--base-border);
@@ -36,6 +36,6 @@
   }
 
   &.disabled {
-    background: var(--box-alt-background-color);
+    background: transparent;
   }
 }

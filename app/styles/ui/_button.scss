@@ -7,21 +7,22 @@
   // it here
   font-family: var(--font-family-sans-serif);
   font-size: 12px;
+  font-weight: 600;
 
-  padding: 0 var(--spacing);
+  padding: 0 var(--spacing-double);
 
   border: none;
   height: 36px;
 
-  color: var(--secondary-button-text-color);
-  background-color: var(--secondary-button-background);
+  color: var(--primary-text-color);
+  background-color: var(--color-secondary-accent);
 
   border-radius: var(--button-border-radius);
   cursor: pointer;
   transition: box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
 
   &:not(:disabled):hover {
-    background-color: var(--secondary-button-hover-background);
+    background-color: var(--color-secondary-accent-hover);
     box-shadow: 0 1px 4px rgba(0,0,0,.3);
   }
 
@@ -43,50 +44,48 @@
 }
 
 .button-component[type='submit'] {
-  font-weight: 600;
   font-size: 14px;
-  background-color: var(--color-accent-background);
-  color: var(--button-text-color);
+  background-color: var(--color-accent);
+  color: var(--icon-text-color);
 
   &:not(:disabled):hover {
-    background-color: var(--color-accent-background-hover);
+    background-color: var(--color-accent-hover);
   }
 }
 
 .button-component[type='reset'] {
-  font-weight: 600;
   font-size: 14px;
-  background-color: var(--secondary-button-background);
-  color: var(--secondary-button-text-color);
+  background-color: var(--color-secondary-accent);
+  color: var(--primary-text-color);
 
   &:not(:disabled):hover {
-    background-color: var(--secondary-button-hover-background);
+    background-color: var(--color-secondary-accent-hover);
   }
 }
 
 .button-component-primary {
   font-weight: 800;
   font-size: 15px;
-  background-color: var(--color-accent-background-hover);
-  color: var(--button-text-color);
+  background-color: var(--color-accent-hover);
+  color: var(--icon-text-color);
   cursor: pointer;
 
   &:not(:disabled):hover {
-    background-color: var(--color-accent-background-hover);
+    background-color: var(--color-accent-hover);
     box-shadow: 0 1px 4px rgba(0,0,0,.3);
   }
 }
 
 .link-button-component {
-  color: var(--link-button-color);
-  text-decoration: none;
+  color: var(--color-accent);
+  text-decoration: underline;
   cursor: pointer;
 
   display: inline-flex;
   align-items: center;
 
   &:hover {
-    text-decoration: underline;
+    text-decoration: none;
   }
 
   &[disabled] {

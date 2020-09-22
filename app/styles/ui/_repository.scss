@@ -15,7 +15,7 @@
   &-sidebar {
     display: flex;
     flex-direction: column;
-    border-right: 1px solid var(--box-border-color);
+    border-right: 1px solid var(--divider-color);
 
     .tab-bar {
       flex-shrink: 0;
@@ -48,10 +48,11 @@
       }
 
       .toolbar-button > button {
-        color: var(--text-color);
+        color: var(--primary-text-color);
+        background-color: var(--primary-background);
 
         &:hover {
-          background: var(--list-item-hover-background-color);
+          background: var(--color-list-item-hover);
         }
       }
     }

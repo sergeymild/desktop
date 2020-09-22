@@ -61,12 +61,6 @@
     }
   }
 
-  input,
-  button {
-    font-size: 14px;
-    height: auto;
-  }
-
   input {
     padding: var(--spacing-half);
   }
@@ -223,7 +217,7 @@
   margin-top: var(--spacing-quad);
 
   .skip-button {
-    color: var(--text-secondary-color);
+    color: var(--secondary-text-color);
   }
 }
 

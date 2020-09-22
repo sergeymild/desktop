@@ -1,7 +1,7 @@
 import * as React from 'react'
 
 import { PathLabel } from '../lib/path-label'
-import { Octicon, iconForStatus } from '../octicons'
+import { iconForStatus, Octicon } from '../octicons'
 import { Checkbox, CheckboxValue } from '../lib/checkbox'
 import { mapStatus } from '../../lib/status'
 import { WorkingDirectoryFileChange } from '../../models/status'
@@ -22,9 +22,8 @@ interface IChangedFileProps {
 
 /** a changed file in the working directory for a given repository */
 export class ChangedFile extends React.Component<IChangedFileProps, {}> {
-  private handleCheckboxChange = (event: React.FormEvent<HTMLInputElement>) => {
-    const include = event.currentTarget.checked
-    this.props.onIncludeChanged(this.props.file.path, include)
+  private handleCheckboxChange = (isChecked: boolean) => {
+    this.props.onIncludeChanged(this.props.file.path, isChecked)
   }
 
   private get checkboxValue(): CheckboxValue {

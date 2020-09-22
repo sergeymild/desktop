@@ -50,7 +50,7 @@
       @include ellipsis;
 
       .prefix {
-        color: var(--text-secondary-color);
+        color: var(--secondary-text-color);
       }
 
       /* Used to highlight substring matches in filtered lists */
@@ -78,23 +78,23 @@
       margin-left: var(--spacing-half);
 
       .octicon {
-        color: var(--tab-bar-active-color);
+        color: var(--color-accent);
         width: auto;
       }
     }
 
     .ahead-behind {
       height: 16px;
-      background: var(--list-item-badge-background-color);
-      color: var(--list-item-badge-color);
+      background: var(--color-accent);
+      color: var(--icon-text-color);
       align-items: center;
       margin-left: auto;
 
       // Perfectly round semi circle ends with real tight
       // padding on either side. Now in two flavors!
       @include darwin {
-        height: 12px;
-        line-height: 12px;
+        height: 14px;
+        line-height: 14px;
       }
 
       @include win32 {
@@ -172,8 +172,8 @@
   .list-item.selected {
     .repository-list-item {
       .ahead-behind {
-        background: var(--list-item-selected-badge-background-color);
-        color: var(--list-item-selected-badge-color);
+        background: var(--color-accent);
+        color: var(--icon-text-color);
       }
     }
   }
@@ -183,14 +183,14 @@
     .list-item.selected {
       .repository-list-item {
         .ahead-behind {
-          background: var(--list-item-selected-active-badge-background-color);
-          color: var(--list-item-selected-active-badge-color);
+          background: var(--color-accent);
+          color: var(--icon-text-color);
         }
       }
     }
 
     .change-indicator {
-      color: var(--text-color);
+      color: var(--primary-text-color);
     }
   }
 }

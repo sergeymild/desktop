@@ -62,8 +62,8 @@
   // avatar.scss already but duplicated here to override
   // the specificity of the .avatar background:inherit below.
   svg.avatar {
-    fill: var(--text-secondary-color);
-    background: var(--box-alt-background-color);
+    fill: var(--secondary-text-color);
+    background: transparent;
   }
 
   .avatar {
@@ -75,7 +75,7 @@
     box-sizing: content-box;
     margin-right: -11px;
     background-color: inherit;
-    box-shadow: 1px 0 0 var(--background-color);
+    box-shadow: 1px 0 0 var(--primary-background);
     border-radius: 50%;
     transition: margin 0.1s ease-in-out;
 

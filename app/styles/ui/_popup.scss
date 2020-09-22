@@ -4,7 +4,7 @@
   max-width: 400px;
   min-width: 260px;
   margin: var(--spacing-triple) var(--spacing);
-  background-color: var(--box-alt-background-color);
+  background-color: transparent;
   z-index: var(--popup-z-index);
 }
 
@@ -16,7 +16,7 @@
 .popup-inner-content {
   border: var(--base-border);
   border-radius: var(--border-radius);
-  background: var(--background-color);
+  background: var(--primary-background);
 }
 
 .popup-actions {

@@ -24,7 +24,6 @@ import { ICommitContext } from '../../models/commit'
 import { ConflictState, RebaseConflictState } from '../../lib/app-state'
 import { ContinueRebase } from './continue-rebase'
 import { hasConflictedFiles } from '../../lib/status'
-import { ChangesListMenu } from './changes-list-menu'
 import { ChangesListHeader } from './changes-list-header'
 import { PopupType } from '../../models/popup'
 import { Button } from '../lib/button'
@@ -189,9 +188,8 @@ export class ChangesList extends React.Component<IChangesListProps,
     }
   }
 
-  private onIncludeAllChanged = (event: React.FormEvent<HTMLInputElement>) => {
-    const include = event.currentTarget.checked
-    this.props.onSelectAll(include)
+  private onIncludeAllChanged = (isChecked: boolean) => {
+    this.props.onSelectAll(isChecked)
   }
 
   private renderRow = (row: number): JSX.Element => {
@@ -590,11 +588,7 @@ export class ChangesList extends React.Component<IChangesListProps,
 
     return (
       <div className="changes-list-container file-list">
-        <ChangesListMenu
-          stashChanges={this.onStashChanges}
-          discardChanges={this.onDiscardAllChanges}
-          filesCount={this.props.workingDirectory.files.length}
-        />
+
         <ChangesListHeader
           onContextMenu={this.onContextMenu}
           workingDirectory={this.props.workingDirectory}

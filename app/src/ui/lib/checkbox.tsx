@@ -16,7 +16,7 @@ interface ICheckboxProps {
   readonly value: CheckboxValue
 
   /** The function to call on value change. */
-  readonly onChange?: (event: React.FormEvent<HTMLInputElement>) => void
+  readonly onChange?: (isChecked: boolean) => void
 
   /** The tab index of the input element. */
   readonly tabIndex?: number
@@ -35,12 +35,12 @@ interface ICheckboxState {
 }
 
 /** A checkbox component which supports the mixed value. */
-export class Checkbox extends React.Component<ICheckboxProps, ICheckboxState> {
+export class Checkbox extends React.PureComponent<ICheckboxProps, ICheckboxState> {
   private input: HTMLInputElement | null = null
 
   private onChange = (event: React.FormEvent<HTMLInputElement>) => {
     if (this.props.onChange) {
-      this.props.onChange(event)
+      this.props.onChange(event.currentTarget.checked)
     }
   }
 
@@ -77,16 +77,11 @@ export class Checkbox extends React.Component<ICheckboxProps, ICheckboxState> {
     this.updateInputState()
   }
 
-  private renderLabel() {
-    const label = this.props.label
+  public render() {
     const inputId = this.state.inputId
 
-    return label ? <label htmlFor={inputId}>{label}</label> : null
-  }
-
-  public render() {
     return (
-      <div className="checkbox-component">
+      <label className="checkbox-component filled-in" htmlFor={inputId}>
         <input
           id={this.state.inputId}
           tabIndex={this.props.tabIndex}
@@ -95,8 +90,8 @@ export class Checkbox extends React.Component<ICheckboxProps, ICheckboxState> {
           ref={this.onInputRef}
           disabled={this.props.disabled}
         />
-        {this.renderLabel()}
-      </div>
+        <span>{this.props.label}</span>
+      </label>
     )
   }
 }

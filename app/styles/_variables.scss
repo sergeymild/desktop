@@ -6,30 +6,55 @@
 @import '~primer-support/lib/variables/color-system.scss';
 
 :root {
-  --color-accent-background: #007a5a;
-  --color-accent-background-hover: #016b4f;
-  --color-list-item-hover: #f6f8fa;
-  --color-list-item-selected: #f6f8fa;
+  $primaryBackground: #fff;
+  $floatingBackground: #fff;
+  $primaryColor: #00BCD4;
+  $primaryLightColor: #B2EBF2;
+  $PrimaryDarkColor: #0097A7;
+  $accentColor: #009688;
+  $secondaryAccentColor: rgba(9,30,66,.08);
+  $primaryText: #212121;
+  $secondaryText: #757575;
+  $dividerColor: #f1f1f1;
+  $iconTextColor: #fff;
+  $toolbarPrimaryColor: #fff;
+  $accentWarning: #D32F2F;
+
+  $primaryButtonColor: lighten(#00BCD4, 5%);
+  $primaryHoverColor: darken($primaryColor, 5%);
+
+  --primary-color: #{$primaryColor};
+  --primary-color-button: #{$primaryButtonColor};
+  --primary-color-hover: #{$primaryHoverColor};
+  --primary-background: #{$primaryBackground};
+  --floating-background: #{$floatingBackground};
+  --status-bar-background: #{$PrimaryDarkColor};
+
+  --toolbar-primary-color: #{$toolbarPrimaryColor};
+  --toolbar-secondary-color: rgb(178, 235, 242);
+  --color-accent: #{$accentColor};
+  --color-accent-hover: #{darken($accentColor, 5%)};
+  --color-secondary-accent: #{$secondaryAccentColor};
+  --color-secondary-accent-hover: #{darken($secondaryAccentColor, 5%)};
+  --color-accent-warning: #{$accentWarning};
+  --color-list-item-hover: #{lighten($dividerColor, 2%)};
+  --color-list-item-selected: #{darken($dividerColor, 2%)};
+
+  --primary-text-color: #{$primaryText};
+  --secondary-text-color: #{$secondaryText};
+  --divider-color: #{$dividerColor};
+  --list-item-selected-color: #BDBDBD;
+  --icon-text-color: #{$iconTextColor};
+
+
 
   --color-new: #{$green};
-  --color-deleted: #{$red};
-  --color-modified: #{$yellow-700};
+  --color-deleted: #{$accentWarning};
+  --color-modified: #FFA000;
   --color-renamed: #{$blue};
-  --color-conflicted: #{$orange};
-
-  --text-color: #24292e;
-  --text-secondary-color: #6a737d;
-  --background-color: #ffffff;
+  --color-conflicted: #E64A19;
 
   --button-border-radius: 4px;
-  --button-text-color: #ffffff;
-
-  --link-button-color: #0366d6;
-  --link-button-hover-color: #005cc5;
-
-  --secondary-button-background: #fafbfc;
-  --secondary-button-hover-background: darken(#fafbfc, 10);
-  --secondary-button-text-color: var(--text-color);
 
   // Typography
   //
@@ -55,85 +80,6 @@
    */
   --scroll-bar-thumb-background-color-active: rgba(0, 0, 0, 0.5);
 
-  // Box
-  //
-  // We use the term 'box' here to refer to a very high-level generic
-  // component that fits many use cases. A 'box' might be a list item
-  // or an item in a tab control header. It's up to each implementation
-  // to decide what states to support (active selection, selection, etc).
-
-  --box-background-color: var(--background-color);
-  --box-alt-background-color: #f6f8fa;
-
-  /**
-   * Border color for boxes.
-   */
-  --box-border-color: #e1e4e8;
-  --box-border-accent-color: #0366d6;
-
-  /**
-   * Background color for selected boxes without keyboard focus
-   */
-  --box-selected-background-color: #ebeef1;
-
-  /**
-   * Text color for when a user hovers over a boxe with a
-   * pointing device. Should not be used by boxes that doesn't
-   * implement a hover state since this will conflict with
-   * selection and active selection
-   */
-  --box-hover-text-color: #{$gray-900};
-
-  /**
-   * Background color for when a user hovers over a boxe with a
-   * pointing device. Should not be used by boxes that doesn't
-   * implement a hover state since this will conflict with
-   * selection and active selection
-   */
-
-  /**
-   * Text color for selected boxes without keyboard focus
-   */
-  --box-selected-text-color: #{$gray-900};
-
-  /**
-   * Border color for selected boxes without keyboard focus
-   */
-  --box-selected-border-color: #{$gray-400};
-
-  /**
-   * Background color for selected boxes with active keyboard focus
-   */
-  --box-selected-active-background-color: red;
-
-  /**
-   * Text color for selected boxes with active keyboard focus
-   */
-  --box-selected-active-text-color: #{$white};
-
-  /**
-   * Border color for selected boxes with active keyboard focus
-   */
-  --box-selected-active-border-color: #{$gray-400};
-
-  /**
-   * Gradient used to indicate that content is overflowing, intended
-   * for use when content can be expanded through other means than
-   * scrolling.
-   */
-  --box-overflow-shadow-background: #{linear-gradient(180deg, rgba($white, 0) 0%, rgba($white, 1) 90%, rgba($white, 1) 100%)};
-
-  /**
-   * Placeholder color for input boxes
-   */
-  --box-placeholder-color: #{$gray-500};
-
-  /**
-   * Author input (co-authors)
-   */
-  --co-author-tag-background-color: #{$blue-000};
-  --co-author-tag-border-color: #{$blue-200};
-
   /**
    * The height of the title bar area on Win32 platforms
    * If changed, update titleBarHeight in 'app/src/ui/dialog/dialog.tsx'
@@ -147,93 +93,37 @@
   */
   --darwin-title-bar-height: 22px;
 
-  --spacing: 10px;
-  --spacing-double: calc(var(--spacing) * 2);
-  --spacing-triple: calc(var(--spacing) * 3);
-  --spacing-quad: calc(var(--spacing) * 4);
-  --spacing-quint: calc(var(--spacing) * 5);
-  --spacing-half: calc(var(--spacing) / 2);
-  --spacing-third: calc(var(--spacing) / 3);
+  --spacing: 8px;
+  --spacing-double: 16px;
+  --spacing-triple: 24px;
+  --spacing-quad: 32px;
+  --spacing-quint: 42px;
+  --spacing-half: 4px;
+  --spacing-third: 2.66666px;
 
   --border-radius: 1rem;
   // When we use the regular border radius (6px) the outline
   // leaves a tiny gap in the corners so we drop down to a
   // similar value than Chrome's default outline border radius.
   --outlined-border-radius: 1rem;
-  --base-border: 1px solid var(--box-border-color);
+  --base-border: 1px solid var(--divider-color);
 
   --base-box-shadow: 0 0 0 1px rgba(232,232,232 ,0.13),0 18px 48px 0 rgba(0,0,0,0.35);
 
-  --toolbar-height: 50px;
+  --toolbar-height: calc(var(--tab-bar-height) + 50px);
 
-  --toolbar-background-color: #350d36;
-  --toolbar-text-color: #{$white};
-  --toolbar-text-secondary-color: #{$gray-300};
 
-  --toolbar-button-color: var(--toolbar-text-color);
-  --toolbar-button-background-color: transparent;
-  --toolbar-button-border-color: rgb(104,74,104);
-  --toolbar-button-secondary-color: var(--toolbar-text-secondary-color);
-
-  --toolbar-button-hover-color: #{$white};
-  --toolbar-button-hover-background-color: rgba(255, 255, 255, 0.2);
-  --toolbar-button-hover-border-color: var(--toolbar-button-border-color);
-
-  --toolbar-button-focus-background-color: #{$gray-800};
-
-  --toolbar-button-active-color: var(--text-color);
-  --toolbar-button-active-background-color: var(--background-color);
-  --toolbar-button-active-border-color: var(--background-color);
-
-  --toolbar-button-progress-color: rgba(255, 255, 255, 0.4);
-  --toolbar-button-focus-progress-color: #{$gray-700};
-  --toolbar-button-hover-progress-color: #{$gray-700};
-  --toolbar-dropdown-open-progress-color: #{$gray-200};
+  --toolbar-button-progress-color: rgba(255, 255, 255, 0.2);
 
   /**
    * App menu bar colors (Windows/Linux only)
    */
-  --app-menu-button-color: var(--toolbar-text-color);
-  --app-menu-button-hover-color: var(--toolbar-button-hover-color);
-  --app-menu-button-hover-background-color: var(--toolbar-button-hover-background-color);
-  --app-menu-button-active-color: var(--toolbar-button-active-color);
-  --app-menu-button-active-background-color: var(--toolbar-button-active-background-color);
-  --app-menu-pane-color: var(--text-color);
-  --app-menu-pane-secondary-color: var(--text-secondary-color);
-  --app-menu-pane-background-color: var(--toolbar-button-active-background-color);
-  --app-menu-divider-color: var(--box-border-color);
 
-  /**
-    * Background color for badges inside of toolbar buttons.
-    * Examples of badges are the ahead/behind bubble in the
-    * push/pull button and the PR badge in the branch drop
-    * down button.
-    */
-  --toolbar-badge-background-color: #{$gray-600};
-  --toolbar-badge-active-background-color: #{$gray-200};
+  --app-menu-pane-color: var(--primary-text-color);
+  --app-menu-pane-secondary-color: var(--secondary-text-color);
+  --app-menu-divider-color: var(--divider-color);
 
   --tab-bar-height: 29px;
-  --tab-bar-active-color: var(--color-accent-background);
-  --tab-bar-background-color: #{$white};
-  --tab-bar-hover-background-color: #{$gray-100};
-
-  /** Count bubble colors when used inside of a tab bar item */
-  --tab-bar-count-color: var(--text-color);
-  --tab-bar-count-background-color: #{$gray-200};
-  --foldout-background-color: var(--background-color);
-
-  /**
-    * Badge colors when used inside of list items.
-    * Example of this is the change indicators inside
-    * of the repository list.
-    */
-  --list-item-badge-color: #{$gray-800};
-  --list-item-badge-background-color: #{$gray-200};
-  --list-item-selected-badge-color: #{$gray-900};
-  --list-item-selected-badge-background-color: #{$gray-300};
-  --list-item-selected-active-badge-color: #{$gray-900};
-  --list-item-selected-active-badge-background-color: #{$white};
-  --list-item-hover-background-color: #{$gray-100};
 
   /** Win32 has custom scrol bars, see _scroll.scss */
   --win32-scroll-bar-size: 10px;
@@ -249,12 +139,7 @@
   --popup-z-index: 20;
   --popup-overlay-z-index: calc(var(--popup-z-index) - 1);
   --foldout-z-index: calc(var(--popup-z-index) - 2);
-  --nudge-arrow-z-index: calc(var(--popup-z-index) - 3);
-  /**
-   * This is 7 to make sure it appears on top code mirror
-   * but behind popups, overlays, and foldouts
-   */
-  --side-panel-z-index: calc(var(--popup-z-index) - 4);
+
 
   /**
    * Toast notifications are shown temporarily for things like the zoom
@@ -264,30 +149,15 @@
   --toast-notification-color: #{$gray-000};
   --toast-notification-background-color: #{rgba($gray-900, 0.6)};
 
-  --tip-box-background-color: #{rgba($blue-500, 0.06)};
-  --tip-box-border-color: #{$blue-200};
+  --tip-box-background-color: #{rgba(#0366d6, 0.06)};
+  --tip-box-border-color: #c8e1ff;
 
-  /** The highlight color used for focus rings and focus box shadows */
-  --focus-color: #{$blue};
-
-  /**
-   * An alternative focus color to use when the background color of
-   * the focused element is the same as the regular focus color.
-   */
-  --alt-focus-color: #{$blue-800};
 
   /**
    * Variables for form elements
    */
   --text-field-height: 25px;
-  --text-field-focus-shadow-color: #{rgba($blue, 0.25)};
-
-  /**
-   * Blankslate actions, see `BlankslateAction` component.
-   */
-  --primary-suggested-action-background: #{$blue-000};
-  --primary-suggested-action-border-color: #{$blue-200};
-  --suggested-action-icon-color: #{$blue-400};
+  --text-field-focus-shadow-color: #{rgba(#0366d6, 0.25)};
 
   /**
    * Diff view
@@ -298,7 +168,7 @@
   --diff-text-color: #{$gray-900};
   --diff-border-color: #{$gray-200};
   --diff-gutter-color: #{$gray-200};
-  --diff-gutter-background-color: var(--background-color);
+  --diff-gutter-background-color: var(--primary-background);
 
   --diff-line-number-color: #{$gray-700};
   --diff-line-number-column-width: 50px;
@@ -306,7 +176,7 @@
   --diff-selected-background-color: #{$blue-400};
   --diff-selected-border-color: #{$blue-600};
   --diff-selected-gutter-color: #{$blue-600};
-  --diff-selected-text-color: var(--background-color);
+  --diff-selected-text-color: var(--primary-background);
 
   --diff-add-background-color: #ddfbe6;
   --diff-add-border-color: #c7f0d2;
@@ -331,17 +201,17 @@
   --diff-hover-background-color: #{$blue-300};
   --diff-hover-border-color: #{$blue-400};
   --diff-hover-gutter-color: #{$blue-400};
-  --diff-hover-text-color: var(--background-color);
+  --diff-hover-text-color: var(--primary-background);
 
   --diff-add-hover-background-color: #{$green-300};
   --diff-add-hover-border-color: #{$green-400};
   --diff-add-hover-gutter-color: #{$green-400};
-  --diff-add-hover-text-color: var(--text-color);
+  --diff-add-hover-text-color: var(--primary-text-color);
 
   --diff-delete-hover-background-color: #{$red-200};
   --diff-delete-hover-border-color: #{$red-300};
   --diff-delete-hover-gutter-color: #{$red-300};
-  --diff-delete-hover-text-color: var(--text-color);
+  --diff-delete-hover-text-color: var(--primary-text-color);
 
   // Syntax highlighting text colors
   --syntax-variable-color: #333;

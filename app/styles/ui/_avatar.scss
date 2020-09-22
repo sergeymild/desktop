@@ -11,6 +11,6 @@
 // a generic silhouette of a person and we want to color
 // that according to the current theme.
 svg.avatar {
-  fill: var(--text-secondary-color);
-  background: var(--box-alt-background-color);
+  fill: var(--secondary-text-color);
+  background: transparent;
 }
