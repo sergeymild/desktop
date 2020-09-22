@@ -4,6 +4,7 @@ import { RelativeTime } from '../relative-time'
 import { IMatches } from '../../lib/fuzzy-find'
 import { IFilterListItem } from '../lib/filter-list'
 import { ITagItem } from '../../lib/git'
+import { HighlightText } from '../lib/highlight-text'
 
 export interface ITagListItem extends IFilterListItem {
   readonly tag: ITagItem
@@ -35,7 +36,9 @@ export const TagListItem: React.FC<IProps> = (
   return (
     <div className="tag-list-item" onContextMenu={handleContextMenu}>
       <div className="info">
-        <div className="summary" title={item.tag.name}>{item.tag.name}</div>
+        <div className="summary" title={item.tag.name}>
+          <HighlightText text={item.tag.name} highlight={title}/>
+        </div>
         <div className="description" title={item.tag.subject || ""}>
           <Octicon className="icon" symbol={icon}/>
           <span className="stash-sha">{item.tag.subject}</span>

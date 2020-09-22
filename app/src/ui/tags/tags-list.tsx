@@ -27,8 +27,6 @@ export class TagsList extends React.Component<IProps, IState> {
     props: IProps,
   ): Partial<IState> | null {
     return {
-      filterText: "",
-      selectedItem: null,
       groups: TagsList.createTagsGroup(props.tagList)
     }
   }

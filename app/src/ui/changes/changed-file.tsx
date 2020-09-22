@@ -22,6 +22,13 @@ interface IChangedFileProps {
 
 /** a changed file in the working directory for a given repository */
 export class ChangedFile extends React.Component<IChangedFileProps, {}> {
+  public shouldComponentUpdate(nextProps: Readonly<IChangedFileProps>, nextState: Readonly<{}>, nextContext: any): boolean {
+    if (this.props.include !== nextProps.include) return true
+    if (this.props.availableWidth !== nextProps.availableWidth) return true
+    if (this.props.disableSelection !== nextProps.disableSelection) return true
+    return this.props.file !== nextProps.file
+  }
+
   private handleCheckboxChange = (isChecked: boolean) => {
     this.props.onIncludeChanged(this.props.file.path, isChecked)
   }
@@ -37,6 +44,7 @@ export class ChangedFile extends React.Component<IChangedFileProps, {}> {
   }
 
   public render() {
+    console.log("ChangedFile render")
     const { status, path } = this.props.file
     const fileStatus = mapStatus(status)
 
