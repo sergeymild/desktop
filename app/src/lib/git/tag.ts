@@ -52,10 +52,10 @@ export async function deleteTag(
   if (remote !== null && isRemote) {
     env = await envForRemoteOperation(account, remote.url)
     args = ['push', '--delete', remote.name, name]
+    await git(args, repository.path, 'deleteLocalTag', {
+      env
+    })
   }
-  await git(args, repository.path, 'deleteLocalTag', {
-    env
-  })
 }
 
 export async function checkoutToTag(

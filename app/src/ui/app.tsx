@@ -37,6 +37,7 @@ import { MenuEventHandlerView } from './menu-event-handler-view'
 import { connect, IGlobalState } from './index'
 import { ToolbarStashButton } from './toolbar/toolbar-stash-button'
 import { ToolbarDiscardButton } from './toolbar/toolbar-discard-button'
+import { ToolbarUndoButton } from './toolbar/toolbar-undo-button'
 
 const MinuteInMilliseconds = 1000 * 60
 const HourInMilliseconds = MinuteInMilliseconds * 60
@@ -474,6 +475,7 @@ class LocalApp extends React.Component<IAppProps & IProps, IAppState> {
         {this.renderTagsToolbarButton()}
         <ToolbarPushPullButton />
         <div style={{flexGrow: 1}}/>
+        <ToolbarUndoButton/>
         <ToolbarStashButton/>
         <ToolbarDiscardButton/>
       </Toolbar>
