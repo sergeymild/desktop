@@ -32,15 +32,34 @@ const mapStateToProps = (state: IGlobalState): IProps => {
   }
 }
 
+const createGroup = (submodules: ReadonlyArray<Repository>): ReadonlyArray<IFilterListGroup<IListItem>> => {
+  const groups = new Array<IFilterListGroup<IListItem>>()
+  const group: IFilterListGroup<IListItem> = {
+    identifier: "Submodules",
+    items: submodules.map(k => ({
+      id: k.hash,
+      repository: k,
+      text: [k.name, k.hash]})
+    )
+  }
+  groups.push(group)
+  return groups
+}
+
 class LocalSubmodulesButton extends React.PureComponent<IProps, IState> {
+  public static getDerivedStateFromProps(
+    props: IProps,
+    state: IState
+  ): Partial<IState> {
+    return {
+      group: createGroup(props.submodules)
+    }
+  }
+
   public state = {
     filterText: "",
     selectedItem: null,
     group: []
-  }
-
-  public componentDidMount() {
-    this.setState({group: this.createGroup()})
   }
 
   private onDropdownStateChanged = (newState: DropdownState) => {
@@ -49,21 +68,6 @@ class LocalSubmodulesButton extends React.PureComponent<IProps, IState> {
     } else {
       dispatcher.closeFoldout(FoldoutType.Submodules)
     }
-  }
-
-  private createGroup = (): ReadonlyArray<IFilterListGroup<IListItem>> => {
-    const modules = this.props.submodules
-    const groups = new Array<IFilterListGroup<IListItem>>()
-    const group: IFilterListGroup<IListItem> = {
-      identifier: "Submodules",
-      items: modules.map(k => ({
-        id: k.hash,
-        repository: k,
-        text: [k.name, k.hash]})
-      )
-    }
-    groups.push(group)
-    return groups
   }
 
   private onFilterTextChanged = (text: string): void => {
@@ -125,4 +129,5 @@ class LocalSubmodulesButton extends React.PureComponent<IProps, IState> {
   }
 }
 
-export const SubmodulesButton = connect(mapStateToProps)(LocalSubmodulesButton)
+export const SubmodulesButton =
+  connect<IProps, IState>(mapStateToProps)(LocalSubmodulesButton)

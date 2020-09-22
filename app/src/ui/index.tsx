@@ -348,7 +348,7 @@ export function setGlobalState(state: IGlobalState) {
   globalState = state
 }
 
-export function connect<P, S, AP>(mapStateToProps: (state: IGlobalState) => P) {
+export function connect<P, S, AP = {}>(mapStateToProps: (state: IGlobalState) => P) {
   return (Wrapped: React.ComponentClass<P & AP, S>): React.ComponentClass<AP, S> => {
     return class extends React.Component<AP, S> {
       public render() {

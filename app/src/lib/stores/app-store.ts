@@ -1376,12 +1376,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     this._clearBanner()
     this.stopBackgroundPruner()
 
-    console.log("=========", repository)
-    try {
-      throw new Error(repository?.name || "repo")
-    } catch (e) {
-      console.error(e)
-    }
     if (repository == null) {
       return Promise.resolve(null)
     }
@@ -4592,6 +4586,56 @@ export class AppStore extends TypedBaseStore<IAppState> {
     )
   }
 
+  private async _addSubmodules(
+    paths: ReadonlyArray<string>,
+    parent: number | null = null
+  ): Promise<Array<Repository>> {
+    const invalidPaths: Array<string> = []
+    const addedRepositories = new Array<Repository>()
+    const lfsRepositories = new Array<Repository>()
+    for (const path of paths) {
+      const validatedPath = await validatedRepositoryPath(path)
+      if (!validatedPath) {
+        invalidPaths.push(path)
+        continue
+      }
+
+      log.info(`[AppStore] adding submodule at ${validatedPath} to store`)
+      const addedRepo = await this.repositoriesStore.addRepository(
+        validatedPath,
+        true,
+        parent
+      )
+
+      // initialize the remotes for this new repository to ensure it can fetch
+      // it's GitHub-related details using the GitHub API (if applicable)
+      const gitStore = this.gitStoreCache.get(addedRepo)
+      await gitStore.loadRemotes()
+
+      const [refreshedRepo, usingLFS] = await Promise.all([
+        this.repositoryWithRefreshedGitHubRepository(addedRepo),
+        this.isUsingLFS(addedRepo),
+      ])
+      addedRepositories.push(refreshedRepo)
+
+      if (usingLFS) {
+        lfsRepositories.push(refreshedRepo)
+      }
+    }
+
+    if (invalidPaths.length > 0) {
+      this.emitError(new Error(this.getInvalidRepoPathsMessage(invalidPaths)))
+    }
+
+    if (lfsRepositories.length === 0) return addedRepositories
+
+    this._showPopup({
+      type: PopupType.InitializeLFS,
+      repositories: lfsRepositories,
+    })
+    return addedRepositories
+  }
+
   public async _addRepositories(
     paths: ReadonlyArray<string>,
     isSubmodules: boolean = false,
@@ -4618,9 +4662,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
           if (!Fs.existsSync(gitmodules)) continue
           // eslint-disable-next-line no-sync
           const modules = parseGitModules(Fs.readFileSync(gitmodules).toString("utf-8"))
-          await this._addRepositories(
+          addedRepo.submodules = await this._addSubmodules(
             modules.map(p => Path.join(addedRepo.path, p.path)),
-            true,
             addedRepo.id
           )
         }
