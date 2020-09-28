@@ -5149,7 +5149,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     // https://youtu.be/IjmtVKOAHPM
     if (branch !== null) {
       await this._checkoutBranch(repository, branch)
-      this.statsStore.recordPRBranchCheckout()
       return
     }
 
