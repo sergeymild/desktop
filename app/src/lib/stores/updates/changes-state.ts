@@ -17,7 +17,7 @@ import { ManualConflictResolution } from '../../../models/manual-conflict-resolu
 
 /**
  * Internal shape of the return value from this response because the compiler
- * seems to complain about attempts to create an object which satifies the
+ * seems to complain about attempts to create an object which satisfies the
  * constraints of Pick<T,K>
  */
 type ChangedFilesResult = {
