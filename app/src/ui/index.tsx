@@ -187,10 +187,12 @@ const sendErrorWithContext = (
   }
 }
 
-process.once('uncaughtException', (error: Error) => {
-  sendErrorWithContext(error)
-  reportUncaughtException(error)
-})
+if (!__DEV__) {
+  process.once('uncaughtException', (error: Error) => {
+    sendErrorWithContext(error)
+    reportUncaughtException(error)
+  })
+}
 
 // See sendNonFatalException for more information
 process.on(

@@ -9,8 +9,6 @@ import { FoldoutType } from '../../lib/app-state'
 import { Row } from '../lib/row'
 import { Octicon, OcticonSymbol } from '../octicons'
 import { Button } from '../lib/button'
-
-import { BranchList } from './branch-list'
 import { IBranchListItem } from './group-branches'
 import { renderDefaultBranch } from './branch-renderer'
 import { IMatches } from '../../lib/fuzzy-find'
@@ -19,6 +17,7 @@ import { UncommittedChangesStrategy, UncommittedChangesStrategyKind } from '../.
 import { IMenuItem } from '../../lib/menu-item'
 import { showContextualMenu } from '../main-process-proxy'
 import { dispatcher } from '../index'
+import { BranchesTreeList } from './branches-tree-list'
 
 interface IBranchesContainerProps {
   readonly repository: Repository
@@ -130,7 +129,7 @@ export class BranchesContainer extends React.Component<
   }
 
   private renderSelectedTab() {
-    return <BranchList
+    return <BranchesTreeList
       defaultBranch={this.props.defaultBranch}
       currentBranch={this.props.currentBranch}
       allBranches={this.props.allBranches}

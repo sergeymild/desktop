@@ -29,7 +29,7 @@ const commonConfig: webpack.Configuration = {
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
+        test: /\.(ts|js)x?$/,
         include: path.resolve(__dirname, 'src'),
         use: [
           {
@@ -40,7 +40,7 @@ const commonConfig: webpack.Configuration = {
             },
           },
         ],
-        exclude: /node_modules/,
+        exclude: [/node_modules/, /app\/test/],
       },
       {
         test: /\.node$/,

@@ -12,6 +12,7 @@
     "noUnusedLocals": true,
     "sourceMap": true,
     "jsx": "react",
+    "allowJs": true,
     "strict": true,
     "noEmit": true,
     "outDir": "./out",
@@ -23,7 +24,7 @@
       "name": "typescript-tslint-plugin"
     }
   ],
-  "include": ["app/**/*.ts", "app/**/*.tsx", "app/**/*.d.tsx"],
+  "include": ["app/**/*.ts", "app/**/*.tsx", "app/**/*.d.tsx", "app/**/*.d.ts"],
   "exclude": [
     "node_modules",
     "app/node_modules",

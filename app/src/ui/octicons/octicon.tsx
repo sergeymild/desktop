@@ -4,6 +4,8 @@ import classNames from 'classnames'
 import { createUniqueId, releaseUniqueId } from '../lib/id-pool'
 
 interface IOcticonProps {
+  readonly onClick?: () => void
+
   /**
    * An instance of an object conforming to the OcticonSymbol
    * type. Supports custom paths as well as those provided
@@ -64,6 +66,7 @@ export class Octicon extends React.Component<IOcticonProps, {}> {
 
     return (
       <svg
+        onClick={this.props.onClick}
         aria-labelledby={labelledBy}
         aria-hidden={ariaHidden}
         className={className}
