@@ -6,12 +6,11 @@ import { IBranchListItem } from './group-branches'
 import { IMatches } from '../../lib/fuzzy-find'
 // @ts-ignore
 import { decorators, Treebeard } from 'react-treebeard'
-import uuid from 'uuid'
 import { Row } from '../lib/row'
-import { dispatcher } from '../index'
 import { Octicon, OcticonSymbol } from '../octicons'
 import moment from 'moment'
 import { Button } from '../lib/button'
+import * as treeHelpers from './tree-helpers'
 
 interface IProps {
   readonly defaultBranch: Branch | null
@@ -44,16 +43,17 @@ interface IProps {
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-interface TreeData {
-  id: string
+export interface TreeData {
   name: string
   toggled: boolean
-  item: Branch
+  item?: Branch
   children: Array<TreeData>
 }
 
 interface IState {
+  readonly rawNodes: Array<TreeData>
   readonly nodes: Array<TreeData>
+  readonly filterText: string
 }
 
 interface IHeaderDecoratorProps {
@@ -64,7 +64,7 @@ const HeaderDecorator: React.FC<IHeaderDecoratorProps> = ({node}) => {
   const icon = node.children.length > 0
     ? OcticonSymbol.fileDirectory
     : OcticonSymbol.gitBranch
-  const date = node.item.tip.author.date ? moment(node.item.tip.author.date).fromNow() : ''
+  const date = node.item?.tip.author.date ? moment(node.item.tip.author.date).fromNow() : ''
   return (
     <div style={{display: "flex", alignItems: "center", height: '30px'}} className="branches-list-item">
       <Octicon className="icon" symbol={icon}/>
@@ -85,63 +85,15 @@ const Toggle: React.FC = () => {
 }
 
 // @ts-ignore
-const arrangeIntoTree = (branches: ReadonlyArray<Branch>) => {
-  const map = new Map<string, Branch>()
-  const paths: Array<Array<string>> = branches.map(b => {
-    map.set(b.name, b)
-    return b.name.split('/')
-  })
-
-  // Adapted from http://brandonclapp.com/arranging-an-array-of-flat-paths-into-a-json-tree-like-structure/
-  const tree: Array<TreeData> = []
-  for (let i = 0; i < paths.length; i++) {
-    const path = paths[i]
-    let currentLevel = tree
-    for (let j = 0; j < path.length; j++) {
-      const part = path[j]
-      const existingPath = findWhere(currentLevel, 'name', part)
-      if (existingPath) {
-        currentLevel = existingPath.children || []
-      } else {
-        const newPart: TreeData = {
-          id: uuid.v4(),
-          name: part,
-          item: map.get(path.join('/'))!,
-          children: [],
-          toggled: false
-        }
-
-        currentLevel.push(newPart)
-        currentLevel = newPart.children
-      }
-    }
-  }
-
-  // @ts-ignore
-  return tree
-
-  // @ts-ignore
-  function findWhere(array: Array<TreeData>, key: string, value: string): TreeData | null {
-    // Adapted from https://stackoverflow.com/questions/32932994/findwhere-from-underscorejs-to-jquery
-    let t = 0 // t is used as a counter
-    // @ts-ignore
-    while (t < array.length && array[t][key] !== value) {
-      t++
-    } // find the index where the id is the as the aValue
-
-    if (t < array.length) {
-      return array[t]
-    } else {
-      return null
-    }
-  }
-}
 
 export class BranchesTreeList extends React.Component<IProps, IState> {
   public constructor(props: IProps) {
     super(props)
+    const nodes = treeHelpers.arrangeIntoTree(props.allBranches)
     this.state = {
-      nodes: arrangeIntoTree(props.allBranches),
+      rawNodes: nodes,
+      nodes: nodes,
+      filterText: ""
     }
   }
 
@@ -153,16 +105,20 @@ export class BranchesTreeList extends React.Component<IProps, IState> {
         placeholder={'Filter'}
         className="filter-list-filter-field"
         onValueChanged={this.onFilterValueChanged}
-        value={this.props.filterText}
+        onSearchCleared={() => this.onFilterValueChanged("")}
+        value={this.state.filterText}
       />
     )
   }
 
   private onFilterValueChanged = (text: string) => {
-    if (this.props.onFilterTextChanged) {
-      return this.props.onFilterTextChanged(text)
-    }
-    dispatcher.setRepositoryFilterText(text)
+    const filter = text.trim();
+    if (!filter) return this.setState({nodes: this.state.rawNodes, filterText: ""});
+    const node = {children: this.state.rawNodes, toggled: true, name: "", id: ""}
+
+    let filtered: TreeData = treeHelpers.filterTree(node, filter);
+    filtered = treeHelpers.expandFilteredNodes(filtered, filter);
+    this.setState(() => ({nodes: filtered.children, filterText: text}));
   }
 
   private onToggle = (node: TreeData, toggled: boolean) => {
