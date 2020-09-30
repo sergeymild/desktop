@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Branch } from '../../models/branch'
-import { ClickSource, SelectionSource } from '../lib/list'
+import { ClickSource } from '../lib/list'
 import { TextBox } from '../lib/text-box'
 // @ts-ignore
 import { decorators, Treebeard } from 'react-treebeard'
@@ -16,6 +16,20 @@ import { PopupType } from '../../models/popup'
 import { Repository } from '../../models/repository'
 import { CloningRepository } from '../../models/cloning-repository'
 
+const baseStyles = {
+  tree: {
+    base: {
+      listStyle: 'none',
+      backgroundColor: 'var(--primary-background)',
+      margin: 0,
+      padding: 0,
+      color: 'var(--primary-text-color)',
+      fontFamily: 'var(--font-family-sans-serif)',
+      fontSize: '14px'
+    },
+  }
+}
+
 interface IProps {
   readonly defaultBranch: Branch | null
   readonly currentBranch: Branch | null
@@ -25,10 +39,7 @@ interface IProps {
   readonly onItemClick?: (item: Branch, source: ClickSource) => void
   readonly onContextMenu?: (branch: Branch) => void
 
-  readonly onSelectionChanged?: (
-    selectedItem: Branch | null,
-    source: SelectionSource,
-  ) => void
+  readonly onSelectionChanged?: (selectedItem: Branch | null) => void
 
   readonly canCreateNewBranch: boolean
   readonly onCreateNewBranch?: (name: string) => void
@@ -49,6 +60,7 @@ interface IState {
 }
 
 interface IHeaderDecoratorProps {
+  readonly onSelect: (node: TreeData) => void
   readonly node: TreeData
 }
 
@@ -108,6 +120,7 @@ class LocalHeaderDecorator extends React.PureComponent<IHeaderDecoratorProps & I
       ? OcticonSymbol.fileDirectory
       : OcticonSymbol.gitBranch
     const date = node.item?.tip.author.date ? moment(node.item.tip.author.date).fromNow() : ''
+    console.log("===", this.props)
     return (
       <div
         style={{display: "flex", alignItems: "center", height: '30px'}}
@@ -169,7 +182,6 @@ export class BranchesTreeList extends React.Component<IProps, IState> {
   }
 
   private onToggle = (node: TreeData, toggled: boolean) => {
-    console.log(node, toggled)
     node.toggled = true;
     if (node.children) {
       node.toggled = toggled;
@@ -179,7 +191,7 @@ export class BranchesTreeList extends React.Component<IProps, IState> {
 
   private onCreateNewBranch = () => {
     if (this.props.onCreateNewBranch) {
-      this.props.onCreateNewBranch("")
+      this.props.onCreateNewBranch(this.state.filterText)
     }
   }
 
@@ -191,6 +203,11 @@ export class BranchesTreeList extends React.Component<IProps, IState> {
     ) : null
   }
 
+  private onSelect = (node: TreeData) => {
+    if (!this.props.onSelectionChanged) return
+    this.props.onSelectionChanged(node.item ?? null)
+  }
+
   public render() {
     return <div style={{height: '100%', overflow: "scroll"}} className="branches-list filter-list">
       <Row className="filter-field-row">
@@ -198,22 +215,12 @@ export class BranchesTreeList extends React.Component<IProps, IState> {
         {this.onRenderNewButton()}
       </Row>
       <Treebeard
+        onSelect={this.onSelect}
+
         data={this.state.nodes}
         onToggle={this.onToggle}
         decorators={{...decorators, Header: HeaderDecorator, Toggle}}
-        style={{
-          tree: {
-            base: {
-              listStyle: 'none',
-              backgroundColor: 'var(--primary-background)',
-              margin: 0,
-              padding: 0,
-              color: 'var(--primary-text-color)',
-              fontFamily: 'var(--font-family-sans-serif)',
-              fontSize: '14px'
-            },
-          }
-        }}
+        style={baseStyles}
       />
     </div>
   }
