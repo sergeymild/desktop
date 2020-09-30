@@ -9,13 +9,8 @@ import { FoldoutType } from '../../lib/app-state'
 import { Row } from '../lib/row'
 import { Octicon, OcticonSymbol } from '../octicons'
 import { Button } from '../lib/button'
-import { IBranchListItem } from './group-branches'
-import { renderDefaultBranch } from './branch-renderer'
-import { IMatches } from '../../lib/fuzzy-find'
 import { startTimer } from '../lib/timing'
 import { UncommittedChangesStrategy, UncommittedChangesStrategyKind } from '../../models/uncommitted-changes-strategy'
-import { IMenuItem } from '../../lib/menu-item'
-import { showContextualMenu } from '../main-process-proxy'
 import { dispatcher } from '../index'
 import { BranchesTreeList } from './branches-tree-list'
 
@@ -33,7 +28,6 @@ interface IBranchesContainerProps {
 
 interface IBranchesContainerState {
   readonly selectedBranch: Branch | null
-  readonly branchFilterText: string
 }
 
 /** The unified Branches and Pull Requests component. */
@@ -47,7 +41,6 @@ export class BranchesContainer extends React.Component<
 
     this.state = {
       selectedBranch: props.currentBranch,
-      branchFilterText: '',
     }
   }
 
@@ -81,53 +74,6 @@ export class BranchesContainer extends React.Component<
     )
   }
 
-  private onRename = (branch: Branch) => {
-    dispatcher.closeCurrentFoldout()
-    dispatcher.showPopup({
-      type: PopupType.RenameBranch,
-      repository: this.props.repository,
-      branch: branch
-    })
-  }
-
-  private onDelete = (branch: Branch) => {
-    dispatcher.closeCurrentFoldout()
-    dispatcher.showPopup({
-      type: PopupType.DeleteBranch,
-      existsOnRemote: true,
-      branch: branch,
-      repository: this.props.repository
-    })
-  }
-
-  private onContextMenu = (branch: Branch) => {
-    const items: IMenuItem[] = [
-      {
-        label: "Rename",
-        action: () => this.onRename(branch),
-        enabled: true,
-      },
-
-      {type: 'separator'},
-      {
-        label: "Delete",
-        action: () => this.onDelete(branch),
-        enabled: true,
-      }
-    ]
-
-    showContextualMenu(items)
-  }
-
-  private renderBranch = (item: IBranchListItem, matches: IMatches) => {
-    return renderDefaultBranch(
-      item,
-      matches,
-      this.props.currentBranch,
-      this.onContextMenu
-    )
-  }
-
   private renderSelectedTab() {
     return <BranchesTreeList
       defaultBranch={this.props.defaultBranch}
@@ -135,13 +81,10 @@ export class BranchesContainer extends React.Component<
       allBranches={this.props.allBranches}
       recentBranches={this.props.recentBranches}
       onItemClick={this.onBranchItemClick}
-      filterText={this.state.branchFilterText}
-      onFilterTextChanged={this.onBranchFilterTextChanged}
       selectedBranch={this.state.selectedBranch}
       onSelectionChanged={this.onBranchSelectionChanged}
       canCreateNewBranch={true}
       onCreateNewBranch={this.onCreateBranchWithName}
-      renderBranch={this.renderBranch}
     />
   }
 
@@ -181,10 +124,6 @@ export class BranchesContainer extends React.Component<
 
   private onBranchSelectionChanged = (selectedBranch: Branch | null) => {
     this.setState({ selectedBranch })
-  }
-
-  private onBranchFilterTextChanged = (text: string) => {
-    this.setState({ branchFilterText: text })
   }
 
   private onCreateBranchWithName = (name: string) => {

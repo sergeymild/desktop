@@ -2,8 +2,6 @@ import * as React from 'react'
 import { Branch } from '../../models/branch'
 import { ClickSource, SelectionSource } from '../lib/list'
 import { TextBox } from '../lib/text-box'
-import { IBranchListItem } from './group-branches'
-import { IMatches } from '../../lib/fuzzy-find'
 // @ts-ignore
 import { decorators, Treebeard } from 'react-treebeard'
 import { Row } from '../lib/row'
@@ -11,6 +9,12 @@ import { Octicon, OcticonSymbol } from '../octicons'
 import moment from 'moment'
 import { Button } from '../lib/button'
 import * as treeHelpers from './tree-helpers'
+import { IMenuItem } from '../../lib/menu-item'
+import { showContextualMenu } from '../main-process-proxy'
+import { connect, dispatcher, IGlobalState } from '../index'
+import { PopupType } from '../../models/popup'
+import { Repository } from '../../models/repository'
+import { CloningRepository } from '../../models/cloning-repository'
 
 interface IProps {
   readonly defaultBranch: Branch | null
@@ -18,28 +22,16 @@ interface IProps {
   readonly allBranches: ReadonlyArray<Branch>
   readonly recentBranches: ReadonlyArray<Branch>
   readonly selectedBranch: Branch | null
-  readonly onFilterKeyDown?: (
-    event: React.KeyboardEvent<HTMLInputElement>,
-  ) => void
   readonly onItemClick?: (item: Branch, source: ClickSource) => void
+  readonly onContextMenu?: (branch: Branch) => void
 
   readonly onSelectionChanged?: (
     selectedItem: Branch | null,
     source: SelectionSource,
   ) => void
 
-  readonly filterText: string
-  readonly onFilterTextChanged: (filterText: string) => void
   readonly canCreateNewBranch: boolean
   readonly onCreateNewBranch?: (name: string) => void
-
-  readonly textbox?: TextBox
-  readonly renderBranch: (
-    item: IBranchListItem,
-    matches: IMatches,
-  ) => JSX.Element
-
-  readonly onFilterListResultsChanged?: (resultCount: number) => void
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -60,23 +52,78 @@ interface IHeaderDecoratorProps {
   readonly node: TreeData
 }
 
-const HeaderDecorator: React.FC<IHeaderDecoratorProps> = ({node}) => {
-  const icon = node.children.length > 0
-    ? OcticonSymbol.fileDirectory
-    : OcticonSymbol.gitBranch
-  const date = node.item?.tip.author.date ? moment(node.item.tip.author.date).fromNow() : ''
-  return (
-    <div style={{display: "flex", alignItems: "center", height: '30px'}} className="branches-list-item">
-      <Octicon className="icon" symbol={icon}/>
-      <div className="name" title={name}>
-        {node.name}
-      </div>
-      <div className="description">
-        {date}
-      </div>
-    </div>
-  )
+const onRename = (branch: Branch, repository: Repository | CloningRepository | null) => {
+  if (!(repository instanceof Repository)) return
+  dispatcher.closeCurrentFoldout()
+  dispatcher.showPopup({
+    type: PopupType.RenameBranch,
+    repository: repository,
+    branch: branch
+  })
 }
+
+const onDelete = (branch: Branch, repository: Repository | CloningRepository | null) => {
+  if (!(repository instanceof Repository)) return
+  dispatcher.closeCurrentFoldout()
+  dispatcher.showPopup({
+    type: PopupType.DeleteBranch,
+    existsOnRemote: true,
+    branch: branch,
+    repository: repository
+  })
+}
+
+const onContextMenu = (branch: Branch | undefined, repository: Repository | CloningRepository | null) => {
+  if (branch === undefined) return
+  const items: IMenuItem[] = [
+    {
+      label: "Rename",
+      action: () => onRename(branch, repository),
+      enabled: true,
+    },
+
+    {type: 'separator'},
+    {
+      label: "Delete",
+      action: () => onDelete(branch, repository),
+      enabled: true,
+    }
+  ]
+
+  showContextualMenu(items)
+}
+
+interface IExternalHeaderDecoratorProps {
+  readonly repository: Repository | CloningRepository | null
+}
+
+const mapStateToProps = (state: IGlobalState): IExternalHeaderDecoratorProps => ({
+  repository: state.appStore.selectedRepository
+})
+
+class LocalHeaderDecorator extends React.PureComponent<IHeaderDecoratorProps & IExternalHeaderDecoratorProps> {
+  public render() {
+    const {node} = this.props
+    const icon = node.children.length > 0
+      ? OcticonSymbol.fileDirectory
+      : OcticonSymbol.gitBranch
+    const date = node.item?.tip.author.date ? moment(node.item.tip.author.date).fromNow() : ''
+    return (
+      <div
+        style={{display: "flex", alignItems: "center", height: '30px'}}
+        className="branches-list-item"
+        onContextMenu={() => onContextMenu(node.item, this.props.repository)}
+      >
+        <Octicon className="icon" symbol={icon}/>
+        <div className="name" title={name}>{node.name}</div>
+        <div className="description">{date}</div>
+      </div>
+    )
+  }
+}
+
+const HeaderDecorator =
+  connect<IExternalHeaderDecoratorProps, {}, IHeaderDecoratorProps>(mapStateToProps)(LocalHeaderDecorator)
 
 const Toggle: React.FC = () => {
   return (
