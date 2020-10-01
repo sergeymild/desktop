@@ -55,6 +55,7 @@
   &-title,
   &-meta {
     padding: var(--spacing);
+    overflow-x: scroll;
   }
 
   &-title {
@@ -106,6 +107,7 @@
     list-style: none;
     margin: 0;
     padding: 0 var(--spacing) var(--spacing);
+    align-items: center;
   }
 
   &-meta-item:not(.without-truncation) {
@@ -120,6 +122,16 @@
     margin-right: var(--spacing);
     font-size: 11px;
     flex-shrink: 0;
+
+    .select-component {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      label {
+        margin: 0;
+        margin-right: var(--spacing-half);
+      }
+    }
 
     .avatar,
     .octicon {

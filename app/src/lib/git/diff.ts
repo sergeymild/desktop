@@ -100,7 +100,8 @@ export async function getCommitDiff(
   repository: Repository,
   file: FileChange,
   commitish: string,
-  hideWhitespaceInDiff: boolean = false
+  hideWhitespaceInDiff: boolean = false,
+  unified: number = defaultUnifiedCount
 ): Promise<IDiff> {
   const args = [
     'log',
@@ -112,6 +113,7 @@ export async function getCommitDiff(
     '--patch-with-raw',
     '-z',
     '--no-color',
+    `--unified=${unified}`,
     '--',
     file.path,
   ]

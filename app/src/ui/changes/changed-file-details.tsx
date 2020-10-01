@@ -16,7 +16,7 @@ interface IProps {
 }
 
 /** Displays information about a file */
-export class ChangedFileDetails extends React.Component<IProps, {}> {
+export class ChangedFileDetails extends React.PureComponent<IProps, {}> {
   private renderDecorator() {
     const {diffKing, lineEndingsChange} = this.props
 
@@ -46,7 +46,7 @@ export class ChangedFileDetails extends React.Component<IProps, {}> {
       value={`${this.props.unified}`}
       onChange={this.updateUnifiedCount}
     >
-      {[1, 2, 3, 4, 5].map(n => (
+      {Array.from(Array(51).keys()).map(n => (
         <option key={n} value={n}>{n}</option>
       ))}
     </Select>

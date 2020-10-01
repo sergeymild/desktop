@@ -43,6 +43,7 @@ interface IProps {
   readonly externalEditorLabel?: string
 
   readonly hideWhitespaceInDiff: boolean
+  readonly unified: number
 }
 
 interface IState {
@@ -69,7 +70,8 @@ const mapStateToProps = (state: IGlobalState): IProps => {
     currentDiff: diff,
     selectedCommit: selectedCommit,
     selectedDiffType: state.appStore.imageDiffType,
-    selectedFile: file
+    selectedFile: file,
+    unified: state.appStore.unified
   }
 }
 
@@ -155,6 +157,8 @@ class LocalSelectedCommit extends React.Component<IProps, IState> {
         hideDescriptionBorder={this.state.hideDescriptionBorder}
         hideWhitespaceInDiff={this.props.hideWhitespaceInDiff}
         onHideWhitespaceInDiffChanged={this.onHideWhitespaceInDiffChanged}
+        unified={this.props.unified}
+        selectedFile={this.props.selectedFile}
       />
     )
   }

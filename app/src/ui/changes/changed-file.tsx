@@ -44,7 +44,6 @@ export class ChangedFile extends React.Component<IChangedFileProps, {}> {
   }
 
   public render() {
-    console.log("ChangedFile render")
     const { status, path } = this.props.file
     const fileStatus = mapStatus(status)
 

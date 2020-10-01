@@ -1,7 +1,7 @@
 import * as React from 'react'
 import classNames from 'classnames'
 
-import { FileChange } from '../../models/status'
+import { CommittedFileChange, FileChange } from '../../models/status'
 import { Octicon, OcticonSymbol } from '../octicons'
 import { RichText } from '../lib/rich-text'
 import { Repository } from '../../models/repository'
@@ -13,11 +13,14 @@ import { Checkbox, CheckboxValue } from '../lib/checkbox'
 import { enableGitTagsDisplay } from '../../lib/feature-flag'
 import { Tokenizer, TokenResult } from '../../lib/text-token-parser'
 import { wrapRichTextCommitMessage } from '../../lib/wrap-rich-text-commit-message'
+import { Select } from '../lib/select'
+import { dispatcher } from '../index'
 
 interface ICommitSummaryProps {
   readonly repository: Repository
   readonly commit: Commit
   readonly files: ReadonlyArray<FileChange>
+  readonly selectedFile: CommittedFileChange | null
 
   /**
    * Whether or not the commit body container should
@@ -27,7 +30,7 @@ interface ICommitSummaryProps {
    * the commit message body.
    */
   readonly isExpanded: boolean
-
+  readonly unified: number
   readonly onExpandChanged: (isExpanded: boolean) => void
 
   readonly onDescriptionBottomChanged: (descriptionBottom: Number) => void
@@ -258,6 +261,24 @@ export class CommitSummary extends React.Component<
     }
   }
 
+  private updateUnifiedCount = (event: React.FormEvent<HTMLSelectElement>) => {
+    const file = this.props.selectedFile
+    if (!file) return
+    dispatcher.updateSummaryUnifiedCount(parseInt(event.currentTarget.value, 10), file, this.props.commit.sha)
+  }
+
+  private renderSelectUnifiedCount() {
+    return <Select
+      label={"Context"}
+      value={`${this.props.unified}`}
+      onChange={this.updateUnifiedCount}
+    >
+      {Array.from(Array(51).keys()).map(n => (
+        <option key={n} value={n}>{n}</option>
+      ))}
+    </Select>
+  }
+
   private renderDescription() {
     if (this.state.body.length === 0) {
       return null
@@ -354,6 +375,9 @@ export class CommitSummary extends React.Component<
                 onChange={this.onHideWhitespaceInDiffChanged}
               />
             </li>
+            <li className="commit-summary-meta-item without-truncation">
+              {this.renderSelectUnifiedCount()}
+            </li>
           </ul>
         </div>
 
@@ -374,7 +398,7 @@ export class CommitSummary extends React.Component<
     }
 
     return (
-      <li className="commit-summary-meta-item" title={tags.join('\n')}>
+      <li className="commit-summary-meta-item without-truncation" title={tags.join('\n')}>
         <span aria-label="Tags">
           <Octicon symbol={OcticonSymbol.tag} />
         </span>

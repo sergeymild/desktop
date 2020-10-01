@@ -34,7 +34,7 @@ import {
 } from '../../models/repository'
 import {
   AppFileStatusKind,
-  CommittedFileChange,
+  CommittedFileChange, FileChange,
   WorkingDirectoryFileChange,
   WorkingDirectoryStatus,
 } from '../../models/status'
@@ -297,7 +297,10 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private currentBanner: Banner | null = null
   private errors: ReadonlyArray<Error> = new Array<Error>()
   private emitQueued = false
-  private unified: number = defaultUnifiedCount
+  private _unified: number = defaultUnifiedCount
+  public get unified(): number {
+    return this._unified
+  }
 
   public readonly localRepositoryStateLookup = new Map<
     number,
@@ -1332,13 +1335,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
       }
     }
 
-    const diff = await getCommitDiff(
-      repository,
-      file,
-      sha,
-      this.hideWhitespaceInDiff
-    )
-
     const stateAfterLoad = this.repositoryStateCache.get(repository)
 
     // A whole bunch of things could have happened since we initiated the diff load
@@ -1353,6 +1349,14 @@ export class AppStore extends TypedBaseStore<IAppState> {
     if (stateAfterLoad.commitSelection.file.id !== file.id) {
       return
     }
+
+    const diff = await getCommitDiff(
+      repository,
+      file,
+      sha,
+      this.hideWhitespaceInDiff,
+      this.unified
+    )
 
     this.repositoryStateCache.updateCommitSelection(repository, () => ({
       diff,
@@ -1898,11 +1902,31 @@ export class AppStore extends TypedBaseStore<IAppState> {
     return status
   }
 
-  public updateUnifiedCount(newCount: number) {
-    this.unified = newCount
+  public async updateUnifiedCount(newCount: number) {
+    this._unified = newCount
     const state = this.getSelectedState()
     if (state == null || state.type !== SelectionType.Repository) return
-    this._selectWorkingDirectoryFiles(state.repository)
+    await this._selectWorkingDirectoryFiles(state.repository)
+  }
+
+  public async updateSummaryUnifiedCount(newCount: number, selectedFile: FileChange, sha: string) {
+    this._unified = newCount
+    const state = this.getSelectedState()
+    if (state == null || state.type !== SelectionType.Repository) return
+
+    const diff = await getCommitDiff(
+      state.repository,
+      selectedFile,
+      sha,
+      this.hideWhitespaceInDiff,
+      this.unified
+    )
+
+    this.repositoryStateCache.updateCommitSelection(state.repository, () => ({
+      diff,
+    }))
+
+    this.emitUpdate()
   }
 
   /**

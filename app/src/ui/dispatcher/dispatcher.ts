@@ -57,7 +57,12 @@ import {
   RepositoryWithGitHubRepository,
 } from '../../models/repository'
 import { RetryAction, RetryActionType } from '../../models/retry-actions'
-import { CommittedFileChange, WorkingDirectoryFileChange, WorkingDirectoryStatus } from '../../models/status'
+import {
+  CommittedFileChange,
+  FileChange,
+  WorkingDirectoryFileChange,
+  WorkingDirectoryStatus,
+} from '../../models/status'
 import { IValidBranch, TipState } from '../../models/tip'
 import { Banner, BannerType } from '../../models/banner'
 
@@ -276,8 +281,11 @@ export class Dispatcher {
   }
 
   public updateUnifiedCount(newCount: number) {
-
     this.appStore.updateUnifiedCount(newCount)
+  }
+
+  public updateSummaryUnifiedCount(newCount: number, selectedFile: FileChange, sha: string) {
+    this.appStore.updateSummaryUnifiedCount(newCount, selectedFile, sha)
   }
 
   /**

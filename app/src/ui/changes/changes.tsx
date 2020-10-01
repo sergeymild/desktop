@@ -17,6 +17,7 @@ interface IProps {
   readonly isCommitting: boolean
   readonly hideWhitespaceInDiff: boolean
   readonly askForConfirmationOnDiscardChanges: boolean
+  readonly unified: number
 }
 
 interface IExProps {
@@ -33,7 +34,7 @@ const mapStateToProps = (state: IGlobalState): IProps => {
     isCommitting: state.appStore.possibleSelectedState?.state?.isCommitting || false,
     askForConfirmationOnDiscardChanges: state.appStore.confirmDiscardChanges,
     imageDiffType: state.appStore.imageDiffType,
-
+    unified: state.appStore.unified
   }
 }
 
@@ -81,7 +82,7 @@ class LocalChanges extends React.Component<IProps & IExProps, {}> {
           status={file.status}
           diffKing={diff?.kind}
           lineEndingsChange={(diff?.kind === DiffType.Text) ? diff.lineEndingsChange : undefined}
-          unified={2}/>
+          unified={this.props.unified}/>
         <SeamlessDiffSwitcher
           repository={this.props.repository}
           imageDiffType={this.props.imageDiffType}
