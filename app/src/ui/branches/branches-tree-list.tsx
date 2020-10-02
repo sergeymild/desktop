@@ -114,18 +114,22 @@ const mapStateToProps = (state: IGlobalState): IExternalHeaderDecoratorProps => 
 })
 
 class LocalHeaderDecorator extends React.PureComponent<IHeaderDecoratorProps & IExternalHeaderDecoratorProps> {
+  private onContextMenu = () => {
+    if (this.props.node.children.length > 0) return;
+    onContextMenu(this.props.node.item, this.props.repository)
+  }
+
   public render() {
     const {node} = this.props
     const icon = node.children.length > 0
       ? OcticonSymbol.fileDirectory
       : OcticonSymbol.gitBranch
     const date = node.item?.tip.author.date ? moment(node.item.tip.author.date).fromNow() : ''
-    console.log("===", this.props)
     return (
       <div
         style={{display: "flex", alignItems: "center", height: '30px'}}
         className="branches-list-item"
-        onContextMenu={() => onContextMenu(node.item, this.props.repository)}
+        onContextMenu={this.onContextMenu}
       >
         <Octicon className="icon" symbol={icon}/>
         <div className="name" title={name}>{node.name}</div>

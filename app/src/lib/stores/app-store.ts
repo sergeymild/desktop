@@ -3176,14 +3176,17 @@ export class AppStore extends TypedBaseStore<IAppState> {
   public async _renameBranch(
     repository: Repository,
     branch: Branch,
-    newName: string
+    newName: string,
+    alsoRenameRemote: boolean
   ): Promise<void> {
-    const gitStore = this.gitStoreCache.get(repository)
-    await gitStore.performFailableOperation(() =>
-      renameBranch(repository, branch, newName)
-    )
+    return this.withAuthenticatingUser(repository, async (r, account) => {
+      const gitStore = this.gitStoreCache.get(repository)
+      await gitStore.performFailableOperation(() =>
+        renameBranch(r, branch, newName, alsoRenameRemote, account)
+      )
 
-    return this._refreshRepository(repository)
+      return this._refreshRepository(r)
+    })
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */

@@ -1150,9 +1150,10 @@ export class Dispatcher {
   public renameBranch(
     repository: Repository,
     branch: Branch,
-    newName: string
+    newName: string,
+    alsoRenameRemote: boolean
   ): Promise<void> {
-    return this.appStore._renameBranch(repository, branch, newName)
+    return this.appStore._renameBranch(repository, branch, newName, alsoRenameRemote)
   }
 
   /**

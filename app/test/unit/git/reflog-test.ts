@@ -48,8 +48,7 @@ describe('git/reflog', () => {
       const currentBranch = allBranches.find(
         branch => branch.name === 'branch-2'
       )
-
-      await renameBranch(repository, currentBranch!, 'branch-2-test')
+      await renameBranch(repository, currentBranch!, 'branch-2-test', false, null)
 
       const branches = await getRecentBranches(repository, 10)
       expect(branches).not.toContain('master')
