@@ -30,15 +30,13 @@ export class PushNeedsPullWarning extends React.Component<
   public render() {
     return (
       <Dialog
-        title={
-          __DARWIN__ ? 'Newer Commits on Remote' : 'Newer commits on remote'
-        }
+        title='Newer commits on remote'
         dismissable={!this.state.isLoading}
         disabled={this.state.isLoading}
         onDismissed={this.props.onDismissed}
         onSubmit={this.onFetch}
         loading={this.state.isLoading}
-        type="warning"
+        className="push-needs-pull-warning"
       >
         <DialogContent>
           <p>
