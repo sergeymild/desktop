@@ -17,6 +17,7 @@ interface IProps {
   readonly dispatcher: Dispatcher
   readonly selectedDiffType: ImageDiffType
   readonly hideWhitespaceInDiff: boolean
+  readonly showSideBySideDiff: boolean
 }
 
 interface IExProps {
@@ -35,7 +36,8 @@ const mapStateToProps = (state: IGlobalState): IProps => {
     dispatcher: state.dispatcher,
     hideWhitespaceInDiff: state.appStore.hideWhitespaceInDiff,
     selectedDiffType: state.appStore.imageDiffType,
-    commitSummaryWidth: state.appStore.commitSummaryWidth
+    commitSummaryWidth: state.appStore.commitSummaryWidth,
+    showSideBySideDiff: state.appStore.showSideBySideDiff
   }
 }
 
@@ -117,6 +119,7 @@ class LocalStashesSidebarContentView extends React.Component<IProps & IExProps, 
         file={file}
         diff={diff}
         readOnly={true}
+        showSideBySideDiff={this.props.showSideBySideDiff}
         hideWhitespaceInDiff={this.props.hideWhitespaceInDiff}
       />
     )

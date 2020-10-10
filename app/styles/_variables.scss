@@ -213,6 +213,9 @@
   --diff-delete-hover-gutter-color: #{$red-300};
   --diff-delete-hover-text-color: var(--primary-text-color);
 
+  --diff-empty-row-background-color: #{$gray-000};
+  --diff-empty-row-gutter-background-color: var(--diff-empty-row-background-color);
+
   // Syntax highlighting text colors
   --syntax-variable-color: #333;
   --syntax-alt-variable-color: #24292e;

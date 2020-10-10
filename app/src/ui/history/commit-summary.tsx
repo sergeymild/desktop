@@ -10,7 +10,10 @@ import { getAvatarUsersForCommit, IAvatarUser } from '../../models/avatar'
 import { AvatarStack } from '../lib/avatar-stack'
 import { CommitAttribution } from '../lib/commit-attribution'
 import { Checkbox, CheckboxValue } from '../lib/checkbox'
-import { enableGitTagsDisplay } from '../../lib/feature-flag'
+import {
+  enableGitTagsDisplay,
+  enableSideBySideDiffs,
+} from '../../lib/feature-flag'
 import { Tokenizer, TokenResult } from '../../lib/text-token-parser'
 import { wrapRichTextCommitMessage } from '../../lib/wrap-rich-text-commit-message'
 import { Select } from '../lib/select'
@@ -38,7 +41,13 @@ interface ICommitSummaryProps {
   readonly hideDescriptionBorder: boolean
 
   readonly hideWhitespaceInDiff: boolean
+
+  /** Whether we should display side by side diffs. */
+  readonly showSideBySideDiff: boolean
   readonly onHideWhitespaceInDiffChanged: (checked: boolean) => void
+
+  /** Called when the user changes the side by side diffs setting. */
+  readonly onShowSideBySideDiffChanged: (checked: boolean) => void
 }
 
 interface ICommitSummaryState {
@@ -150,6 +159,10 @@ export class CommitSummary extends React.Component<
   ) => {
     const value = isChecked
     this.props.onHideWhitespaceInDiffChanged(value)
+  }
+
+  private onShowSideBySideDiffChanged = (isChecked: boolean) => {
+    this.props.onShowSideBySideDiffChanged(isChecked)
   }
 
   private onResized = () => {
@@ -363,7 +376,7 @@ export class CommitSummary extends React.Component<
 
             <li
               className="commit-summary-meta-item without-truncation"
-              title={filesDescription}
+              title="Hide Whitespace"
             >
               <Checkbox
                 label="Hide Whitespace"
@@ -378,6 +391,23 @@ export class CommitSummary extends React.Component<
             <li className="commit-summary-meta-item without-truncation">
               {this.renderSelectUnifiedCount()}
             </li>
+
+            {enableSideBySideDiffs() && (
+              <li
+                className="commit-summary-meta-item without-truncation"
+                title="Split View"
+              >
+                <Checkbox
+                  label="Split View"
+                  value={
+                    this.props.showSideBySideDiff
+                      ? CheckboxValue.On
+                      : CheckboxValue.Off
+                  }
+                  onChange={this.onShowSideBySideDiffChanged}
+                />
+              </li>
+            )}
           </ul>
         </div>
 

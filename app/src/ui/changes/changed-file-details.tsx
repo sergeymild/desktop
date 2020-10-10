@@ -6,6 +6,8 @@ import { iconForStatus, Octicon, OcticonSymbol } from '../octicons'
 import { mapStatus } from '../../lib/status'
 import { dispatcher } from '../index'
 import { Select } from '../lib/select'
+import { Checkbox, CheckboxValue } from '../lib/checkbox'
+import { enableSideBySideDiffs } from '../../lib/feature-flag'
 
 interface IProps {
   readonly path: string
@@ -13,6 +15,12 @@ interface IProps {
   readonly diffKing?: DiffType
   readonly lineEndingsChange?: LineEndingsChange
   readonly unified: number
+
+  /** Whether we should display side by side diffs. */
+  readonly showSideBySideDiff: boolean
+
+  /** Called when the user changes the side by side diffs setting. */
+  readonly onShowSideBySideDiffChanged: (checked: boolean) => void
 }
 
 /** Displays information about a file */
@@ -52,6 +60,10 @@ export class ChangedFileDetails extends React.PureComponent<IProps, {}> {
     </Select>
   }
 
+  private onShowSideBySideDiffChanged = (isChecked: boolean) => {
+    this.props.onShowSideBySideDiffChanged(isChecked)
+  }
+
   public render() {
     const status = this.props.status
     const fileStatus = mapStatus(status!)
@@ -61,6 +73,17 @@ export class ChangedFileDetails extends React.PureComponent<IProps, {}> {
         <PathLabel path={this.props.path} status={this.props.status!} />
         {this.renderDecorator()}
         {this.renderSelectUnifiedCount()}
+        {enableSideBySideDiffs() && (
+          <Checkbox
+            label="Split View"
+            value={
+              this.props.showSideBySideDiff
+                ? CheckboxValue.On
+                : CheckboxValue.Off
+            }
+            onChange={this.onShowSideBySideDiffChanged}
+          />
+        )}
         <Octicon
           symbol={iconForStatus(status!)}
           className={`status status-${fileStatus.toLowerCase()}`}

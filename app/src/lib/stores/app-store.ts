@@ -241,6 +241,9 @@ const imageDiffTypeKey = 'image-diff-type'
 const hideWhitespaceInDiffDefault = false
 const hideWhitespaceInDiffKey = 'hide-whitespace-in-diff'
 
+const showSideBySideDiffDefault = false
+const showSideBySideDiffKey = 'show-side-by-side-diff'
+
 const shellKey = 'shell'
 
 const repositoryIndicatorsEnabledKey = 'enable-repository-indicators'
@@ -339,6 +342,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private askForConfirmationOnForcePush = askForConfirmationOnForcePushDefault
   public imageDiffType: ImageDiffType = imageDiffTypeDefault
   public hideWhitespaceInDiff: boolean = hideWhitespaceInDiffDefault
+  private _showSideBySideDiff: boolean = showSideBySideDiffDefault
+  public get showSideBySideDiff(): boolean { return this._showSideBySideDiff }
 
   private _uncommittedChangesStrategyKind: UncommittedChangesStrategyKind = uncommittedChangesStrategyKindDefault
   public get uncommittedChangesStrategyKind(): UncommittedChangesStrategyKind {
@@ -645,6 +650,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       selectedExternalEditor: this._selectedExternalEditor,
       imageDiffType: this.imageDiffType,
       hideWhitespaceInDiff: this.hideWhitespaceInDiff,
+      showSideBySideDiff: this.showSideBySideDiff,
       selectedShell: this._selectedShell,
       repositoryFilterText: this.repositoryFilterText,
       resolvedExternalEditor: this.resolvedExternalEditor,
@@ -1706,6 +1712,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
         : parseInt(imageDiffTypeValue)
 
     this.hideWhitespaceInDiff = getBoolean(hideWhitespaceInDiffKey, false)
+    this._showSideBySideDiff = getBoolean(showSideBySideDiffKey, false)
 
     this.automaticallySwitchTheme = getAutoSwitchPersistedTheme()
 
@@ -4383,6 +4390,13 @@ export class AppStore extends TypedBaseStore<IAppState> {
     } else {
       return this._changeFileSelection(repository, file)
     }
+  }
+
+  public _setShowSideBySideDiff(showSideBySideDiff: boolean) {
+    setBoolean(showSideBySideDiffKey, showSideBySideDiff)
+    this._showSideBySideDiff = showSideBySideDiff
+
+    this.emitUpdate()
   }
 
   public _setUpdateBannerVisibility(visibility: boolean) {

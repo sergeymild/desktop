@@ -29,6 +29,7 @@ interface IProps {
   readonly dispatcher: Dispatcher
   readonly sidebarWidth: number
   readonly stashesCount: number
+  readonly showSideBySideDiff: boolean
 
   /**
    * A value indicating whether or not the application is currently presenting
@@ -63,7 +64,8 @@ const mapStateToProps = (state: IGlobalState): IProps => {
     isShowingFoldout: state.appStore.currentFoldout !== null,
     isShowingModal: state.appStore.isShowingModal(),
     sidebarWidth: state.appStore.sidebarWidth,
-    stashesCount: state.appStore.localStashesCount
+    stashesCount: state.appStore.localStashesCount,
+    showSideBySideDiff: state.appStore.showSideBySideDiff
   }
 }
 

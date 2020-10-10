@@ -44,6 +44,8 @@ interface IProps {
 
   readonly hideWhitespaceInDiff: boolean
   readonly unified: number
+  /** Whether we should display side by side diffs. */
+  readonly showSideBySideDiff: boolean
 }
 
 interface IState {
@@ -71,7 +73,8 @@ const mapStateToProps = (state: IGlobalState): IProps => {
     selectedCommit: selectedCommit,
     selectedDiffType: state.appStore.imageDiffType,
     selectedFile: file,
-    unified: state.appStore.unified
+    unified: state.appStore.unified,
+    showSideBySideDiff: state.appStore.showSideBySideDiff
   }
 }
 
@@ -141,6 +144,7 @@ class LocalSelectedCommit extends React.Component<IProps, IState> {
         diff={diff}
         readOnly={true}
         hideWhitespaceInDiff={this.props.hideWhitespaceInDiff}
+        showSideBySideDiff={this.props.showSideBySideDiff}
       />
     )
   }
@@ -156,9 +160,11 @@ class LocalSelectedCommit extends React.Component<IProps, IState> {
         onDescriptionBottomChanged={this.onDescriptionBottomChanged}
         hideDescriptionBorder={this.state.hideDescriptionBorder}
         hideWhitespaceInDiff={this.props.hideWhitespaceInDiff}
-        onHideWhitespaceInDiffChanged={this.onHideWhitespaceInDiffChanged}
+        showSideBySideDiff={this.props.showSideBySideDiff}
         unified={this.props.unified}
         selectedFile={this.props.selectedFile}
+        onHideWhitespaceInDiffChanged={this.onHideWhitespaceInDiffChanged}
+        onShowSideBySideDiffChanged={this.onShowSideBySideDiffChanged}
       />
     )
   }
@@ -182,6 +188,10 @@ class LocalSelectedCommit extends React.Component<IProps, IState> {
       this.props.repository,
       this.props.selectedFile as CommittedFileChange
     )
+  }
+
+  private onShowSideBySideDiffChanged = (showSideBySideDiff: boolean) => {
+    this.props.dispatcher.onShowSideBySideDiffChanged(showSideBySideDiff)
   }
 
   private onCommitSummaryReset = () => {

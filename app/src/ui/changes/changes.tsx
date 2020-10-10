@@ -18,6 +18,10 @@ interface IProps {
   readonly hideWhitespaceInDiff: boolean
   readonly askForConfirmationOnDiscardChanges: boolean
   readonly unified: number
+  /**
+   * Whether we should display side by side diffs.
+   */
+  readonly showSideBySideDiff: boolean
 }
 
 interface IExProps {
@@ -34,7 +38,8 @@ const mapStateToProps = (state: IGlobalState): IProps => {
     isCommitting: state.appStore.possibleSelectedState?.state?.isCommitting || false,
     askForConfirmationOnDiscardChanges: state.appStore.confirmDiscardChanges,
     imageDiffType: state.appStore.imageDiffType,
-    unified: state.appStore.unified
+    unified: state.appStore.unified,
+    showSideBySideDiff: state.appStore.showSideBySideDiff
   }
 }
 
@@ -82,7 +87,9 @@ class LocalChanges extends React.Component<IProps & IExProps, {}> {
           status={file.status}
           diffKing={diff?.kind}
           lineEndingsChange={(diff?.kind === DiffType.Text) ? diff.lineEndingsChange : undefined}
-          unified={this.props.unified}/>
+          unified={this.props.unified}showSideBySideDiff={this.props.showSideBySideDiff}
+          onShowSideBySideDiffChanged={this.onShowSideBySideDiffChanged}
+        />
         <SeamlessDiffSwitcher
           repository={this.props.repository}
           imageDiffType={this.props.imageDiffType}
@@ -92,12 +99,17 @@ class LocalChanges extends React.Component<IProps & IExProps, {}> {
           onDiscardChanges={this.onDiscardChanges}
           diff={diff}
           hideWhitespaceInDiff={this.props.hideWhitespaceInDiff}
+          showSideBySideDiff={this.props.showSideBySideDiff}
           askForConfirmationOnDiscardChanges={
             this.props.askForConfirmationOnDiscardChanges
           }
         />
       </div>
     )
+  }
+
+  private onShowSideBySideDiffChanged = (showSideBySideDiff: boolean) => {
+    this.props.dispatcher.onShowSideBySideDiffChanged(showSideBySideDiff)
   }
 }
 

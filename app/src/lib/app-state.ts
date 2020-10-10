@@ -190,6 +190,9 @@ export interface IAppState {
   /** Whether we should hide white space changes in diff */
   readonly hideWhitespaceInDiff: boolean
 
+  /** Whether we should show side by side diffs */
+  readonly showSideBySideDiff: boolean
+
   /** The user's preferred shell. */
   readonly selectedShell: Shell
 

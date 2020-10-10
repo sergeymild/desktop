@@ -51,6 +51,9 @@ interface ISeamlessDiffSwitcherProps {
   /** Hiding whitespace in diff. */
   readonly hideWhitespaceInDiff: boolean
 
+  /** Whether we should display side by side diffs. */
+  readonly showSideBySideDiff: boolean
+
   /** Whether we should show a confirmation dialog when the user discards changes */
   readonly askForConfirmationOnDiscardChanges?: boolean
 
@@ -188,6 +191,7 @@ export class SeamlessDiffSwitcher extends React.Component<
       imageDiffType,
       readOnly,
       hideWhitespaceInDiff,
+      showSideBySideDiff,
       onIncludeChanged,
       onDiscardChanges,
       diff,
@@ -216,6 +220,7 @@ export class SeamlessDiffSwitcher extends React.Component<
             diff={diff}
             readOnly={readOnly}
             hideWhitespaceInDiff={hideWhitespaceInDiff}
+            showSideBySideDiff={showSideBySideDiff}
             askForConfirmationOnDiscardChanges={
               this.props.askForConfirmationOnDiscardChanges
             }
