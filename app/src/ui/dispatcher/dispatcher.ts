@@ -1949,7 +1949,7 @@ export class Dispatcher {
   /**
    * Change the workflow preferences for the specified repository.
    *
-   * @param repository            The repositosy to update.
+   * @param repository            The repository to update.
    * @param workflowPreferences   The object with the workflow settings to use.
    */
   public async updateRepositoryWorkflowPreferences(
@@ -2541,7 +2541,7 @@ export class Dispatcher {
   }
 
   /**
-   * Initialze the compare state for the current repository.
+   * Initialize the compare state for the current repository.
    */
   public initializeCompare(
     repository: Repository,
@@ -2736,7 +2736,7 @@ export class Dispatcher {
   }
 
   /**
-   * Moves unconmitted changes to the branch being checked out
+   * Moves uncommitted changes to the branch being checked out
    */
   public async moveChangesToBranchAndCheckout(
     repository: Repository,

@@ -2,14 +2,17 @@ import * as React from 'react'
 
 import { CommittedFileChange } from '../../models/status'
 import { List } from '../lib/list'
-import { FileListItem } from './file-list-item'
+import { CommittedFileItem } from './committed-file-item'
 
 interface IFileListProps {
   readonly files: ReadonlyArray<CommittedFileChange>
   readonly selectedFile: CommittedFileChange | null
   readonly onSelectedFileChanged: (file: CommittedFileChange) => void
   readonly availableWidth: number
-  readonly onContextMenu?: (event: React.MouseEvent<HTMLDivElement>) => void
+  readonly onContextMenu?: (
+    file: CommittedFileChange,
+    event: React.MouseEvent<HTMLDivElement>
+  ) => void
 }
 
 /**
@@ -22,22 +25,13 @@ export class FileList extends React.Component<IFileListProps> {
   }
 
   private renderFile = (row: number) => {
-    const file = this.props.files[row]
-
-    const listItemPadding = 10 * 2
-    const statusWidth = 16
-    const filePathPadding = 5
-    const availablePathWidth =
-      this.props.availableWidth -
-      listItemPadding -
-      filePathPadding -
-      statusWidth
-
-    return <FileListItem
-      availablePathWidth={availablePathWidth}
-      file={file}
-      onContextMenu={this.props.onContextMenu}
-    />
+    return (
+      <CommittedFileItem
+        file={this.props.files[row]}
+        availableWidth={this.props.availableWidth}
+        onContextMenu={this.props.onContextMenu}
+      />
+    )
   }
 
   private rowForFile(file: CommittedFileChange | null): number {

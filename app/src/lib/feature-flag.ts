@@ -134,7 +134,7 @@ export function enableDiscardLines(): boolean {
  * Note: side by side diffs will use the new diff viewer.
  */
 export function enableSideBySideDiffs(): boolean {
-  return enableDevelopmentFeatures()
+  return enableBetaFeatures()
 }
 
 /**

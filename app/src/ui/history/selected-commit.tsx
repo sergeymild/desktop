@@ -258,15 +258,13 @@ class LocalSelectedCommit extends React.Component<IProps, IState> {
     )
   }
 
-  private onContextMenu = async (event: React.MouseEvent<HTMLDivElement>) => {
+  private onContextMenu = async (
+    file: CommittedFileChange,
+    event: React.MouseEvent<HTMLDivElement>
+  ) => {
     event.preventDefault()
 
-    if (this.props.selectedFile == null) {
-      return
-    }
-
-    const filePath = this.props.selectedFile.path
-    const fullPath = Path.join(this.props.repository.path, filePath)
+    const fullPath = Path.join(this.props.repository.path, file.path)
     const fileExistsOnDisk = await pathExists(fullPath)
     if (!fileExistsOnDisk) {
       showContextualMenu([
@@ -280,7 +278,7 @@ class LocalSelectedCommit extends React.Component<IProps, IState> {
       return
     }
 
-    const extension = Path.extname(filePath)
+    const extension = Path.extname(file.path)
 
     const isSafeExtension = isSafeFileExtension(extension)
     const openInExternalEditor = this.props.externalEditorLabel
@@ -294,7 +292,7 @@ class LocalSelectedCommit extends React.Component<IProps, IState> {
       },
       {
         label: RevealInFileManagerLabel,
-        action: () => revealInFileManager(this.props.repository, filePath),
+        action: () => revealInFileManager(this.props.repository, file.path),
         enabled: fileExistsOnDisk,
       },
       {
@@ -304,7 +302,7 @@ class LocalSelectedCommit extends React.Component<IProps, IState> {
       },
       {
         label: OpenWithDefaultProgramLabel,
-        action: () => this.onOpenItem(filePath),
+        action: () => this.onOpenItem(file.path),
         enabled: isSafeExtension && fileExistsOnDisk,
       },
     ]

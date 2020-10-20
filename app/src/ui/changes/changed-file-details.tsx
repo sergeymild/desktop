@@ -6,8 +6,8 @@ import { iconForStatus, Octicon, OcticonSymbol } from '../octicons'
 import { mapStatus } from '../../lib/status'
 import { dispatcher } from '../index'
 import { Select } from '../lib/select'
-import { Checkbox, CheckboxValue } from '../lib/checkbox'
 import { enableSideBySideDiffs } from '../../lib/feature-flag'
+import { DiffOptions } from '../diff/diff-options'
 
 interface IProps {
   readonly path: string
@@ -74,14 +74,9 @@ export class ChangedFileDetails extends React.PureComponent<IProps, {}> {
         {this.renderDecorator()}
         {this.renderSelectUnifiedCount()}
         {enableSideBySideDiffs() && (
-          <Checkbox
-            label="Split View"
-            value={
-              this.props.showSideBySideDiff
-                ? CheckboxValue.On
-                : CheckboxValue.Off
-            }
-            onChange={this.onShowSideBySideDiffChanged}
+          <DiffOptions
+            onShowSideBySideDiffChanged={this.onShowSideBySideDiffChanged}
+            showSideBySideDiff={this.props.showSideBySideDiff}
           />
         )}
         <Octicon
