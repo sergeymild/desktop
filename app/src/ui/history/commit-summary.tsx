@@ -407,9 +407,7 @@ export class CommitSummary extends React.Component<
                     }
                     hideWhitespaceChanges={this.props.hideWhitespaceInDiff}
                     showSideBySideDiff={this.props.showSideBySideDiff}
-                    onShowSideBySideDiffChanged={
-                      this.props.onShowSideBySideDiffChanged
-                    }
+                    onShowSideBySideDiffChanged={this.onShowSideBySideDiffChanged}
                   />
                 </li>
               </>

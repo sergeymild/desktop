@@ -91,10 +91,10 @@ export class DiffOptions extends React.Component<
   }
 
   private onHideWhitespaceChangesChanged = (
-    event: React.FormEvent<HTMLInputElement>
+    isChecked: boolean
   ) => {
     if (this.props.onHideWhitespaceChangesChanged !== undefined) {
-      this.props.onHideWhitespaceChangesChanged(event.currentTarget.checked)
+      this.props.onHideWhitespaceChangesChanged(isChecked)
     }
   }
 
