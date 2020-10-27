@@ -38,7 +38,7 @@ import { RepositoryStateCache } from '../../src/lib/stores/repository-state-cach
 import { ApiRepositoriesStore } from '../../src/lib/stores/api-repositories-store'
 import { getStatusOrThrow } from '../helpers/status'
 import { AppFileStatusKind } from '../../src/models/status'
-import { ManualConflictResolutionKind } from '../../src/models/manual-conflict-resolution'
+import { ManualConflictResolution } from '../../src/models/manual-conflict-resolution'
 
 // enable mocked version
 jest.mock('../../src/lib/window-state')
@@ -193,7 +193,7 @@ describe('AppStore', () => {
         await appStore._finishConflictedMerge(
           repo,
           status.workingDirectory,
-          new Map<string, ManualConflictResolutionKind>()
+          new Map<string, ManualConflictResolution>()
         )
         const newStatus = await getStatusOrThrow(repo)
         const trackedFiles = newStatus.workingDirectory.files.filter(
@@ -211,7 +211,7 @@ describe('AppStore', () => {
         await appStore._finishConflictedMerge(
           repo,
           status.workingDirectory,
-          new Map<string, ManualConflictResolutionKind>()
+          new Map<string, ManualConflictResolution>()
         )
         const newStatus = await getStatusOrThrow(repo)
         const untrackedfiles = newStatus.workingDirectory.files.filter(
@@ -234,7 +234,7 @@ describe('AppStore', () => {
         await appStore._finishConflictedMerge(
           repo,
           status.workingDirectory,
-          new Map<string, ManualConflictResolutionKind>()
+          new Map<string, ManualConflictResolution>()
         )
         const newStatus = await getStatusOrThrow(repo)
         const modifiedFiles = newStatus.workingDirectory.files.filter(
