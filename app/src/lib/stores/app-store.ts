@@ -155,7 +155,7 @@ import { GitStoreCache } from './git-store-cache'
 import { GitErrorContext } from '../git-error-context'
 import { getBoolean, getNumber, getNumberArray, setBoolean, setNumber, setNumberArray } from '../local-storage'
 import { ExternalEditorError } from '../editors/shared'
-import { ApiRepositoriesStore } from './api-repositories-store'
+import { ApiRepositoriesStore, IAccountRepositories } from './api-repositories-store'
 import {
   updateChangedFiles,
   updateConflictState,
