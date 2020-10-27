@@ -966,7 +966,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
         repository,
         allBranches,
         currentPullRequest,
-        getRemotes
+        getRemotes,
+        cachedDefaultBranch
       )
 
       if (inferredBranch !== null) {
@@ -2666,7 +2667,10 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     // If the user is opening the repository list and we haven't yet
     // started to refresh the repository indicators let's do so.
-    if (foldout.type === FoldoutType.Repository) {
+    if (
+      foldout.type === FoldoutType.Repository &&
+      this.repositoryIndicatorsEnabled
+    ) {
       // N.B: RepositoryIndicatorUpdater.prototype.start is
       // idempotent.
       this.repositoryIndicatorUpdater.start()
