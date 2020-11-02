@@ -2,9 +2,8 @@ import * as React from 'react'
 
 import { Repository } from '../../models/repository'
 import { Dispatcher } from '../dispatcher'
-import { Dialog, DialogError, DialogContent, DialogFooter } from '../dialog'
+import { Dialog, DialogError, DialogContent, DialogFooter, OkCancelButtonGroup } from '../dialog'
 
-import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
 import { startTimer } from '../lib/timing'
 import { Ref } from '../lib/ref'
 import { RefNameTextBox } from '../lib/ref-name-text-box'
@@ -42,8 +41,10 @@ export class CreateTag extends React.Component<
   public constructor(props: ICreateTagProps) {
     super(props)
 
+    const tags = this.props.localTags ?? []
+
     this.state = {
-      tagName: props.initialName || '',
+      tagName: props.initialName || (tags.length > 0 ? tags[0].name : ""),
       tagMessage: null,
       isCreatingTag: false,
     }
@@ -67,7 +68,7 @@ export class CreateTag extends React.Component<
         <DialogContent>
           <RefNameTextBox
             label="Name"
-            initialValue={this.props.initialName}
+            initialValue={this.state.tagName}
             onValueChange={this.updateTagName}
           />
           <RefNameTextBox

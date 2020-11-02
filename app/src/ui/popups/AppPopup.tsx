@@ -877,8 +877,6 @@ export const AppPopup: React.FC<IProps> = (
       const isCurrentBranchProtected = appStore.isCurrentBranchProtected(popup.repository)
       const commitAuthor = appStore.getCommitAuthor(popup.repository)
       const commitMessage = appStore.getCommitMessage(popup.repository)
-      const mostRecentLocalCommit = appStore.getMostRecentCommit(popup.repository)
-      const focusCommitMessage = appStore.getFocusCommitMessage()
 
       const tip = appStore.branchState(popup.repository).tip
       let branchName: string | null = null
@@ -895,11 +893,9 @@ export const AppPopup: React.FC<IProps> = (
         repository={popup.repository}
         currentBranchProtected={isCurrentBranchProtected}
         lastCommit={lastCommit}
-        mostRecentLocalCommit={mostRecentLocalCommit}
         branch={branchName}
         commitAuthor={commitAuthor}
         commitMessage={commitMessage}
-        focusCommitMessage={focusCommitMessage}
       />
     default:
       return assertNever(popup, `Unknown popup type: ${popup}`)

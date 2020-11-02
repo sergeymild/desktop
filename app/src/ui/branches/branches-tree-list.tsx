@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { Branch } from '../../models/branch'
-import { ClickSource } from '../lib/list'
 import { TextBox } from '../lib/text-box'
 // @ts-ignore
 import { decorators, Treebeard } from 'react-treebeard'
@@ -36,7 +35,7 @@ interface IProps {
   readonly allBranches: ReadonlyArray<Branch>
   readonly recentBranches: ReadonlyArray<Branch>
   readonly selectedBranch: Branch | null
-  readonly onItemClick?: (item: Branch, source: ClickSource) => void
+  readonly onItemClick?: (item: Branch) => void
   readonly onContextMenu?: (branch: Branch) => void
 
   readonly onSelectionChanged?: (selectedItem: Branch | null) => void
@@ -186,11 +185,15 @@ export class BranchesTreeList extends React.Component<IProps, IState> {
   }
 
   private onToggle = (node: TreeData, toggled: boolean) => {
-    node.toggled = true;
-    if (node.children) {
+    if (node.children.length > 0) {
+      node.toggled = true;
       node.toggled = toggled;
+      return this.setState({nodes: this.state.nodes});
     }
-    this.setState({nodes: this.state.nodes});
+    const branch = node.item
+    if (!this.props.onItemClick) return
+    if (!branch) return
+    this.props.onItemClick(branch)
   }
 
   private onCreateNewBranch = () => {
@@ -207,11 +210,6 @@ export class BranchesTreeList extends React.Component<IProps, IState> {
     ) : null
   }
 
-  private onSelect = (node: TreeData) => {
-    if (!this.props.onSelectionChanged) return
-    this.props.onSelectionChanged(node.item ?? null)
-  }
-
   public render() {
     return <div style={{height: '100%', overflow: "scroll"}} className="branches-list filter-list">
       <Row className="filter-field-row">
@@ -219,8 +217,6 @@ export class BranchesTreeList extends React.Component<IProps, IState> {
         {this.onRenderNewButton()}
       </Row>
       <Treebeard
-        onSelect={this.onSelect}
-
         data={this.state.nodes}
         onToggle={this.onToggle}
         decorators={{...decorators, Header: HeaderDecorator, Toggle}}

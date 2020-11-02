@@ -33,8 +33,6 @@ interface IProps {
   readonly branch: string | null
   readonly commitAuthor: CommitIdentity | null
   readonly commitMessage: ICommitMessage
-  readonly focusCommitMessage: boolean
-  readonly mostRecentLocalCommit: Commit | null
   readonly lastCommit: Commit | null
 }
 
