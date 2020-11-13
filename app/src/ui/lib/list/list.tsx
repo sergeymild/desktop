@@ -672,21 +672,21 @@ export class List extends React.Component<IListProps, IListState> {
     }
   }
 
-  public componentDidMount() {
-    const { props, grid } = this
-    const { selectedRows, scrollToRow, setScrollTop } = props
-
-    // Prefer scrollTop position over scrollToRow
-    if (grid !== null && setScrollTop === undefined) {
-      if (scrollToRow !== undefined) {
-        grid.scrollToCell({ rowIndex: scrollToRow, columnIndex: 0 })
-      } else if (selectedRows.length > 0) {
-        // If we have a selected row when we're about to mount
-        // we'll scroll to it immediately.
-        grid.scrollToCell({ rowIndex: selectedRows[0], columnIndex: 0 })
-      }
-    }
-  }
+  // public componentDidMount() {
+  //   const { props, grid } = this
+  //   const { selectedRows, scrollToRow, setScrollTop } = props
+  //
+  //   // Prefer scrollTop position over scrollToRow
+  //   if (grid !== null && setScrollTop === undefined) {
+  //     if (scrollToRow !== undefined) {
+  //       grid.scrollToCell({ rowIndex: scrollToRow, columnIndex: 0 })
+  //     } else if (selectedRows.length > 0) {
+  //       // If we have a selected row when we're about to mount
+  //       // we'll scroll to it immediately.
+  //       grid.scrollToCell({ rowIndex: selectedRows[0], columnIndex: 0 })
+  //     }
+  //   }
+  // }
 
   public componentDidUpdate(prevProps: IListProps, prevState: IListState) {
     const { scrollToRow, setScrollTop } = this.props
