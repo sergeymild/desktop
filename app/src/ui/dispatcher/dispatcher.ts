@@ -2738,8 +2738,4 @@ export class Dispatcher {
   public setRepositoryIndicatorsEnabled(repositoryIndicatorsEnabled: boolean) {
     this.appStore._setRepositoryIndicatorsEnabled(repositoryIndicatorsEnabled)
   }
-
-  public recordDiffOptionsViewed() {
-    return this.statsStore.recordDiffOptionsViewed()
-  }
 }

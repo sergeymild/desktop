@@ -4,7 +4,7 @@ import { CSSTransition, TransitionGroup } from 'react-transition-group'
 
 import { FoldoutType, IAppState, SelectionType } from '../lib/app-state'
 import { Dispatcher } from './dispatcher'
-import { AppStore, GitHubUserStore, IssuesStore } from '../lib/stores'
+import { AccountsStore, AppStore, GitHubUserStore, IssuesStore } from '../lib/stores'
 import { assertNever } from '../lib/fatal-error'
 import { UpdateStatus, updateStore } from './lib/update-store'
 import { matchExistingRepository } from '../lib/repository-matching'
@@ -51,6 +51,7 @@ interface IAppProps {
   readonly dispatcher: Dispatcher
   readonly repositoryStateManager: RepositoryStateCache
   readonly appStore: AppStore
+  readonly accounts: AccountsStore
   readonly issuesStore: IssuesStore
   readonly gitHubUserStore: GitHubUserStore
 }
@@ -77,6 +78,7 @@ const mapStateToProps = (state: IGlobalState): IAppProps => {
   return {
     dispatcher: state.dispatcher,
     appStore: state.appStore,
+    accounts: state.appStore.accountsStore,
     gitHubUserStore: state.gitHubUserStore,
     issuesStore: state.issuesStore,
     repositoryStateManager: state.repositoryStateManager
@@ -352,8 +354,8 @@ class LocalApp extends React.Component<IAppProps & IProps, IAppState> {
       askForConfirmationOnDiscardChanges={this.state.askForConfirmationOnDiscardChanges}
       askForConfirmationOnRepositoryRemoval={this.state.askForConfirmationOnRepositoryRemoval}
       askForConfirmationOnForcePush={this.state.askForConfirmationOnForcePush}
-      dotComAccount={this.props.appStore.getDotComAccount()}
-      enterpriseAccount={this.props.appStore.getEnterpriseAccount()}
+      dotComAccount={this.props.accounts.getDotComAccount()}
+      enterpriseAccount={this.props.accounts.getEnterpriseAccount()}
       uncommittedChangesStrategyKind={this.state.uncommittedChangesStrategyKind}
       selectedExternalEditor={this.state.selectedExternalEditor}
       automaticallySwitchTheme={this.state.automaticallySwitchTheme}

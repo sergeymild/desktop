@@ -22,9 +22,6 @@ interface IProps {
    * Whether we should display side by side diffs.
    */
   readonly showSideBySideDiff: boolean
-
-  /** Called when the user opens the diff options popover */
-  readonly onDiffOptionsOpened: () => void
 }
 
 interface IExProps {
@@ -92,7 +89,6 @@ class LocalChanges extends React.Component<IProps & IExProps, {}> {
           lineEndingsChange={(diff?.kind === DiffType.Text) ? diff.lineEndingsChange : undefined}
           unified={this.props.unified}showSideBySideDiff={this.props.showSideBySideDiff}
           onShowSideBySideDiffChanged={this.onShowSideBySideDiffChanged}
-          onDiffOptionsOpened={this.props.onDiffOptionsOpened}
         />
         <SeamlessDiffSwitcher
           repository={this.props.repository}

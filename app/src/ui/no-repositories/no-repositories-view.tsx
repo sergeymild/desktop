@@ -89,8 +89,8 @@ interface IState {
 const mapStateToProps = (state: IGlobalState): Iprops => {
   return {
     apiRepositories: state.appStore.apiRepositories,
-    dotComAccount: state.appStore.getDotComAccount(),
-    enterpriseAccount: state.appStore.getEnterpriseAccount()
+    dotComAccount: state.appStore.accountsStore.getDotComAccount(),
+    enterpriseAccount: state.appStore.accountsStore.getEnterpriseAccount()
   }
 }
 

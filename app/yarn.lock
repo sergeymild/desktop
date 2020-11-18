@@ -562,10 +562,10 @@ double-ended-queue@^2.1.0-0:
   resolved "https://registry.yarnpkg.com/double-ended-queue/-/double-ended-queue-2.1.0-0.tgz#103d3527fd31528f40188130c841efdd78264e5c"
   integrity sha1-ED01J/0xUo9AGIEwyEHv3XgmTlw=
 
-dugite@1.91.3:
-  version "1.91.3"
-  resolved "https://registry.yarnpkg.com/dugite/-/dugite-1.91.3.tgz#2903cbec72d7e9941b85e6850e7d1655c54df5dc"
-  integrity sha512-vZYWkdoUuC3VZeaXMQqBbE/D0VpXPob+H9nluwFocYTB3nDJuyA+dGFQA1WvY1Yg2jKDbiVTxviPMFvLamfJqw==
+dugite@1.92.0:
+  version "1.92.0"
+  resolved "https://registry.yarnpkg.com/dugite/-/dugite-1.92.0.tgz#34a32a35ba5e69a61c62afa686a9a27944e0f5f0"
+  integrity sha512-Xra5E2ISwy+sCUrlcBkBsOpP85u5lsbaMnRpnvMJpO+KSoCGccMUimekGS+Ry8ZRni80gHw83MKSrdycaH2bZg==
   dependencies:
     checksum "^0.1.1"
     got "^9.6.0"
@@ -1900,11 +1900,6 @@ tunnel-agent@^0.6.0:
   integrity sha1-J6XeoGs2sEoKmWZ3SykIaPD8QP0=
   dependencies:
     safe-buffer "^5.0.1"
-
-ua-parser-js@^0.7.12:
-  version "0.7.14"
-  resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-0.7.14.tgz#110d53fa4c3f326c121292bbeac904d2e03387ca"
-  integrity sha1-EQ1T+kw/MmwSEpK76skE0uAzh8o=
 
 universalify@^0.1.0:
   version "0.1.1"

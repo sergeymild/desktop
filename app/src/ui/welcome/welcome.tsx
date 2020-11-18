@@ -10,7 +10,6 @@ import { Start } from './start'
 import { SignInEnterprise } from './sign-in-enterprise'
 import { ConfigureGit } from './configure-git'
 import { UiView } from '../ui-view'
-import { Disposable } from 'event-kit'
 
 /** The steps along the Welcome flow. */
 export enum WelcomeStep {
@@ -66,10 +65,6 @@ export class Welcome extends React.Component<IWelcomeProps, IWelcomeState> {
 
   public componentWillReceiveProps(nextProps: IWelcomeProps) {
     this.advanceOnSuccessfulSignIn(nextProps)
-  }
-
-  public componentDidMount() {
-    this.props.dispatcher.recordWelcomeWizardInitiated()
   }
 
   /**

@@ -55,7 +55,6 @@ import { getAppMenu, updatePreferredAppMenuItemLabels } from '../../ui/main-proc
 import {
   API,
   getAccountForEndpoint,
-  getDotComAPIEndpoint,
   getEndpointForRepository,
   IAPIOrganization,
   IAPIRepository,
@@ -390,7 +389,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
     private readonly cloningRepositoriesStore: CloningRepositoriesStore,
     private readonly issuesStore: IssuesStore,
     private readonly signInStore: SignInStore,
-    private readonly accountsStore: AccountsStore,
+    public readonly accountsStore: AccountsStore,
     private readonly repositoriesStore: RepositoriesStore,
     private readonly pullRequestCoordinator: PullRequestCoordinator,
     private readonly repositoryStateCache: RepositoryStateCache,
@@ -2096,9 +2095,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     selectedSection: RepositorySectionTab
   ): Promise<void> {
     this.repositoryStateCache.update(repository, state => {
-      if (state.selectedSection !== selectedSection) {
-        this.statsStore.recordRepositoryViewChanged()
-      }
       return { selectedSection }
     })
     this.emitUpdate()
@@ -4409,7 +4405,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     if (showSideBySideDiff !== this.showSideBySideDiff) {
       setShowSideBySideDiff(showSideBySideDiff)
       this._showSideBySideDiff = showSideBySideDiff
-      this.statsStore.recordDiffModeChanged()
       this.emitUpdate()
     }
   }

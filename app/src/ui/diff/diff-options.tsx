@@ -14,9 +14,6 @@ interface IDiffOptionsProps {
 
   readonly showSideBySideDiff: boolean
   readonly onShowSideBySideDiffChanged: (showSideBySideDiff: boolean) => void
-
-  /** Called when the user opens the diff options popover */
-  readonly onDiffOptionsOpened: () => void
 }
 
 interface IDiffOptionsState {
@@ -60,7 +57,6 @@ export class DiffOptions extends React.Component<
     this.setState(prevState => {
       if (!prevState.isOpen) {
         document.addEventListener('mousedown', this.onDocumentMouseDown)
-        this.props.onDiffOptionsOpened()
         return { isOpen: true }
       }
       return null

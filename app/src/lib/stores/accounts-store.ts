@@ -1,7 +1,7 @@
 import { IDataStore, ISecureStore } from './stores'
 import { getKeyForAccount } from '../auth'
 import { Account } from '../../models/account'
-import { fetchUser, EmailVisibility } from '../api'
+import { fetchUser, EmailVisibility, getDotComAPIEndpoint } from '../api'
 import { fatalError } from '../fatal-error'
 import { TypedBaseStore } from './base-store'
 
@@ -206,6 +206,20 @@ export class AccountsStore extends TypedBaseStore<ReadonlyArray<Account>> {
     this.dataStore.setItem('users', JSON.stringify(usersWithoutTokens))
 
     this.emitUpdate(this.accounts)
+  }
+
+  public getDotComAccount(): Account | null {
+    const dotComAccount = this.accounts.find(
+      a => a.endpoint === getDotComAPIEndpoint()
+    )
+    return dotComAccount || null
+  }
+
+  public getEnterpriseAccount(): Account | null {
+    const enterpriseAccount = this.accounts.find(
+      a => a.endpoint !== getDotComAPIEndpoint()
+    )
+    return enterpriseAccount || null
   }
 }
 
