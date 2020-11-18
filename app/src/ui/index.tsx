@@ -75,6 +75,7 @@ import 'wicg-focus-ring'
 // setup this moment.js plugin so we can use easier
 // syntax for formatting time duration
 import momentDurationFormatSetup from 'moment-duration-format'
+import { sendNonFatalException } from '../lib/helpers/non-fatal-exception'
 
 if (__DEV__) {
   installDevGlobals()
@@ -107,12 +108,10 @@ if (!process.env.TEST_ENV) {
 }
 
 let currentState: IAppState | null = null
-let lastUnhandledRejection: string | null = null
-let lastUnhandledRejectionTime: Date | null = null
 
 const sendErrorWithContext = (
   error: Error,
-  context: { [key: string]: string } = {},
+  context: Record<string, string> = {},
   nonFatal?: boolean,
 ) => {
   error = withSourceMappedStack(error)
@@ -163,14 +162,6 @@ const sendErrorWithContext = (
           extra.activeAppErrors = `${currentState.errors.length}`
         }
 
-        if (
-          lastUnhandledRejection !== null &&
-          lastUnhandledRejectionTime !== null
-        ) {
-          extra.lastUnhandledRejection = lastUnhandledRejection
-          extra.lastUnhandledRejectionTime = lastUnhandledRejectionTime.toString()
-        }
-
         extra.repositoryCount = `${currentState.repositories.length}`
         extra.windowState = currentState.windowState
         extra.accounts = `${currentState.accounts.length}`
@@ -217,13 +208,8 @@ process.on(
  * See https://developer.mozilla.org/en-US/docs/Web/API/Window/unhandledrejection_event
  */
 window.addEventListener('unhandledrejection', ev => {
-  if (ev.reason !== null && ev.reason !== undefined) {
-    try {
-      lastUnhandledRejection = `${ev.reason}`
-      lastUnhandledRejectionTime = new Date()
-    } catch (err) {
-      /* ignore */
-    }
+  if (ev.reason instanceof Error) {
+    sendNonFatalException('unhandledRejection', ev.reason)
   }
 })
 

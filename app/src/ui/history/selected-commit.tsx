@@ -165,6 +165,7 @@ class LocalSelectedCommit extends React.Component<IProps, IState> {
         selectedFile={this.props.selectedFile}
         onHideWhitespaceInDiffChanged={this.onHideWhitespaceInDiffChanged}
         onShowSideBySideDiffChanged={this.onShowSideBySideDiffChanged}
+        onDiffOptionsOpened={this.props.onDiffOptionsOpened}
       />
     )
   }
