@@ -131,7 +131,7 @@ class LocalHeaderDecorator extends React.PureComponent<IHeaderDecoratorProps & I
         onContextMenu={this.onContextMenu}
       >
         <Octicon className="icon" symbol={icon}/>
-        <div className="name" title={name}>{node.name}</div>
+        <div className="name">{node.name}</div>
         <div className="description">{date}</div>
       </div>
     )

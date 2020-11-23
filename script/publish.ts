@@ -201,7 +201,7 @@ function updateDeploy(artifacts: ReadonlyArray<IUploadResult>, secret: string) {
         return
       }
 
-      resolve()
+      resolve(undefined)
     })
   })
 }
