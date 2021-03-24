@@ -9,3 +9,8 @@
 @import 'type';
 
 @import 'ui';
+
+// Hide the actual scroll bar
+.ReactVirtualized__Grid::-webkit-scrollbar {
+  display: none !important;
+}
